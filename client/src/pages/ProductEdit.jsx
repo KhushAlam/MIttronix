@@ -1,0 +1,227 @@
+import { useState } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { MdArrowBack, MdSave, MdDelete } from 'react-icons/md'
+
+function ProductEdit() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  
+  const [formData, setFormData] = useState({
+    name: 'iPhone 14 Pro',
+    category: 'Electronics',
+    price: '999',
+    cost: '750',
+    stock: '25',
+    sku: 'IPH14P-001',
+    status: 'Active',
+    description: 'The iPhone 14 Pro features a 6.1-inch Super Retina XDR display with ProMotion, A16 Bionic chip, and an advanced camera system.',
+    specifications: 'Display: 6.1-inch Super Retina XDR\nChip: A16 Bionic\nStorage: 128GB, 256GB, 512GB, 1TB\nCamera: Pro camera system\nBattery: Up to 23 hours video playback'
+  })
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log('Updating product:', formData)
+    // Add update logic here
+    navigate(`/products/details/${id}`)
+  }
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      console.log('Deleting product:', id)
+      // Add delete logic here
+      navigate('/products/list')
+    }
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title-section">
+          <h1 className="page-title">Edit Product</h1>
+          <p className="page-subtitle">Update product information</p>
+        </div>
+        <div className="page-actions">
+          <Link to={`/products/details/${id}`} className="btn btn-secondary">
+            <MdArrowBack size={16} />
+            Back to Details
+          </Link>
+        </div>
+      </div>
+
+      <div className="form-container">
+        <form onSubmit={handleSubmit} className="product-form">
+          <div className="form-grid">
+            <div className="form-section">
+              <div className="content-card">
+                <h3>Basic Information</h3>
+                
+                <div className="form-group">
+                  <label htmlFor="name">Product Name *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="sku">SKU *</label>
+                  <input
+                    type="text"
+                    id="sku"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="category">Category</label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                  >
+                    <option value="Electronics">Electronics</option>
+                    <option value="Computers">Computers</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Clothing">Clothing</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="status">Status</label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Out of Stock">Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Pricing & Inventory</h3>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price">Sale Price *</label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="cost">Cost Price</label>
+                    <input
+                      type="number"
+                      id="cost"
+                      name="cost"
+                      value={formData.cost}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="stock">Stock Quantity</label>
+                  <input
+                    type="number"
+                    id="stock"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    min="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="content-card">
+                <h3>Description</h3>
+                <div className="form-group">
+                  <label htmlFor="description">Product Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows="6"
+                    placeholder="Enter product description..."
+                  />
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Specifications</h3>
+                <div className="form-group">
+                  <label htmlFor="specifications">Product Specifications</label>
+                  <textarea
+                    id="specifications"
+                    name="specifications"
+                    value={formData.specifications}
+                    onChange={handleInputChange}
+                    rows="8"
+                    placeholder="Enter specifications (one per line)..."
+                  />
+                </div>
+              </div>
+
+              <div className="content-card danger-zone">
+                <h3>Danger Zone</h3>
+                <p>Once you delete a product, there is no going back. Please be certain.</p>
+                <button 
+                  type="button" 
+                  onClick={handleDelete}
+                  className="btn btn-danger"
+                >
+                  <MdDelete size={16} />
+                  Delete Product
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary">
+              <MdSave size={16} />
+              Save Changes
+            </button>
+            <Link to={`/products/details/${id}`} className="btn btn-secondary">
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export default ProductEdit
