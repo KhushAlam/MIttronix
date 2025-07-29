@@ -13,7 +13,8 @@ import {
   MdSecurity,
   MdMenu,
   MdClose,
-  MdNotificationAdd
+  MdNotificationAdd,
+  MdReceiptLong
 } from 'react-icons/md'
 
 function Sidebar() {
@@ -46,7 +47,7 @@ function Sidebar() {
           <div className="logo-icon">
             <span><img className="logo-image" src="https://dapper-maamoul-8bc20d.netlify.app/image/Mittronix-logo-black.png" alt="Logo" /></span>
           </div>
-          <span className="logo-text">Mitronix</span>
+          <span className="logo-text">Mittronix</span>
         </div>
         <button
           className="mobile-menu-toggle"
@@ -93,12 +94,12 @@ function Sidebar() {
         </Link>
 
         {/* Orders */}
-          <Link 
-          to="/orders/list" 
+          <Link
+          to="/orders/list"
           className={`nav-item ${isActive('/orders/list') || isActive('/') ? 'active' : ''}`}
         >
           <span className="nav-icon">
-              <MdShoppingCart size={20} />
+              <MdReceiptLong size={20} />
             </span>
           <span className='nav-text'>Orders</span>
         </Link>
@@ -134,6 +135,15 @@ function Sidebar() {
             <MdNotificationAdd size={20} />
           </span>
           <span className="nav-text">Notifications</span>
+        </Link>
+      <Link 
+          to="/profile" 
+          className={`nav-item ${isActive('/profile') || isActive('/') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            <MdPerson size={20} />
+          </span>
+          <span className="nav-text">Profile</span>
         </Link>
       </div>
 

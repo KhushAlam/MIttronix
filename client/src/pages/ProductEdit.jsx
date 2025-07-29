@@ -1,34 +1,110 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { MdArrowBack, MdSave, MdDelete } from 'react-icons/md'
+import { productService } from '../api/productService.js'
+import { categoryService } from '../api/categoryService.js'
 
 function ProductEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
-  
+
   const [formData, setFormData] = useState({
-    name: 'iPhone 14 Pro',
-    category: 'Electronics',
-    price: '999',
-    cost: '750',
-    stock: '25',
-    sku: 'IPH14P-001',
-    status: 'Active',
-    description: 'The iPhone 14 Pro features a 6.1-inch Super Retina XDR display with ProMotion, A16 Bionic chip, and an advanced camera system.',
-    specifications: 'Display: 6.1-inch Super Retina XDR\nChip: A16 Bionic\nStorage: 128GB, 256GB, 512GB, 1TB\nCamera: Pro camera system\nBattery: Up to 23 hours video playback'
+    name: '',
+    category: '',
+    price: '',
+    stockQuantity: '',
+    stockStatus: '',
+    description: '',
+    specification: '',
+    colour: '',
+    brand: '',
+    isActive: true
   })
 
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [originalProduct, setOriginalProduct] = useState(null)
+
+  // Fetch product data and categories on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const [products, categoriesData] = await Promise.all([
+          productService.getProducts(),
+          categoryService.getCategories()
+        ])
+
+        const product = products.find(p => p._id === id)
+        if (product) {
+          setOriginalProduct(product)
+          setFormData({
+            name: product.name || '',
+            category: product.category || '',
+            price: product.price || '',
+            stockQuantity: product.stockQuantity || '',
+            stockStatus: product.stockStatus || 'InStock',
+            description: product.description || '',
+            specification: product.specification || '',
+            colour: product.colour || '',
+            brand: product.brand || '',
+            isActive: product.isActive !== undefined ? product.isActive : true
+          })
+        } else {
+          setError('Product not found')
+        }
+
+        setCategories(categoriesData)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError('Failed to load product data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchData()
+    }
+  }, [id])
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Updating product:', formData)
+    setError('')
+
+    // Validation
+    if (!formData.name || !formData.price || !formData.description || !formData.category) {
+      setError('Please fill in all required fields')
+      return
+    }
+
+    if (formData.price <= 0) {
+      setError('Price must be greater than 0')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      await productService.updateProduct(id, formData)
+      alert('Product updated successfully!')
+      navigate(`/products/details/${id}`)
+    } catch (error) {
+      console.error('Error updating product:', error)
+      setError(error.message || 'Failed to update product')
+    } finally {
+      setSaving(false)
+    }
     // Add update logic here
     navigate(`/products/details/${id}`)
   }

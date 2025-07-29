@@ -3,54 +3,53 @@ import { uploadImage } from '../utils/cloudinary.js';
 
 export const createProduct = async (req,res) => {
     try {
-      let imageUrl = "";
-      if(req.file){
-        const {name, 
-            description, 
-            category, 
-            price, 
-            colour, 
-            specification, 
+        const {name,
+            description,
+            category,
+            price,
+            colour,
+            specification,
             stockStatus,
-            stockQuantity, 
-            brand, 
+            stockQuantity,
+            brand,
             isActive} = req.body;
 
-            if(!name || !price || !description || !category){
-                res.status(400).json({
-                    message: 'name, price, decription, category are required'
-                })
-            }
-            
-            if(!req.file){
-              return res.status(400).json({ message: 'Image file is required' });
-            }
-
-            const result = await uploadImage(req.file.buffer);
-            imageUrl = result.secure_url;
-
-            const newProduct = await Product.create({
-                name,
-                description,
-                category, 
-                imageUrl:{
-                  url: imageUrl,
-                  public_id: result.public_id
-                }, 
-                price, 
-                colour, 
-                specification, 
-                stockQuantity: stockQuantity || 0, 
-                brand,
-                stockStatus,
-                isActive
+        if(!name || !price || !description || !category){
+            return res.status(400).json({
+                message: 'name, price, description, category are required'
             })
-            res.status(201).json({message: "Product created successfully", newProduct});
-      }
-      else {
-        res.status(400).json({ message: 'Image file is required' });
-      }
-        
+        }
+
+        if(!req.files || req.files.length === 0){
+            return res.status(400).json({ message: 'At least one image file is required' });
+        }
+
+        // Upload all images to cloudinary
+        const uploadPromises = req.files.map(file => uploadImage(file.buffer));
+        const uploadResults = await Promise.all(uploadPromises);
+
+        // Create images array with url and public_id
+        const images = uploadResults.map(result => ({
+            url: result.secure_url,
+            public_id: result.public_id
+        }));
+
+        const newProduct = await Product.create({
+            name,
+            description,
+            category,
+            images,
+            price,
+            colour,
+            specification,
+            stockQuantity: stockQuantity || 0,
+            brand,
+            stockStatus,
+            isActive
+        })
+
+        res.status(201).json({message: "Product created successfully", newProduct});
+
     } catch (error) {
         res.status(500).json({ message: 'Error creating Product', error: error.message });
     }

@@ -32,18 +32,18 @@ function PerformanceChart() {
         <div className="chart-bars">
           {chartData.map((data, index) => (
             <div key={index} className="chart-bar-group" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'}}>
-              <div 
+              <div
                 className="chart-bar"
                 style={{
                   height: `${(data.pageViews / maxValue) * 180}px`,
-                  backgroundColor: '#e17055'
+                  backgroundColor: '#ffc007'
                 }}
               ></div>
-              <div 
+              <div
                 className="chart-bar"
                 style={{
                   height: `${(data.clicks / maxValue) * 180}px`,
-                  backgroundColor: '#74b9ff',
+                  backgroundColor: '#e6ac06',
                   width: '18px'
                 }}
               ></div>
@@ -60,11 +60,11 @@ function PerformanceChart() {
 
       <div className="chart-legend">
         <div className="legend-item">
-          <div className="legend-color" style={{backgroundColor: '#e17055'}}></div>
+          <div className="legend-color" style={{backgroundColor: '#ffc007'}}></div>
           Page Views
         </div>
         <div className="legend-item">
-          <div className="legend-color" style={{backgroundColor: '#74b9ff'}}></div>
+          <div className="legend-color" style={{backgroundColor: '#e6ac06'}}></div>
           Clicks
         </div>
       </div>

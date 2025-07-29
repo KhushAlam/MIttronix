@@ -5,26 +5,46 @@ import { MdArrowBack, MdSave } from 'react-icons/md'
 function EditCategory() {
   const navigate = useNavigate()
   const { id } = useParams()
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'Active'
+    status: 'Active',
+    parent: ''
   })
+
+  const [parentCategories, setParentCategories] = useState([])
 
   // Mock data - in real app this would come from API
   const categories = {
-    1: { name: 'Electronics', description: 'Electronic devices and gadgets', status: 'Active' },
-    2: { name: 'Computers', description: 'Laptops, desktops, and computer accessories', status: 'Active' },
-    3: { name: 'Accessories', description: 'Phone cases, chargers, and other accessories', status: 'Active' },
-    4: { name: 'Clothing', description: 'Apparel and fashion items', status: 'Inactive' }
+    1: { name: 'Electronics', description: 'Electronic devices and gadgets', status: 'Active', parent: '' },
+    2: { name: 'Computers', description: 'Laptops, desktops, and computer accessories', status: 'Active', parent: '' },
+    3: { name: 'Smartphones', description: 'Mobile phones and smartphones', status: 'Active', parent: '1' },
+    4: { name: 'Clothing', description: 'Apparel and fashion items', status: 'Inactive', parent: '' }
   }
 
   useEffect(() => {
+    // Fetch parent categories for dropdown
+    const fetchParentCategories = async () => {
+      try {
+        // This would be replaced with actual API call
+        const mockParentCategories = [
+          { _id: '1', title: 'Electronics' },
+          { _id: '2', title: 'Computers' },
+          { _id: '4', title: 'Clothing' }
+        ].filter(cat => cat._id !== id) // Exclude current category from parent options
+        setParentCategories(mockParentCategories)
+      } catch (error) {
+        console.error('Error fetching parent categories:', error)
+      }
+    }
+
     // Load category data for editing
     if (id && categories[id]) {
       setFormData(categories[id])
     }
+
+    fetchParentCategories()
   }, [id])
 
   const handleInputChange = (e) => {
@@ -86,6 +106,24 @@ function EditCategory() {
                   rows="4"
                   placeholder="Enter category description..."
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="parent">Parent Category (Optional)</label>
+                <select
+                  id="parent"
+                  name="parent"
+                  value={formData.parent}
+                  onChange={handleInputChange}
+                >
+                  <option value="">-- Select Parent Category --</option>
+                  {parentCategories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.title}
+                    </option>
+                  ))}
+                </select>
+                <small className="form-hint">Leave empty to make this a main category</small>
               </div>
 
               <div className="form-group">

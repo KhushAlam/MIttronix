@@ -18,18 +18,18 @@ const validatePhoneNumber = (phone, countryCode) => {
   }
 };
   
-// const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// const sendOtp = async (contactNumber) => {
-//   const otp = otpGenerator.generate(6, { upperCase: false, specialChars: false });
-//   console.log(`Sending OTP ${otp} to ${contactNumber}`);
+const sendOtp = async (contactNumber) => {
+  const otp = otpGenerator.generate(6, { upperCase: false, specialChars: false });
+  console.log(`Sending OTP ${otp} to ${contactNumber}`);
   
-//   await client.messages.create({
-//     body: `Your OTP is ${otp}`,
-//     from: process.env.TWILIO_PHONE_NUMBER,
-//     to: contactNumber
-//   });
-// };
+  await client.messages.create({
+    body: `Your OTP is ${otp}`,
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to: contactNumber
+  });
+};
 
 
 export const userSignup = async (req, res) => {
@@ -135,40 +135,40 @@ export const userLogin = async (req, res) => {
   }
 };
 
-// export const resetPassword = async (req, res) => {
-//   try {
-//     const { contactNumber } = req.body;
+export const resetPassword = async (req, res) => {
+  try {
+    const { contactNumber } = req.body;
 
-//     if (!contactNumber) {
-//       return res.status(400).json({ message: "Contact number is required" });
-//     }
+    if (!contactNumber) {
+      return res.status(400).json({ message: "Contact number is required" });
+    }
 
-//     if (!validatePhoneNumber(contactNumber, "IN")) {
-//       return res.status(400).json({
-//         message: "Invalid Indian phone number format. Please provide a 10-digit number.",
-//       });
-//     }
+    if (!validatePhoneNumber(contactNumber, "IN")) {
+      return res.status(400).json({
+        message: "Invalid Indian phone number format. Please provide a 10-digit number.",
+      });
+    }
 
-//     const verifyOtp = await sendOtp(contactNumber);
-//     const { otp } = req.body;
-//     if (!otp) {
-//       return res.status(400).json({ message: "OTP is required" });
-//     }
+    const verifyOtp = await sendOtp(contactNumber);
+    const { otp } = req.body;
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
+    }
 
-//     if (otp !== verifyOtp) {
-//       return res.status(400).json({ message: "Invalid OTP" });
-//     }
-//     const newPassword = req.body.newPassword;
-//     if (!newPassword) {
-//       return res.status(400).json({ message: "New password is required" });
-//     }
+    if (otp !== verifyOtp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+    const newPassword = req.body.newPassword;
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
+    }
 
-//     res.status(200).json({ message: "Password reset successfully" });
-//   } catch (error) {
-//     console.error("Reset password error:", error.message);
-//     res.status(500).json({
-//       message: "Error resetting password",
-//       error,
-//     });
-//   }
-// };
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error.message);
+    res.status(500).json({
+      message: "Error resetting password",
+      error,
+    });
+  }
+};

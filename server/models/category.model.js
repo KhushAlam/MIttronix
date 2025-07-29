@@ -16,6 +16,15 @@ const categorySchema = new mongoose.Schema({
   },
   tagID: {
     type: Number
+  },
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null
+  },
+  isSubCategory: {
+    type: Boolean,
+    default: false
   }
 });
 

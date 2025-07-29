@@ -14,7 +14,7 @@ const productShcema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Category'
     },
-    imageUrl: {
+    images: [{
         url: {
             type: String,
             required: true
@@ -23,7 +23,7 @@ const productShcema = new mongoose.Schema({
             type: String,
             required: true
         }
-    },
+    }],
     price: {
         type: Number,
         required: true

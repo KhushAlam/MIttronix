@@ -22,7 +22,7 @@ function ConversionsChart() {
             cy="60"
             r="50"
             fill="none"
-            stroke="#e17055"
+            stroke="#ffc007"
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={`${2 * Math.PI * 50}`}
