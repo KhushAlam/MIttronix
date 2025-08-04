@@ -2,30 +2,30 @@ import mongoose from "mongoose";
 
 const categorySchema = new mongoose.Schema({
   title: {
-    type: String
+    type: String,
   },
   description: {
-    type: String
+    type: String,
   },
   createdBy: {
     type: String,
-    enum: ["Admin", "Seller", "Other"]
+    enum: ["Admin", "Seller", "Other"],
   },
   stock: {
-    type: Number
+    type: Number,
   },
   tagID: {
-    type: Number
+    type: Number,
   },
   parent: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    default: null
+    ref: "Category",
+    default: null,
   },
   isSubCategory: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-export default mongoose.model("Category", categorySchema)
+export default mongoose.model("Category", categorySchema);

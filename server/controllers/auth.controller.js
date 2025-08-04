@@ -2,12 +2,28 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import mongoose from "mongoose";
 import otpGenerator from "otp-generator";
 import dotenv from "dotenv";
 import twilio from "twilio";
 
 dotenv.config();
+
+const ADMIN_ID = process.env.ADMIN_ID;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+export const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+  if (
+    email === process.env.ADMIN_EMAIL &&
+    password === process.env.ADMIN_PASSWORD
+  ) {
+    const token = jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    return res.json({ token });
+  }
+  return res.status(401).json({ message: "Invalid credentials" });
+};
 
 const validatePhoneNumber = (phone, countryCode) => {
   try {
@@ -17,20 +33,25 @@ const validatePhoneNumber = (phone, countryCode) => {
     return false;
   }
 };
-  
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 const sendOtp = async (contactNumber) => {
-  const otp = otpGenerator.generate(6, { upperCase: false, specialChars: false });
+  const otp = otpGenerator.generate(6, {
+    upperCase: false,
+    specialChars: false,
+  });
   console.log(`Sending OTP ${otp} to ${contactNumber}`);
-  
+
   await client.messages.create({
     body: `Your OTP is ${otp}`,
     from: process.env.TWILIO_PHONE_NUMBER,
-    to: contactNumber
+    to: contactNumber,
   });
 };
-
 
 export const userSignup = async (req, res) => {
   try {
@@ -63,7 +84,8 @@ export const userSignup = async (req, res) => {
       hashedPassword,
     });
 
-    const token = jwt.sign({
+    const token = jwt.sign(
+      {
         id: newUser._id,
         contactNumber: newUser.contactNumber,
         role: "Seller",
@@ -86,7 +108,6 @@ export const userSignup = async (req, res) => {
       error,
     });
     console.log("Signup error:", error.message);
-    
   }
 };
 
@@ -95,12 +116,16 @@ export const userLogin = async (req, res) => {
     const { contactNumber, password } = req.body;
 
     if (!contactNumber || !password) {
-      return res.status(400).json({ message: "Contact number and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Contact number and password are required" });
     }
 
     const user = await User.findOne({ contactNumber });
     if (!user) {
-      return res.status(404).json({ message: "User not found. Please sign up first." });
+      return res
+        .status(404)
+        .json({ message: "User not found. Please sign up first." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.hashedPassword);
@@ -145,7 +170,8 @@ export const resetPassword = async (req, res) => {
 
     if (!validatePhoneNumber(contactNumber, "IN")) {
       return res.status(400).json({
-        message: "Invalid Indian phone number format. Please provide a 10-digit number.",
+        message:
+          "Invalid Indian phone number format. Please provide a 10-digit number.",
       });
     }
 
