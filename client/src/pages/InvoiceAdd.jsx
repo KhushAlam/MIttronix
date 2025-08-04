@@ -53,7 +53,6 @@ function InvoiceAdd() {
       [field]: value
     }
     
-    // Calculate amount for this item
     if (field === 'quantity' || field === 'rate') {
       const quantity = field === 'quantity' ? parseFloat(value) || 0 : updatedItems[index].quantity
       const rate = field === 'rate' ? parseFloat(value) || 0 : updatedItems[index].rate

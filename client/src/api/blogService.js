@@ -1,17 +1,14 @@
 import { mockBlogs, mockBlogCategories } from './mockData.js';
 
-// Mock delay to simulate API response time
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const blogService = {
-    // Get all blogs with pagination and filtering
     getAll: async (params = {}) => {
         try {
             await delay(500);
 
             let filteredBlogs = [...mockBlogs];
 
-            // Apply filters
             if (params.status && params.status !== 'All Status') {
                 filteredBlogs = filteredBlogs.filter(blog => blog.status === params.status.toLowerCase());
             }
@@ -31,10 +28,8 @@ export const blogService = {
                 );
             }
 
-            // Sort by date (newest first)
             filteredBlogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            // Pagination
             const page = parseInt(params.page) || 1;
             const limit = parseInt(params.limit) || 10;
             const start = (page - 1) * limit;
@@ -55,7 +50,6 @@ export const blogService = {
         }
     },
 
-    // Get blog by ID or slug
     getById: async (id) => {
         try {
             await delay(300);
@@ -69,7 +63,6 @@ export const blogService = {
         }
     },
 
-    // Create new blog
     create: async (data) => {
         try {
             await delay(800);
@@ -97,7 +90,6 @@ export const blogService = {
         }
     },
 
-    // Update blog
     update: async (id, data) => {
         try {
             const response = await axiosInstance.put(`${BLOG_API}/${id}`, data);
@@ -107,7 +99,6 @@ export const blogService = {
         }
     },
 
-    // Toggle blog status (publish/unpublish)
     toggleStatus: async (id, status) => {
         try {
             const response = await axiosInstance.put(`${BLOG_API}/${id}/status`, { status });
@@ -117,7 +108,6 @@ export const blogService = {
         }
     },
 
-    // Toggle featured status
     toggleFeatured: async (id) => {
         try {
             const response = await axiosInstance.put(`${BLOG_API}/${id}/featured`);
@@ -127,7 +117,6 @@ export const blogService = {
         }
     },
 
-    // Get blog statistics
     getStats: async () => {
         try {
             await delay(400);
@@ -145,7 +134,6 @@ export const blogService = {
         }
     },
 
-    // Get featured blogs
     getFeatured: async (limit = 5) => {
         try {
             await delay(300);
@@ -159,7 +147,6 @@ export const blogService = {
         }
     },
 
-    // Delete blog
     delete: async (id) => {
         try {
             const response = await axiosInstance.delete(`${BLOG_API}/${id}`);

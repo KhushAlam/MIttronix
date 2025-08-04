@@ -9,7 +9,6 @@ function CategoriesList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Fetch categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -19,7 +18,6 @@ function CategoriesList() {
         setCategories(categoriesData)
       } catch (error) {
         console.error('Error fetching categories:', error)
-        // Use mock data as fallback when API fails
         setCategories(mockCategories)
         setError('Unable to connect to backend. Showing sample data.')
       } finally {
@@ -98,7 +96,6 @@ function CategoriesList() {
     }
   ]
 
-  // Group categories by parent
   const parentCategories = categories.filter(cat => !cat.isSubCategory)
   const subCategories = categories.filter(cat => cat.isSubCategory)
 
@@ -120,7 +117,6 @@ function CategoriesList() {
     if (window.confirm(`Are you sure you want to delete "${categoryName}"?`)) {
       try {
         await categoryService.deleteCategory(categoryId)
-        // Remove the deleted category from the state
         setCategories(categories.filter(category => category._id !== categoryId))
         alert('Category deleted successfully!')
       } catch (error) {

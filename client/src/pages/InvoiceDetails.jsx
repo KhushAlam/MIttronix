@@ -4,7 +4,6 @@ import { MdArrowBack, MdPrint, MdDownload, MdEdit } from 'react-icons/md'
 function InvoiceDetails() {
   const { id } = useParams()
 
-  // Mock invoice data
   const invoice = {
     id: id || 'INV-001',
     number: 'INV-2024-001',

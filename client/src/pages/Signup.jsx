@@ -68,10 +68,8 @@ function Signup() {
             setLoading(true);
             setError('');
             
-            // Simulate signup API call
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // For demo purposes, create account
             localStorage.setItem('isAuthenticated', 'true');
             localStorage.setItem('user', JSON.stringify({
                 name: `${formData.firstName} ${formData.lastName}`,

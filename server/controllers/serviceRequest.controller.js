@@ -95,3 +95,110 @@ export const updateServiceRequest = async (req, res) => {
     });
   }
 };
+
+export const deleteServiceRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedServiceRequest = await ServiceRequest.findByIdAndDelete(id);
+
+    if (!deletedServiceRequest) {
+      return res.status(404).json({ message: "Service request not found" });
+    }
+
+    res.status(200).json({
+      message: "Service request deleted successfully",
+      data: deletedServiceRequest,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Couldn't delete service request",
+      error: error.message,
+    });
+  }
+};
+
+export const filterServiceRequestsByStatus = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    const filter = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const serviceRequests = await ServiceRequest.find(filter)
+      .populate("user", "name email")
+      .populate("orderId", "orderNumber");
+
+    res.status(200).json(serviceRequests);
+  } catch (error) {
+    console.error("Error filtering service requests:", error);
+    res.status(500).json({
+      message: "Couldn't filter service requests",
+      error: error.message,
+    });
+  }
+};
+
+export const filterServiceRequestsByType = async (req, res) => {
+  try {
+    const { type } = req.query;
+
+    const filter = {};
+    if (type) {
+      filter.type = type;
+    }
+
+    const serviceRequests = await ServiceRequest.find(filter)
+      .populate("user", "name email")
+      .populate("orderId", "orderNumber");
+    res.status(200).json(serviceRequests);
+  } catch (error) {
+    res.status(500).json({
+      message: "Couldn't filter service requests by type",
+      error: error.message,
+    });
+  }
+};
+
+export const getServiceRequestByPriority = async (req, res) => {
+  try {
+    const { priority } = req.query;
+
+    const filter = {};
+    if (priority) {
+      filter.priority = priority;
+    }
+
+    const serviceRequests = await ServiceRequest.find(filter)
+      .populate("user", "name email")
+      .populate("orderId", "orderNumber");
+
+    res.status(200).json(serviceRequests);
+  } catch (error) {
+    console.error("Error fetching service requests by priority:", error);
+    res.status(500).json({
+      message: "Couldn't fetch service requests by priority",
+      error: error.message,
+    });
+  }
+}
+
+export const getServiceRequestsByUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const serviceRequests = await ServiceRequest.find({ user: userId })
+      .populate("user", "name email")
+      .populate("orderId", "orderNumber");
+
+    res.status(200).json(serviceRequests);
+  } catch (error) {
+    console.error("Error fetching service requests by user:", error);
+    res.status(500).json({
+      message: "Couldn't fetch service requests by user",
+      error: error.message,
+    });
+  }
+}

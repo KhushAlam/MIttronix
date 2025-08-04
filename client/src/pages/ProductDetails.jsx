@@ -26,7 +26,6 @@ function ProductDetails() {
         if (foundProduct) {
           setProduct(foundProduct)
 
-          // Fetch category details
           const categories = await categoryService.getCategories()
           const foundCategory = categories.find(cat => cat._id === foundProduct.category)
           setCategory(foundCategory)

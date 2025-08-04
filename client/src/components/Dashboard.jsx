@@ -1,8 +1,6 @@
 import StatsCards from "./StatsCards";
 import PerformanceChart from "./PerformanceChart";
 import ConversionsChart from "./ConversionsChart";
-// import SessionsCountry from "./SessionsCountry";
-// import TopPages from "./TopPages";
 import { IoMdNotifications } from "react-icons/io";
 import { MdPerson } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -36,10 +34,6 @@ function Dashboard() {
           <ConversionsChart />
         </div>
 
-        {/* <div className="bottom-section">
-          <SessionsCountry />
-          <TopPages />
-        </div> */}
       </div>
     </div>
   );

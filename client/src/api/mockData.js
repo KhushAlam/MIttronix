@@ -1,6 +1,3 @@
-// Mock data for various endpoints
-
-// Service Requests Mock Data
 export const mockServiceRequests = [
   {
     id: 'SR-2024-001',

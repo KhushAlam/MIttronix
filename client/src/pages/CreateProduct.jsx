@@ -8,7 +8,6 @@ import { categoryService } from '../api/categoryService.js'
 function CreateProduct() {
   const navigate = useNavigate()
 
-  // Initial form state for reset functionality
   const initialFormState = {
     name: '',
     slug: '',
@@ -31,7 +30,6 @@ function CreateProduct() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // Fetch categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -55,14 +53,13 @@ function CreateProduct() {
     setSuccess('')
   }
 
-  // Function to generate slug from name
   const generateSlug = (name) => {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
   }
 
   const handleInputChange = (e) => {
@@ -73,7 +70,6 @@ function CreateProduct() {
         [name]: value
       }
 
-      // Auto-generate slug when name changes
       if (name === 'name') {
         newData.slug = generateSlug(value)
       }
@@ -106,7 +102,7 @@ function CreateProduct() {
         setError(`Invalid file type: ${file.name}. Please upload only JPG, PNG, GIF, or WebP images.`)
         return false
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         setError(`File too large: ${file.name}. Please upload images smaller than 5MB.`)
         return false
       }
@@ -150,7 +146,7 @@ function CreateProduct() {
   const removeImage = (id) => {
     setImages(prev => {
       const updated = prev.filter(img => img.id !== id)
-      // Clean up object URLs to prevent memory leaks
+
       const removed = prev.find(img => img.id === id)
       if (removed) {
         URL.revokeObjectURL(removed.preview)
@@ -164,13 +160,11 @@ function CreateProduct() {
     setError('')
     setSuccess('')
 
-    // Validation
     if (!formData.name || !formData.price || !formData.description || !formData.category) {
       setError('Please fill in all required fields (Name, Price, Description, Category)')
       return
     }
 
-    // Prevent submission with temporary fallback categories
     if (formData.category.startsWith('temp_')) {
       setError('Please select a valid category or create categories first')
       return
@@ -181,13 +175,11 @@ function CreateProduct() {
       return
     }
 
-    // Validate price is a positive number
     if (formData.price <= 0) {
       setError('Price must be greater than 0')
       return
     }
 
-    // Validate stock quantity is non-negative
     if (formData.stockQuantity && formData.stockQuantity < 0) {
       setError('Stock quantity cannot be negative')
       return
@@ -196,10 +188,9 @@ function CreateProduct() {
     setLoading(true)
 
     try {
-      // Prepare product data for submission
       const productData = {
         ...formData,
-        images: images.map(img => img.file) // Backend expects multiple images
+        images: images.map(img => img.file)
       }
 
       console.log('Submitting product data:', {
@@ -213,13 +204,10 @@ function CreateProduct() {
 
       setSuccess('Product created successfully!')
 
-      // Clean up object URLs
       images.forEach(img => URL.revokeObjectURL(img.preview))
 
-      // Reset form for creating another product
       resetForm()
-
-      // Navigate after a longer delay to show success and allow creating another
+      
       setTimeout(() => navigate("/products/grid"), 1500);
 
     } catch (error) {

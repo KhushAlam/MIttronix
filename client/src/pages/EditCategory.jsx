@@ -15,7 +15,6 @@ function EditCategory() {
 
   const [parentCategories, setParentCategories] = useState([])
 
-  // Mock data - in real app this would come from API
   const categories = {
     1: { name: 'Electronics', description: 'Electronic devices and gadgets', status: 'Active', parent: '' },
     2: { name: 'Computers', description: 'Laptops, desktops, and computer accessories', status: 'Active', parent: '' },
@@ -24,22 +23,19 @@ function EditCategory() {
   }
 
   useEffect(() => {
-    // Fetch parent categories for dropdown
     const fetchParentCategories = async () => {
       try {
-        // This would be replaced with actual API call
         const mockParentCategories = [
           { _id: '1', title: 'Electronics' },
           { _id: '2', title: 'Computers' },
           { _id: '4', title: 'Clothing' }
-        ].filter(cat => cat._id !== id) // Exclude current category from parent options
+        ].filter(cat => cat._id !== id) 
         setParentCategories(mockParentCategories)
       } catch (error) {
         console.error('Error fetching parent categories:', error)
       }
     }
 
-    // Load category data for editing
     if (id && categories[id]) {
       setFormData(categories[id])
     }
@@ -58,7 +54,7 @@ function EditCategory() {
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log('Updating category:', formData)
-    // Add update logic here
+    // add update logic
     navigate('/categories/list')
   }
 

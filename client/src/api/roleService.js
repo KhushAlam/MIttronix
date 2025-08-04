@@ -3,7 +3,6 @@ import axiosInstance from './axios.config.js';
 const ROLE_API = '/roles';
 
 export const roleService = {
-    // Get all roles with pagination and filtering
     getAll: async (params = {}) => {
         try {
             const response = await axiosInstance.get(ROLE_API, { params });
@@ -13,7 +12,6 @@ export const roleService = {
         }
     },
 
-    // Get role by ID
     getById: async (id) => {
         try {
             const response = await axiosInstance.get(`${ROLE_API}/${id}`);
@@ -23,7 +21,6 @@ export const roleService = {
         }
     },
 
-    // Create new role
     create: async (data) => {
         try {
             const response = await axiosInstance.post(ROLE_API, data);
@@ -33,7 +30,6 @@ export const roleService = {
         }
     },
 
-    // Update role
     update: async (id, data) => {
         try {
             const response = await axiosInstance.put(`${ROLE_API}/${id}`, data);
@@ -43,7 +39,6 @@ export const roleService = {
         }
     },
 
-    // Toggle role status
     toggleStatus: async (id) => {
         try {
             const response = await axiosInstance.put(`${ROLE_API}/${id}/status`);
@@ -53,7 +48,6 @@ export const roleService = {
         }
     },
 
-    // Add permission to role
     addPermission: async (id, module, action) => {
         try {
             const response = await axiosInstance.post(`${ROLE_API}/${id}/permissions`, { module, action });
@@ -63,7 +57,6 @@ export const roleService = {
         }
     },
 
-    // Remove permission from role
     removePermission: async (id, module, action) => {
         try {
             const response = await axiosInstance.delete(`${ROLE_API}/${id}/permissions`, { 
@@ -75,7 +68,6 @@ export const roleService = {
         }
     },
 
-    // Get role statistics
     getStats: async () => {
         try {
             const response = await axiosInstance.get(`${ROLE_API}/stats`);
@@ -85,7 +77,6 @@ export const roleService = {
         }
     },
 
-    // Get available permission options
     getPermissionOptions: async () => {
         try {
             const response = await axiosInstance.get(`${ROLE_API}/permissions`);
@@ -95,7 +86,6 @@ export const roleService = {
         }
     },
 
-    // Duplicate role
     duplicate: async (id) => {
         try {
             const response = await axiosInstance.post(`${ROLE_API}/${id}/duplicate`);
@@ -105,7 +95,6 @@ export const roleService = {
         }
     },
 
-    // Delete role
     delete: async (id) => {
         try {
             const response = await axiosInstance.delete(`${ROLE_API}/${id}`);

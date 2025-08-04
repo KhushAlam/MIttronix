@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdArrowBack, MdSave } from "react-icons/md";
-import { categoryService } from "../api/categoryService"; // Assuming this service exists and works
+import { categoryService } from "../api/categoryService";
 
 function CreateCategory() {
   const navigate = useNavigate();
 
-  // State for form data
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -14,24 +13,16 @@ function CreateCategory() {
     parent: "",
   });
 
-  // State for UI and data
   const [parentCategories, setParentCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Fetch parent categories on component mount
   useEffect(() => {
     const fetchParentCategories = async () => {
       try {
-        // This should be replaced with a real API call
-        // const categories = await categoryService.getAllCategories();
-        const mockParentCategories = [
-          { _id: "1", title: "Electronics" },
-          { _id: "2", title: "Computers" },
-          { _id: "3", title: "Clothing" },
-        ];
-        setParentCategories(mockParentCategories);
+        const categories = await categoryService.getCategories();
+        setParentCategories(categories.filter(cat => !cat.isSubCategory));
       } catch (err) {
         console.error("Error fetching parent categories:", err);
         setError("Failed to load parent categories.");
@@ -40,7 +31,6 @@ function CreateCategory() {
     fetchParentCategories();
   }, []);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -49,7 +39,6 @@ function CreateCategory() {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -64,13 +53,11 @@ function CreateCategory() {
     try {
       const categoryData = {
         ...formData,
-        parent: formData.parent || null, // Ensure parent is null if empty
+        parent: formData.parent || null,
       };
 
-      // In a real app, 'title' might be what the API expects
-      // Make sure the key matches the API (e.g., name vs title)
       const dataToSend = {
-          title: categoryData.name, // Or just 'name' if API expects that
+          title: categoryData.name,
           description: categoryData.description,
           status: categoryData.status,
           parent: categoryData.parent,

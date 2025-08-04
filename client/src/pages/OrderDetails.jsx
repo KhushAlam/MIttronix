@@ -4,7 +4,6 @@ import { MdArrowBack, MdPrint, MdEdit, MdLocalShipping, MdCheckCircle } from 're
 function OrderDetails() {
   const { id } = useParams()
 
-  // Mock order data - would come from API in real app
   const order = {
     id: id || '#ORD-001',
     date: '2024-01-15',
@@ -52,11 +51,10 @@ function OrderDetails() {
       }
     ],
     shippingCost: 15.00,
-    taxRate: 10.74, // Tax rate percentage
+    taxRate: 10.74, 
     discountAmount: 0
   }
 
-  // Calculate totals dynamically
   const calculateTotals = () => {
     const subtotal = order.items.reduce((sum, item) => sum + item.total, 0)
     const tax = (subtotal * order.taxRate) / 100

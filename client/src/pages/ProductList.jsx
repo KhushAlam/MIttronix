@@ -10,14 +10,12 @@ function ProductList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Fetch products and categories on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
         setError('')
 
-        // Fetch products and categories
         const [productsData, categoriesData] = await Promise.all([
           productService.getProducts(),
           categoryService.getCategories()
@@ -38,7 +36,6 @@ function ProductList() {
     fetchData()
   }, [])
 
-  // Helper function to get category name by ID
   const getCategoryName = (categoryId) => {
     const category = categories.find(cat => cat._id === categoryId)
     return category ? category.title : 'Unknown'
@@ -50,7 +47,6 @@ function ProductList() {
     if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
       try {
         await productService.deleteProduct(productId)
-        // Remove the deleted product from the state
         setProducts(products.filter(product => product._id !== productId))
         alert('Product deleted successfully!')
       } catch (error) {

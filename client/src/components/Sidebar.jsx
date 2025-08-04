@@ -28,19 +28,8 @@ function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
 
-  // const toggleDropdown = (key) => {
-  //   setExpandedDropdowns(prev => {
-  //     const newState = {}
-  //     Object.keys(prev).forEach(k => {
-  //       newState[k] = false
-  //     })
-  //     newState[key] = !prev[key]
-  //     return newState
-  //   })
-  // }
 
   const isActive = (path) => location.pathname === path
-  // const isDropdownActive = (paths) => paths.some(path => location.pathname.includes(path))
 
   return (
     <div
@@ -186,61 +175,6 @@ function Sidebar() {
           {!isCollapsed && <span className="nav-text">Roles</span>}
         </Link>
       </div>
-
-        {/* <div className="sidebar-section">
-        <div className="section-title">Users</div>
-
-        
-        <Link 
-          to="/profile" 
-          className={`nav-item ${isActive('/profile') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">
-            <MdPersonPin size={20} />
-          </span>
-          <span className="nav-text">Profile</span>
-        </Link>
-
-        <Link 
-          to="/roles" 
-          className={`nav-item ${isActive('/roles') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">
-            <MdPerson size={20} />
-          </span>
-          <span className="nav-text">Roles</span>
-        </Link>
-
-        <Link 
-          to="/permissions" 
-          className={`nav-item ${isActive('/permissions') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">
-            <MdSecurity size={20} />
-          </span>
-          <span className="nav-text">Permissions</span>
-        </Link>
-
-        <Link 
-          to="/customers" 
-          className={`nav-item ${isActive('/customers') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">
-            <MdGroup size={20} />
-          </span>
-          <span className="nav-text">Customers</span>
-        </Link>
-
-        <Link 
-          to="/sellers" 
-          className={`nav-item ${isActive('/sellers') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">
-            <MdGroup size={20} />
-          </span>
-          <span className="nav-text">Sellers</span>
-        </Link>
-      </div> */}
     </div>
   )
 }

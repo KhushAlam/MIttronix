@@ -28,7 +28,6 @@ function CreateRole() {
         notes: ''
     });
 
-    // Permission modules and actions (this would come from API)
     const permissionModules = {
         users: {
             label: 'User Management',
@@ -119,7 +118,6 @@ function CreateRole() {
     };
 
     useEffect(() => {
-        // Initialize permissions object
         const initialPermissions = {};
         Object.keys(permissionModules).forEach(module => {
             initialPermissions[module] = {};
@@ -216,7 +214,6 @@ function CreateRole() {
             setLoading(true);
             setError('');
 
-            // Convert permissions to the format expected by the API
             const permissions = [];
             Object.entries(formData.permissions).forEach(([module, actions]) => {
                 const moduleActions = Object.entries(actions)
@@ -237,7 +234,7 @@ function CreateRole() {
                 permissions,
                 status: status,
                 notes: formData.notes,
-                createdBy: 'Admin User' // This would come from auth context
+                createdBy: 'Admin User'
             };
 
             await roleService.create(submitData);

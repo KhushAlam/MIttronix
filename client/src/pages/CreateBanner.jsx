@@ -71,7 +71,7 @@ function CreateBanner() {
                 status,
                 startDate: new Date(formData.startDate).toISOString(),
                 endDate: new Date(formData.endDate).toISOString(),
-                createdBy: 'Admin User' // This would come from auth context
+                createdBy: 'Admin User'
             };
 
             await bannerService.create(submitData);

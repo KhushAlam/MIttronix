@@ -3,7 +3,6 @@ import axiosInstance from './axios.config.js';
 const BANNER_API = '/banners';
 
 export const bannerService = {
-    // Get all banners with pagination and filtering
     getAll: async (params = {}) => {
         try {
             const response = await axiosInstance.get(BANNER_API, { params });
@@ -13,7 +12,6 @@ export const bannerService = {
         }
     },
 
-    // Get banner by ID
     getById: async (id) => {
         try {
             const response = await axiosInstance.get(`${BANNER_API}/${id}`);
@@ -23,7 +21,6 @@ export const bannerService = {
         }
     },
 
-    // Create new banner
     create: async (data) => {
         try {
             const response = await axiosInstance.post(BANNER_API, data);
@@ -33,7 +30,6 @@ export const bannerService = {
         }
     },
 
-    // Update banner
     update: async (id, data) => {
         try {
             const response = await axiosInstance.put(`${BANNER_API}/${id}`, data);
@@ -43,7 +39,6 @@ export const bannerService = {
         }
     },
 
-    // Toggle banner status
     toggleStatus: async (id) => {
         try {
             const response = await axiosInstance.put(`${BANNER_API}/${id}/status`);
@@ -53,7 +48,6 @@ export const bannerService = {
         }
     },
 
-    // Get active banners by placement
     getByPlacement: async (placement, targetAudience = 'All Users') => {
         try {
             const response = await axiosInstance.get(`${BANNER_API}/placement/${placement}`, {
@@ -65,7 +59,6 @@ export const bannerService = {
         }
     },
 
-    // Record banner impression
     recordImpression: async (id) => {
         try {
             const response = await axiosInstance.post(`${BANNER_API}/${id}/impression`);
@@ -75,7 +68,6 @@ export const bannerService = {
         }
     },
 
-    // Record banner click
     recordClick: async (id) => {
         try {
             const response = await axiosInstance.post(`${BANNER_API}/${id}/click`);
@@ -85,7 +77,6 @@ export const bannerService = {
         }
     },
 
-    // Get banner statistics
     getStats: async () => {
         try {
             const response = await axiosInstance.get(`${BANNER_API}/stats`);
@@ -95,7 +86,6 @@ export const bannerService = {
         }
     },
 
-    // Duplicate banner
     duplicate: async (id) => {
         try {
             const response = await axiosInstance.post(`${BANNER_API}/${id}/duplicate`);
@@ -105,7 +95,6 @@ export const bannerService = {
         }
     },
 
-    // Delete banner
     delete: async (id) => {
         try {
             const response = await axiosInstance.delete(`${BANNER_API}/${id}`);

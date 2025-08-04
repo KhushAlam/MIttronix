@@ -28,7 +28,6 @@ function ProductEdit() {
   const [error, setError] = useState('')
   const [originalProduct, setOriginalProduct] = useState(null)
 
-  // Fetch product data and categories on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,14 +71,14 @@ function ProductEdit() {
     }
   }, [id])
 
-  // Function to generate slug from name
+
   const generateSlug = (name) => {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+      .replace(/[^\w\s-]/g, '') 
+      .replace(/[\s_-]+/g, '-') 
+      .replace(/^-+|-+$/g, '') 
   }
 
   const handleInputChange = (e) => {
@@ -90,7 +89,6 @@ function ProductEdit() {
         [name]: type === 'checkbox' ? checked : value
       }
 
-      // Auto-generate slug when name changes
       if (name === 'name') {
         newData.slug = generateSlug(value)
       }
@@ -103,7 +101,6 @@ function ProductEdit() {
     e.preventDefault()
     setError('')
 
-    // Validation
     if (!formData.name || !formData.price || !formData.description || !formData.category) {
       setError('Please fill in all required fields')
       return

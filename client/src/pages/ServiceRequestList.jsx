@@ -65,9 +65,8 @@ function ServiceRequestList() {
   const fetchStats = async () => {
     try {
       const response = await serviceRequestService.getStats();
-      setStats(response); // Fixed: remove .data since service returns stats directly
+      setStats(response);
     } catch (error) {
-      // API endpoint not available - use fallback stats silently
       setStats({
         overview: {
           open: 0,

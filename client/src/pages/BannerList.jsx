@@ -33,7 +33,6 @@ function BannerList() {
         sortOrder: 'desc'
     });
 
-    // Mock data for demonstration (will be replaced by API calls)
     const mockBanners = [
         {
             _id: '1',
@@ -132,7 +131,6 @@ function BannerList() {
                 setBanners(response.data);
                 setPagination(response.pagination);
             } catch (apiError) {
-                // Use mock data when API fails
                 console.log('API unavailable, using mock data');
                 setBanners(mockBanners);
                 setPagination({ current: 1, total: 1, pages: 1 });
@@ -150,7 +148,6 @@ function BannerList() {
             const response = await bannerService.getStats();
             setStats(response.data);
         } catch (error) {
-            // Use mock stats when API fails
             setStats(mockStats);
         }
     };

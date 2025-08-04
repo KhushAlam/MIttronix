@@ -30,7 +30,6 @@ function CreateServiceRequest() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validation
         if (!formData.type || !formData.orderId || !formData.product || !formData.description) {
             setError('Please fill in all required fields');
             return;
@@ -40,7 +39,6 @@ function CreateServiceRequest() {
             setLoading(true);
             setError('');
 
-            // Map form data to backend service request structure
             const submitData = {
                 title: `${formData.type} Request - Order ${formData.orderId}`,
                 description: formData.description,

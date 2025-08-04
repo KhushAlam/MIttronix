@@ -60,9 +60,8 @@ function BlogList() {
     const fetchStats = async () => {
         try {
             const response = await blogService.getStats();
-            setStats(response); // Fixed: remove .data since service returns stats directly
+            setStats(response); 
         } catch (error) {
-            // API endpoint not available - use fallback stats silently
             setStats({
                 total: 0,
                 published: 0,

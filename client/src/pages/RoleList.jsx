@@ -32,7 +32,6 @@ function RoleList() {
         sortOrder: 'desc'
     });
 
-    // Mock data for demonstration
     const mockRoles = [
         {
             _id: '1',
@@ -140,7 +139,6 @@ function RoleList() {
                 setRoles(response.data);
                 setPagination(response.pagination);
             } catch (apiError) {
-                // Use mock data when API fails
                 console.log('API unavailable, using mock data');
                 setRoles(mockRoles);
                 setPagination({ current: 1, total: 1, pages: 1 });
@@ -158,7 +156,6 @@ function RoleList() {
             const response = await roleService.getStats();
             setStats(response.data);
         } catch (error) {
-            // Use mock stats when API fails
             setStats(mockStats);
         }
     };

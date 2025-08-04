@@ -32,7 +32,6 @@ function OrderAdd() {
 
   const [showProductSelector, setShowProductSelector] = useState(null)
   
-  // Sample products - in a real app, this would come from API
   const availableProducts = [
     { id: 1, name: 'Wireless Headphones', sku: 'WH-001', price: 99.99, stock: 50 },
     { id: 2, name: 'Bluetooth Speaker', sku: 'BS-002', price: 79.99, stock: 30 },
@@ -68,7 +67,6 @@ function OrderAdd() {
       [field]: value
     }
     
-    // Calculate total for this product
     if (field === 'quantity' || field === 'price') {
       const quantity = field === 'quantity' ? parseFloat(value) || 0 : updatedProducts[index].quantity
       const price = field === 'price' ? parseFloat(value) || 0 : updatedProducts[index].price

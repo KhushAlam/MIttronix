@@ -111,14 +111,12 @@ function CreateBlog() {
         }));
     };
 
-    // Content section management
     const addContentSection = (type) => {
         const newSection = {
             id: Date.now(),
             type,
             content: '',
             order: contentSections.length,
-            // Type-specific default properties
             ...(type === SECTION_TYPES.IMAGE && { 
                 url: '', 
                 alt: '', 
@@ -494,7 +492,6 @@ function CreateBlog() {
             setLoading(true);
             setError('');
 
-            // Convert sections to structured content
             const structuredContent = contentSections.map((section, index) => ({
                 ...section,
                 order: index
@@ -502,7 +499,7 @@ function CreateBlog() {
 
             const submitData = {
                 ...formData,
-                content: JSON.stringify(structuredContent), // Store as JSON for flexible content
+                content: JSON.stringify(structuredContent),
                 status,
                 author: '60f7b3b3b3b3b3b3b3b3b3b3'
             };

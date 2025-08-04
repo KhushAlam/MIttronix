@@ -12,7 +12,6 @@ function Notifications() {
     scheduleType: 'now'
   })
 
-  // Mock data for SMS notifications history
   const notificationsHistory = [
     {
       id: 1,
@@ -56,7 +55,6 @@ function Notifications() {
     }
   ]
 
-  // Mock users data
   const users = [
     { id: 1, name: 'John Doe', phone: '+1 234 567 8901', type: 'customer', active: true },
     { id: 2, name: 'Jane Smith', phone: '+1 234 567 8902', type: 'customer', active: true },

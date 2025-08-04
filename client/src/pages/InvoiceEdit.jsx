@@ -6,7 +6,6 @@ function InvoiceEdit() {
   const navigate = useNavigate()
   const { id } = useParams()
   
-  // Mock invoice data for editing - would come from API in real app
   const mockInvoice = {
     id: id || 'INV-001',
     number: 'INV-2024-001',
@@ -78,7 +77,6 @@ function InvoiceEdit() {
       [field]: value
     }
     
-    // Calculate amount for this item
     if (field === 'quantity' || field === 'rate') {
       const quantity = field === 'quantity' ? parseFloat(value) || 0 : updatedItems[index].quantity
       const rate = field === 'rate' ? parseFloat(value) || 0 : updatedItems[index].rate

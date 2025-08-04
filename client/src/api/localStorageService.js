@@ -1,6 +1,4 @@
-// Fallback service when backend is unavailable
 export const localStorageService = {
-  // Save product to local storage
   saveProduct: (productData) => {
     try {
       const products = JSON.parse(localStorage.getItem('products') || '[]')
@@ -37,7 +35,6 @@ export const localStorageService = {
     }
   },
 
-  // Get all local products
   getProducts: () => {
     try {
       return JSON.parse(localStorage.getItem('products') || '[]')
@@ -46,7 +43,6 @@ export const localStorageService = {
     }
   },
 
-  // Clear all local products
   clearProducts: () => {
     localStorage.removeItem('products')
   }
