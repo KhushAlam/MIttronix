@@ -10,6 +10,7 @@ function ProductEdit() {
 
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     category: '',
     price: '',
     stockQuantity: '',
@@ -42,6 +43,7 @@ function ProductEdit() {
           setOriginalProduct(product)
           setFormData({
             name: product.name || '',
+            slug: product.slug || '',
             category: product.category || '',
             price: product.price || '',
             stockQuantity: product.stockQuantity || '',
@@ -70,12 +72,31 @@ function ProductEdit() {
     }
   }, [id])
 
+  // Function to generate slug from name
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+  }
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }
+
+      // Auto-generate slug when name changes
+      if (name === 'name') {
+        newData.slug = generateSlug(value)
+      }
+
+      return newData
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -149,6 +170,22 @@ function ProductEdit() {
                     onChange={handleInputChange}
                     required
                   />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="slug">URL Slug *</label>
+                  <input
+                    type="text"
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="product-url-slug"
+                  />
+                  <small className="form-hint">
+                    URL-friendly version of the product name. Automatically generated from product name.
+                  </small>
                 </div>
 
                 <div className="form-group">

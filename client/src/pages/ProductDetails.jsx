@@ -143,27 +143,31 @@ function ProductDetails() {
       <div className="product-details-container">
         <div className="product-details-grid">
           <div className="product-images-section">
-            <div className="main-image">
+            <div className="main-image-container">
               <img
-                src={product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/400x400'}
+                className="main-product-image"
+                src={product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/300x300'}
                 alt={product.name}
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/400x400?text=No+Image'
+                  e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'
                 }}
               />
             </div>
             {product.images && product.images.length > 1 && (
-              <div className="thumbnail-images">
-                {product.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image.url}
-                    alt={`${product.name} ${index + 1}`}
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'
-                    }}
-                  />
-                ))}
+              <div className="thumbnail-gallery">
+                <div className="thumbnail-scroll">
+                  {product.images.map((image, index) => (
+                    <img
+                      key={index}
+                      className="thumbnail-image"
+                      src={image.url}
+                      alt={`${product.name} ${index + 1}`}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,9 +1,10 @@
 import StatsCards from "./StatsCards";
 import PerformanceChart from "./PerformanceChart";
 import ConversionsChart from "./ConversionsChart";
-import SessionsCountry from "./SessionsCountry";
-import TopPages from "./TopPages";
+// import SessionsCountry from "./SessionsCountry";
+// import TopPages from "./TopPages";
 import { IoMdNotifications } from "react-icons/io";
+import { MdPerson } from "react-icons/md";
 import { Link } from "react-router-dom";
 
 function Dashboard() {
@@ -19,8 +20,10 @@ function Dashboard() {
             <IoMdNotifications className="icons" size={24} color="grey" />
           </div>
 
-          <Link to="/profile">
-              <img className="user-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face" alt="" />
+          <Link to="/login" className="user-avatar-link">
+              <div className="user-avatar-icon">
+                <MdPerson size={28} />
+              </div>
           </Link>
         </div>
       </div>

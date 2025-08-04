@@ -15,15 +15,22 @@ function ProductList() {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setError('')
+
+        // Fetch products and categories
         const [productsData, categoriesData] = await Promise.all([
           productService.getProducts(),
           categoryService.getCategories()
         ])
-        setProducts(productsData)
-        setCategories(categoriesData)
+
+        setProducts(productsData || [])
+        setCategories(categoriesData || [])
+
       } catch (error) {
         console.error('Error fetching data:', error)
-        setError('Failed to load products')
+        setError('Failed to load data. Using offline mode.')
+        setProducts([])
+        setCategories([])
       } finally {
         setLoading(false)
       }
@@ -81,33 +88,7 @@ function ProductList() {
     )
   }
 
-  if (error) {
-    return (
-      <div>
-        <div className="page-header">
-          <div className="page-title-section">
-            <h1 className="page-title">Product List</h1>
-            <p className="page-subtitle">Manage your products inventory</p>
-          </div>
-          <div className="page-actions">
-            <Link to="/products/create" className="btn btn-primary">
-              <MdAdd size={16} />
-              Add Product
-            </Link>
-          </div>
-        </div>
-        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: '#dc2626', marginBottom: '20px' }}>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div>
@@ -127,6 +108,19 @@ function ProductList() {
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="content-card" style={{
+          backgroundColor: '#fef3c7',
+          borderLeft: '4px solid #f59e0b',
+          marginBottom: '20px',
+          padding: '12px 16px'
+        }}>
+          <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
+            ⚠️ {error}
+          </p>
+        </div>
+      )}
 
       <div className="content-card">
         {products.length === 0 ? (

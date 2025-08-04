@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import Layout from './components/Layout'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import ProductList from './pages/ProductList'
@@ -16,17 +17,33 @@ import OrderEdit from './pages/OrderEdit'
 import InvoicesList from './pages/InvoicesList'
 import InvoiceDetails from './pages/InvoiceDetails'
 import InvoiceAdd from './pages/InvoiceAdd'
+import InvoiceEdit from './pages/InvoiceEdit'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
+import ServiceRequestList from './pages/ServiceRequestList'
+import BlogList from './pages/BlogList'
+import CreateBlog from './pages/CreateBlog'
+import CreateServiceRequest from './pages/CreateServiceRequest'
+import BannerList from './pages/BannerList'
+import CreateBanner from './pages/CreateBanner'
+import RoleList from './pages/RoleList'
+import CreateRole from './pages/CreateRole'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 
-function App() {
+function AppContent() {
+  const location = useLocation()
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
+
   return (
-    <Router>
-      <div className="app">
-        <Sidebar />
-        <div className="main-content">
+    <div className="app">
+      {!isAuthPage && <Sidebar />}
+      <div className={`main-content ${isAuthPage ? 'auth-page' : ''}`}>
           <Routes>
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             
@@ -57,13 +74,38 @@ function App() {
             <Route path="/invoices/details/:id" element={<InvoiceDetails />} />
             <Route path="/invoices/details" element={<InvoiceDetails />} />
             <Route path="/invoices/add" element={<InvoiceAdd />} />
-            <Route path="/invoices/edit/:id" element={<InvoiceAdd />} />
+            <Route path="/invoices/edit/:id" element={<InvoiceEdit />} />
             <Route path="/invoices" element={<InvoicesList />} />
             
             {/* Settings & Profile & Notifications */}
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/service-request" element={<ServiceRequestList />} />
+
+            {/* Service Requests Routes */}
+            <Route path="/service-requests" element={<ServiceRequestList />} />
+            <Route path="/service-requests/create" element={<CreateServiceRequest />} />
+            <Route path="/service-requests/:id" element={<div className="page-header"><h1>Service Request Details</h1></div>} />
+            <Route path="/service-requests/:id/edit" element={<div className="page-header"><h1>Edit Service Request</h1></div>} />
+
+            {/* Blog Routes */}
+            <Route path="/blogs" element={<BlogList />} />
+            <Route path="/blogs/create" element={<CreateBlog />} />
+            <Route path="/blogs/:id" element={<div className="page-header"><h1>Blog Details</h1></div>} />
+            <Route path="/blogs/:id/edit" element={<div className="page-header"><h1>Edit Blog</h1></div>} />
+
+            {/* Banner Routes */}
+            <Route path="/banners" element={<BannerList />} />
+            <Route path="/banners/create" element={<CreateBanner />} />
+            <Route path="/banners/:id" element={<div className="page-header"><h1>Banner Details</h1></div>} />
+            <Route path="/banners/:id/edit" element={<div className="page-header"><h1>Edit Banner</h1></div>} />
+
+            {/* Role Routes */}
+            <Route path="/roles" element={<RoleList />} />
+            <Route path="/roles/create" element={<CreateRole />} />
+            <Route path="/roles/:id" element={<div className="page-header"><h1>Role Details</h1></div>} />
+            <Route path="/roles/:id/edit" element={<div className="page-header"><h1>Edit Role</h1></div>} />
             
             {/* Placeholder routes for other nav items */}
             <Route path="/roles" element={<div className="page-header"><h1>Roles Page</h1></div>} />
@@ -72,7 +114,14 @@ function App() {
             <Route path="/sellers" element={<div className="page-header"><h1>Sellers Page</h1></div>} />
           </Routes>
         </div>
-      </div>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   )
 }

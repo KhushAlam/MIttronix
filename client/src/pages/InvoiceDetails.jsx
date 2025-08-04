@@ -32,30 +32,30 @@ function InvoiceDetails() {
         id: 1,
         description: 'Smartphone Case - Premium Quality',
         quantity: 2,
-        rate: 25.99,
-        amount: 51.98
+        rate: 2599,
+        amount: 5198
       },
       {
         id: 2,
         description: 'Wireless Charging Pad',
         quantity: 1,
-        rate: 39.99,
-        amount: 39.99
+        rate: 3999,
+        amount: 3999
       },
       {
         id: 3,
         description: 'USB-C Cable (2m)',
         quantity: 3,
-        rate: 12.99,
-        amount: 38.97
+        rate: 1299,
+        amount: 3897
       }
     ],
-    subtotal: 130.94,
-    tax: 15.71,
-    discount: 5.00,
-    total: 141.65,
-    amountPaid: 141.65,
-    balance: 0.00
+    subtotal: 13094,
+    tax: 1571,
+    discount: 500,
+    total: 14165,
+    amountPaid: 14165,
+    balance: 0
   }
 
   const getStatusColor = (status) => {
@@ -161,8 +161,8 @@ function InvoiceDetails() {
                   <tr key={item.id}>
                     <td className="description-col">{item.description}</td>
                     <td className="quantity-col">{item.quantity}</td>
-                    <td className="rate-col">${item.rate.toFixed(2)}</td>
-                    <td className="amount-col">${item.amount.toFixed(2)}</td>
+                    <td className="rate-col">₹{item.rate.toLocaleString()}</td>
+                    <td className="amount-col">₹{item.amount.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -174,19 +174,19 @@ function InvoiceDetails() {
             <div className="totals-section">
               <div className="total-row">
                 <span className="total-label">Subtotal:</span>
-                <span className="total-value">${invoice.subtotal.toFixed(2)}</span>
+                <span className="total-value">₹{invoice.subtotal.toLocaleString()}</span>
               </div>
               <div className="total-row">
                 <span className="total-label">Discount:</span>
-                <span className="total-value">-${invoice.discount.toFixed(2)}</span>
+                <span className="total-value">-₹{invoice.discount.toLocaleString()}</span>
               </div>
               <div className="total-row">
                 <span className="total-label">Tax (12%):</span>
-                <span className="total-value">${invoice.tax.toFixed(2)}</span>
+                <span className="total-value">₹{invoice.tax.toLocaleString()}</span>
               </div>
               <div className="total-row grand-total">
                 <span className="total-label">Total:</span>
-                <span className="total-value">${invoice.total.toFixed(2)}</span>
+                <span className="total-value">₹{invoice.total.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -195,11 +195,11 @@ function InvoiceDetails() {
           <div className="payment-summary">
             <div className="payment-row">
               <span className="payment-label">Amount Paid:</span>
-              <span className="payment-value">${invoice.amountPaid.toFixed(2)}</span>
+              <span className="payment-value">₹{invoice.amountPaid.toLocaleString()}</span>
             </div>
             <div className="payment-row balance">
               <span className="payment-label">Balance Due:</span>
-              <span className="payment-value">${invoice.balance.toFixed(2)}</span>
+              <span className="payment-value">₹{invoice.balance.toLocaleString()}</span>
             </div>
           </div>
 

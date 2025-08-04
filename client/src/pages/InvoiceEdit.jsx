@@ -1,31 +1,56 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MdArrowBack, MdSave, MdAdd, MdDelete } from 'react-icons/md'
 
-function InvoiceAdd() {
+function InvoiceEdit() {
   const navigate = useNavigate()
+  const { id } = useParams()
   
-  const [formData, setFormData] = useState({
-    number: '',
-    date: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    status: 'Draft',
+  // Mock invoice data for editing - would come from API in real app
+  const mockInvoice = {
+    id: id || 'INV-001',
+    number: 'INV-2024-001',
+    date: '2024-01-15',
+    dueDate: '2024-02-15',
+    status: 'Paid',
     customer: {
-      name: '',
-      company: '',
-      address: '',
-      city: '',
-      email: '',
-      phone: ''
+      name: 'John Doe',
+      company: 'Acme Corporation',
+      address: '456 Customer Ave',
+      city: 'Mumbai, MH 400001',
+      email: 'john.doe@acme.com',
+      phone: '+91 98765 43210'
     },
     items: [
-      { id: 1, description: '', quantity: 1, rate: 0, amount: 0 }
+      {
+        id: 1,
+        description: 'Samsung 65" QLED 4K Smart TV - Premium Quality',
+        quantity: 1,
+        rate: 89999,
+        amount: 89999
+      },
+      {
+        id: 2,
+        description: 'LG 7kg Front Load Washing Machine',
+        quantity: 1,
+        rate: 42999,
+        amount: 42999
+      },
+      {
+        id: 3,
+        description: 'IFB 30L Convection Microwave Oven',
+        quantity: 2,
+        rate: 15999,
+        amount: 31998
+      }
     ],
-    notes: '',
-    terms: '',
-    taxRate: 12,
-    discountAmount: 0
-  })
+    notes: 'Thank you for your business! Payment terms: Net 30 days.',
+    terms: 'All sales are final. Returns accepted within 7 days with original packaging.',
+    taxRate: 18,
+    discountAmount: 5000
+  }
+  
+  const [formData, setFormData] = useState(mockInvoice)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -98,9 +123,10 @@ function InvoiceAdd() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('Creating invoice:', formData)
-    // Add create logic here
-    navigate('/invoices/list')
+    console.log('Updating invoice:', formData)
+    // Add update logic here
+    alert('Invoice updated successfully!')
+    navigate(`/invoices/details/${id}`)
   }
 
   const { subtotal, tax, total } = calculateTotals()
@@ -109,13 +135,13 @@ function InvoiceAdd() {
     <div>
       <div className="page-header">
         <div className="page-title-section">
-          <h1 className="page-title">Create Invoice</h1>
-          <p className="page-subtitle">Create a new invoice</p>
+          <h1 className="page-title">Edit Invoice</h1>
+          <p className="page-subtitle">Edit invoice #{formData.number}</p>
         </div>
         <div className="page-actions">
-          <Link to="/invoices/list" className="btn btn-secondary">
+          <Link to={`/invoices/details/${id}`} className="btn btn-secondary">
             <MdArrowBack size={16} />
-            Back to Invoices
+            Back to Details
           </Link>
         </div>
       </div>
@@ -152,6 +178,7 @@ function InvoiceAdd() {
                     <option value="Pending">Pending</option>
                     <option value="Paid">Paid</option>
                     <option value="Overdue">Overdue</option>
+                    <option value="Cancelled">Cancelled</option>
                   </select>
                 </div>
               </div>
@@ -222,7 +249,7 @@ function InvoiceAdd() {
                     value={formData.customer.email}
                     onChange={handleInputChange}
                     required
-                    placeholder="john@example.com"
+                    placeholder="john.doe@example.com"
                   />
                 </div>
                 <div className="form-group">
@@ -233,20 +260,20 @@ function InvoiceAdd() {
                     name="customer.phone"
                     value={formData.customer.phone}
                     onChange={handleInputChange}
-                    placeholder="+1 234 567 8900"
+                    placeholder="+91 98765 43210"
                   />
                 </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="customer.address">Address</label>
-                <textarea
+                <input
+                  type="text"
                   id="customer.address"
                   name="customer.address"
                   value={formData.customer.address}
                   onChange={handleInputChange}
-                  rows="2"
-                  placeholder="123 Customer Street"
+                  placeholder="456 Customer Avenue"
                 />
               </div>
 
@@ -258,7 +285,7 @@ function InvoiceAdd() {
                   name="customer.city"
                   value={formData.customer.city}
                   onChange={handleInputChange}
-                  placeholder="New York, NY 10001"
+                  placeholder="Mumbai, MH 400001"
                 />
               </div>
             </div>
@@ -268,7 +295,11 @@ function InvoiceAdd() {
           <div className="content-card">
             <div className="section-header">
               <h3>Invoice Items</h3>
-              <button type="button" onClick={addItem} className="btn btn-outline">
+              <button
+                type="button"
+                onClick={addItem}
+                className="btn btn-primary btn-small"
+              >
                 <MdAdd size={16} />
                 Add Item
               </button>
@@ -278,11 +309,11 @@ function InvoiceAdd() {
               <div className="table-header">
                 <div className="col-description">Description</div>
                 <div className="col-quantity">Qty</div>
-                <div className="col-rate">Rate</div>
+                <div className="col-rate">Rate (₹)</div>
                 <div className="col-amount">Amount</div>
                 <div className="col-actions">Actions</div>
               </div>
-              
+
               {formData.items.map((item, index) => (
                 <div key={item.id} className="table-row">
                   <div className="col-description">
@@ -309,7 +340,7 @@ function InvoiceAdd() {
                       value={item.rate}
                       onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
                       min="0"
-                      step="0.01"
+                      step="1"
                       required
                     />
                   </div>
@@ -346,7 +377,7 @@ function InvoiceAdd() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="discountAmount">Discount Amount</label>
+                    <label htmlFor="discountAmount">Discount Amount (₹)</label>
                     <input
                       type="number"
                       id="discountAmount"
@@ -354,7 +385,7 @@ function InvoiceAdd() {
                       value={formData.discountAmount}
                       onChange={handleInputChange}
                       min="0"
-                      step="0.01"
+                      step="1"
                     />
                   </div>
                 </div>
@@ -393,7 +424,7 @@ function InvoiceAdd() {
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows="3"
-                placeholder="Thank you for your business!"
+                placeholder="Thank you for your business! Payment terms: Net 30 days."
               />
             </div>
 
@@ -405,17 +436,18 @@ function InvoiceAdd() {
                 value={formData.terms}
                 onChange={handleInputChange}
                 rows="3"
-                placeholder="Please pay within 30 days..."
+                placeholder="All sales are final. Returns accepted within 7 days."
               />
             </div>
           </div>
 
+          {/* Form Actions */}
           <div className="form-actions">
             <button type="submit" className="btn btn-primary">
               <MdSave size={16} />
-              Create Invoice
+              Update Invoice
             </button>
-            <Link to="/invoices/list" className="btn btn-secondary">
+            <Link to={`/invoices/details/${id}`} className="btn btn-secondary">
               Cancel
             </Link>
           </div>
@@ -425,4 +457,4 @@ function InvoiceAdd() {
   )
 }
 
-export default InvoiceAdd
+export default InvoiceEdit

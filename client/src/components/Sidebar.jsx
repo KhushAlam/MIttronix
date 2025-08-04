@@ -11,10 +11,16 @@ import {
   MdPersonPin,
   MdGroup,
   MdSecurity,
-  MdMenu,
-  MdClose,
   MdNotificationAdd,
-  MdReceiptLong
+  MdReceiptLong,
+  MdRoomService,
+  MdElectricalServices,
+  MdMiscellaneousServices,
+  MdArticle,
+  MdViewCarousel,
+  MdAdminPanelSettings,
+  MdChevronLeft,
+  MdChevronRight
 } from 'react-icons/md'
 
 function Sidebar() {
@@ -47,103 +53,137 @@ function Sidebar() {
           <div className="logo-icon">
             <span><img className="logo-image" src="https://dapper-maamoul-8bc20d.netlify.app/image/Mittronix-logo-black.png" alt="Logo" /></span>
           </div>
-          <span className="logo-text">Mittronix</span>
+          {!isCollapsed && <span className="logo-text">Mittronix</span>}
         </div>
-        <button
-          className="mobile-menu-toggle"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
-        </button>
       </div>
       
       <div className="sidebar-section">
-        <div className="section-title">General</div>
-        
         {/* Dashboard */}
-        <Link 
-          to="/dashboard" 
+        <Link
+          to="/dashboard"
           className={`nav-item ${isActive('/dashboard') || isActive('/') ? 'active' : ''}`}
         >
           <span className="nav-icon">
             <MdDashboard size={20} />
           </span>
-          <span className="nav-text">Dashboard</span>
+          {!isCollapsed && <span className="nav-text">Dashboard</span>}
         </Link>
 
         {/* Products */}
-          <Link 
-          to="/products/list" 
-          className={`nav-item ${isActive('/products/list') || isActive('/') ? 'active' : ''}`}
+          <Link
+          to="/products/list"
+          className={`nav-item ${location.pathname.startsWith('/products') ? 'active' : ''}`}
         >
           <span className="nav-icon">
               <MdShoppingBag size={20} />
             </span>
-          <span className='nav-text'>Products</span>
+          {!isCollapsed && <span className='nav-text'>Products</span>}
         </Link>
-          
+
         {/* Categories */}
-          <Link 
-          to="/categories/list" 
-          className={`nav-item ${isActive('/categories/list') || isActive('/') ? 'active' : ''}`}
+          <Link
+          to="/categories/list"
+          className={`nav-item ${location.pathname.startsWith('/categories') ? 'active' : ''}`}
         >
           <span className="nav-icon">
               <MdCategory size={20} />
             </span>
-          <span className='nav-text'>Categories</span>
+          {!isCollapsed && <span className='nav-text'>Categories</span>}
         </Link>
 
         {/* Orders */}
           <Link
           to="/orders/list"
-          className={`nav-item ${isActive('/orders/list') || isActive('/') ? 'active' : ''}`}
+          className={`nav-item ${location.pathname.startsWith('/orders') ? 'active' : ''}`}
         >
           <span className="nav-icon">
               <MdReceiptLong size={20} />
             </span>
-          <span className='nav-text'>Orders</span>
+          {!isCollapsed && <span className='nav-text'>Orders</span>}
         </Link>
 
         {/* Invoices */}
-          <Link 
-          to="/invoices/list" 
-          className={`nav-item ${isActive('/invoices/list') || isActive('/') ? 'active' : ''}`}
+          <Link
+          to="/invoices/list"
+          className={`nav-item ${location.pathname.startsWith('/invoices') ? 'active' : ''}`}
         >
           <span className="nav-icon">
               <MdReceipt size={20} />
             </span>
-          <span className='nav-text'>Invoices</span>
+          {!isCollapsed && <span className='nav-text'>Invoices</span>}
         </Link>
 
         {/* Settings */}
-        <Link 
-          to="/settings" 
+        <Link
+          to="/settings"
           className={`nav-item ${isActive('/settings') ? 'active' : ''}`}
         >
           <span className="nav-icon">
             <MdSettings size={20} />
           </span>
-          <span className="nav-text">Settings</span>
+          {!isCollapsed && <span className="nav-text">Settings</span>}
         </Link>
 
       {/* Notifications */}
-      <Link 
-          to="/notifications" 
-          className={`nav-item ${isActive('/notifications') || isActive('/') ? 'active' : ''}`}
+      <Link
+          to="/notifications"
+          className={`nav-item ${isActive('/notifications') ? 'active' : ''}`}
         >
           <span className="nav-icon">
             <MdNotificationAdd size={20} />
           </span>
-          <span className="nav-text">Notifications</span>
+          {!isCollapsed && <span className="nav-text">Notifications</span>}
         </Link>
-      <Link 
-          to="/profile" 
-          className={`nav-item ${isActive('/profile') || isActive('/') ? 'active' : ''}`}
+      <Link
+          to="/profile"
+          className={`nav-item ${isActive('/profile') ? 'active' : ''}`}
         >
           <span className="nav-icon">
             <MdPerson size={20} />
           </span>
-          <span className="nav-text">Profile</span>
+          {!isCollapsed && <span className="nav-text">Profile</span>}
+        </Link>
+      <Link
+          to="/service-requests"
+          className={`nav-item ${location.pathname.startsWith('/service-requests') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            <MdMiscellaneousServices size={20} />
+          </span>
+          {!isCollapsed && <span className="nav-text">Service Requests</span>}
+        </Link>
+
+        {/* Blogs */}
+        <Link
+          to="/blogs"
+          className={`nav-item ${location.pathname.startsWith('/blogs') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            <MdArticle size={20} />
+          </span>
+          {!isCollapsed && <span className="nav-text">Blogs</span>}
+        </Link>
+
+        {/* Banners */}
+        <Link
+          to="/banners"
+          className={`nav-item ${location.pathname.startsWith('/banners') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            <MdViewCarousel size={20} />
+          </span>
+          {!isCollapsed && <span className="nav-text">Banners</span>}
+        </Link>
+
+        {/* Roles */}
+        <Link
+          to="/roles"
+          className={`nav-item ${location.pathname.startsWith('/roles') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            <MdAdminPanelSettings size={20} />
+          </span>
+          {!isCollapsed && <span className="nav-text">Roles</span>}
         </Link>
       </div>
 

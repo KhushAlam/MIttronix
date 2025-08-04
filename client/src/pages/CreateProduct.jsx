@@ -11,6 +11,7 @@ function CreateProduct() {
   // Initial form state for reset functionality
   const initialFormState = {
     name: '',
+    slug: '',
     category: '',
     price: '',
     stockQuantity: '',
@@ -54,12 +55,31 @@ function CreateProduct() {
     setSuccess('')
   }
 
+  // Function to generate slug from name
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      }
+
+      // Auto-generate slug when name changes
+      if (name === 'name') {
+        newData.slug = generateSlug(value)
+      }
+
+      return newData
+    })
   }
 
 
@@ -397,6 +417,23 @@ function CreateProduct() {
                     placeholder="Enter product name"
                     disabled={loading}
                   />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="slug">URL Slug *</label>
+                  <input
+                    type="text"
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="product-url-slug"
+                    disabled={loading}
+                  />
+                  <small className="form-hint">
+                    URL-friendly version of the product name. Automatically generated from product name.
+                  </small>
                 </div>
 
                 <div className="form-group">

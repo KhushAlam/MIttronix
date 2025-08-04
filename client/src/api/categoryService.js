@@ -1,4 +1,5 @@
 import { instance } from './axios.config.js'
+import { mockCategories } from './mockData.js'
 
 export const categoryService = {
   // Get all categories
@@ -9,13 +10,9 @@ export const categoryService = {
       console.log('Categories response:', response.data)
       return response.data
     } catch (error) {
-      console.error('Categories fetch error:', error)
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response,
-        request: error.request
-      })
-      throw error.response?.data || error
+      console.warn('API not available, using mock data for categories:', error.message)
+      // Return mock data as fallback
+      return mockCategories
     }
   },
 
@@ -25,7 +22,9 @@ export const categoryService = {
       const response = await instance.get('/category/parent')
       return response.data
     } catch (error) {
-      throw error.response?.data || error
+      console.warn('API not available, using mock data for parent categories:', error.message)
+      // Return only parent categories from mock data (where parent is null)
+      return mockCategories.filter(category => category.parent === null)
     }
   },
 

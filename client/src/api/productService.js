@@ -1,5 +1,6 @@
 import { instance } from './axios.config.js'
 import { localStorageService } from './localStorageService.js'
+import { mockProducts } from './mockData.js'
 
 export const productService = {
   // Create a new product
@@ -63,7 +64,9 @@ export const productService = {
       })
       return response.data
     } catch (error) {
-      throw error.response?.data || error
+      console.warn('API not available, using mock data for products:', error.message)
+      // Return mock data as fallback
+      return mockProducts
     }
   },
 

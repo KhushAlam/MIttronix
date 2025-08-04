@@ -32,7 +32,7 @@ function StatsCards() {
     {
       icon: <MdAttachMoney size={20} />,
       iconClass: 'red',
-      value: '$123.6k',
+      value: '₹12.3L',
       label: 'Payment Received',
       change: '+10.6%',
       changeType: 'negative',
@@ -54,7 +54,7 @@ function StatsCards() {
           <div className="stat-label">{stat.label}</div>
           
           <div className={`stat-change ${stat.changeType}`}>
-            {stat.changeType === 'positive' ? '↗' : '↘'} {stat.change} {stat.period}
+            {stat.changeType === 'positive' ? '↗' : '��'} {stat.change} {stat.period}
           </div>
         </div>
       ))}

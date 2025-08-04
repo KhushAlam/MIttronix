@@ -14,11 +14,14 @@ function CategoriesList() {
     const fetchCategories = async () => {
       try {
         setLoading(true)
+        setError('')
         const categoriesData = await categoryService.getCategories()
         setCategories(categoriesData)
       } catch (error) {
         console.error('Error fetching categories:', error)
-        setError('Failed to load categories')
+        // Use mock data as fallback when API fails
+        setCategories(mockCategories)
+        setError('Unable to connect to backend. Showing sample data.')
       } finally {
         setLoading(false)
       }
@@ -28,62 +31,68 @@ function CategoriesList() {
 
   const mockCategories = [
     {
-      id: 1,
-      name: 'Electronics',
+      _id: '1',
+      title: 'Electronics',
       description: 'Electronic devices and gadgets',
       productCount: 25,
       status: 'Active',
       createdAt: '2024-01-10',
+      createdBy: 'Admin',
       parent: null,
       isSubCategory: false
     },
     {
-      id: 2,
-      name: 'Computers',
+      _id: '2',
+      title: 'Computers',
       description: 'Laptops, desktops, and computer accessories',
       productCount: 15,
       status: 'Active',
       createdAt: '2024-01-12',
+      createdBy: 'Admin',
       parent: null,
       isSubCategory: false
     },
     {
-      id: 3,
-      name: 'Smartphones',
+      _id: '3',
+      title: 'Smartphones',
       description: 'Mobile phones and smartphones',
       productCount: 20,
       status: 'Active',
       createdAt: '2024-01-13',
-      parent: 1,
+      createdBy: 'Admin',
+      parent: '1',
       isSubCategory: true
     },
     {
-      id: 4,
-      name: 'Laptops',
+      _id: '4',
+      title: 'Laptops',
       description: 'Laptop computers',
       productCount: 10,
       status: 'Active',
       createdAt: '2024-01-14',
-      parent: 2,
+      createdBy: 'Admin',
+      parent: '2',
       isSubCategory: true
     },
     {
-      id: 5,
-      name: 'Accessories',
+      _id: '5',
+      title: 'Accessories',
       description: 'Phone cases, chargers, and other accessories',
       productCount: 30,
       status: 'Active',
       createdAt: '2024-01-15',
+      createdBy: 'Admin',
       parent: null,
       isSubCategory: false
     },
     {
-      id: 6,
-      name: 'Clothing',
+      _id: '6',
+      title: 'Clothing',
       description: 'Apparel and fashion items',
       productCount: 0,
       status: 'Inactive',
       createdAt: '2024-01-18',
+      createdBy: 'Admin',
       parent: null,
       isSubCategory: false
     }
@@ -146,33 +155,7 @@ function CategoriesList() {
     )
   }
 
-  if (error) {
-    return (
-      <div>
-        <div className="page-header">
-          <div className="page-title-section">
-            <h1 className="page-title">Categories</h1>
-            <p className="page-subtitle">Manage product categories</p>
-          </div>
-          <div className="page-actions">
-            <Link to="/categories/create" className="btn btn-primary">
-              <MdAdd size={16} />
-              Add Category
-            </Link>
-          </div>
-        </div>
-        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: '#dc2626', marginBottom: '20px' }}>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div>
@@ -188,6 +171,19 @@ function CategoriesList() {
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="content-card" style={{
+          backgroundColor: '#fef3c7',
+          borderLeft: '4px solid #f59e0b',
+          marginBottom: '20px',
+          padding: '12px 16px'
+        }}>
+          <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
+            ⚠️ {error}
+          </p>
+        </div>
+      )}
 
       <div className="content-card">
         {categories.length === 0 ? (

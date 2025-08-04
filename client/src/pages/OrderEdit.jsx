@@ -29,8 +29,8 @@ function OrderEdit() {
         name: 'Smartphone Case', 
         sku: 'PHN-001', 
         quantity: 2, 
-        price: 25.99, 
-        total: 51.98 
+        price: 2599,
+        total: 5198 
       },
       { 
         id: 2, 
@@ -38,15 +38,15 @@ function OrderEdit() {
         name: 'Wireless Charger', 
         sku: 'CHG-002', 
         quantity: 1, 
-        price: 39.99, 
-        total: 39.99 
+        price: 3999,
+        total: 3999 
       }
     ],
     notes: 'Handle with care - fragile items',
     shippingAddress: '123 Main Street, New York, NY 10001',
     paymentMethod: 'Credit Card',
     taxRate: 10,
-    shippingCost: 15.00,
+    shippingCost: 150,
     discountAmount: 0
   }
 
@@ -404,7 +404,7 @@ function OrderEdit() {
                                 <div className="product-info">
                                   <div className="product-name">{availableProduct.name}</div>
                                   <div className="product-details">
-                                    SKU: {availableProduct.sku} | Stock: {availableProduct.stock} | ${availableProduct.price}
+                                    SKU: {availableProduct.sku} | Stock: {availableProduct.stock} | ₹{availableProduct.price.toLocaleString()}
                                   </div>
                                 </div>
                               </div>
@@ -443,7 +443,7 @@ function OrderEdit() {
                     />
                   </div>
                   <div className="col-total">
-                    <span className="total-display">${product.total.toFixed(2)}</span>
+                    <span className="total-display">₹{product.total.toLocaleString()}</span>
                   </div>
                   <div className="col-actions">
                     <button
@@ -504,23 +504,23 @@ function OrderEdit() {
                 <div className="totals-display">
                   <div className="total-row">
                     <span>Subtotal:</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="total-row">
                     <span>Tax ({formData.taxRate}%):</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₹{tax.toLocaleString()}</span>
                   </div>
                   <div className="total-row">
                     <span>Shipping:</span>
-                    <span>${formData.shippingCost.toFixed(2)}</span>
+                    <span>₹{formData.shippingCost.toLocaleString()}</span>
                   </div>
                   <div className="total-row">
                     <span>Discount:</span>
-                    <span>-${formData.discountAmount.toFixed(2)}</span>
+                    <span>-₹{formData.discountAmount.toLocaleString()}</span>
                   </div>
                   <div className="total-row grand-total">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
