@@ -1,11 +1,11 @@
-import axiosInstance from './axios.config.js';
+import { instance } from './axios.config.js';
 
 const ROLE_API = '/roles';
 
 export const roleService = {
     getAll: async (params = {}) => {
         try {
-            const response = await axiosInstance.get(ROLE_API, { params });
+            const response = await instance.get(ROLE_API, { params });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -14,7 +14,7 @@ export const roleService = {
 
     getById: async (id) => {
         try {
-            const response = await axiosInstance.get(`${ROLE_API}/${id}`);
+            const response = await instance.get(`${ROLE_API}/${id}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -23,7 +23,7 @@ export const roleService = {
 
     create: async (data) => {
         try {
-            const response = await axiosInstance.post(ROLE_API, data);
+            const response = await instance.post(ROLE_API, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -32,7 +32,7 @@ export const roleService = {
 
     update: async (id, data) => {
         try {
-            const response = await axiosInstance.put(`${ROLE_API}/${id}`, data);
+            const response = await instance.put(`${ROLE_API}/${id}`, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -41,7 +41,7 @@ export const roleService = {
 
     toggleStatus: async (id) => {
         try {
-            const response = await axiosInstance.put(`${ROLE_API}/${id}/status`);
+            const response = await instance.put(`${ROLE_API}/${id}/status`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -50,7 +50,7 @@ export const roleService = {
 
     addPermission: async (id, module, action) => {
         try {
-            const response = await axiosInstance.post(`${ROLE_API}/${id}/permissions`, { module, action });
+            const response = await instance.post(`${ROLE_API}/${id}/permissions`, { module, action });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -59,8 +59,8 @@ export const roleService = {
 
     removePermission: async (id, module, action) => {
         try {
-            const response = await axiosInstance.delete(`${ROLE_API}/${id}/permissions`, { 
-                data: { module, action } 
+            const response = await instance.delete(`${ROLE_API}/${id}/permissions`, {
+                data: { module, action }
             });
             return response.data;
         } catch (error) {
@@ -70,7 +70,7 @@ export const roleService = {
 
     getStats: async () => {
         try {
-            const response = await axiosInstance.get(`${ROLE_API}/stats`);
+            const response = await instance.get(`${ROLE_API}/stats`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -79,7 +79,7 @@ export const roleService = {
 
     getPermissionOptions: async () => {
         try {
-            const response = await axiosInstance.get(`${ROLE_API}/permissions`);
+            const response = await instance.get(`${ROLE_API}/permissions`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -88,7 +88,7 @@ export const roleService = {
 
     duplicate: async (id) => {
         try {
-            const response = await axiosInstance.post(`${ROLE_API}/${id}/duplicate`);
+            const response = await instance.post(`${ROLE_API}/${id}/duplicate`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -97,7 +97,7 @@ export const roleService = {
 
     delete: async (id) => {
         try {
-            const response = await axiosInstance.delete(`${ROLE_API}/${id}`);
+            const response = await instance.delete(`${ROLE_API}/${id}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;

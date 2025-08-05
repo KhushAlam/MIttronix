@@ -39,7 +39,7 @@ function CreateBlog() {
         category: 'Technology',
         tags: [],
         featuredImage: { url: '', alt: '' },
-        status: 'Draft',
+        status: 'draft',
         seoTitle: '',
         seoDescription: '',
         seoKeywords: [],
@@ -475,16 +475,16 @@ function CreateBlog() {
         }
     };
 
-    const handleSubmit = async (e, status = 'Draft') => {
+    const handleSubmit = async (e, status = 'draft') => {
         e.preventDefault();
-        
+
         if (!formData.title.trim() || !formData.excerpt.trim()) {
             setError('Title and excerpt are required');
             return;
         }
 
-        if (contentSections.length === 0) {
-            setError('At least one content section is required');
+        if (contentSections.length === 0 || !contentSections[0].content.trim()) {
+            setError('At least one content section with content is required');
             return;
         }
 
@@ -500,8 +500,11 @@ function CreateBlog() {
             const submitData = {
                 ...formData,
                 content: JSON.stringify(structuredContent),
-                status,
-                author: '60f7b3b3b3b3b3b3b3b3b3b3'
+                status: status.toLowerCase(),
+                author: {
+                    id: '60f7b3b3b3b3b3b3b3b3b3b3',
+                    name: 'Admin User'
+                }
             };
 
             await blogService.create(submitData);
@@ -839,9 +842,9 @@ function CreateBlog() {
                             {loading ? 'Saving...' : 'Save as Draft'}
                         </button>
                         
-                        <button 
-                            type="button" 
-                            onClick={(e) => handleSubmit(e, 'Published')}
+                        <button
+                            type="button"
+                            onClick={(e) => handleSubmit(e, 'published')}
                             className="btn btn-primary"
                             disabled={loading}
                         >

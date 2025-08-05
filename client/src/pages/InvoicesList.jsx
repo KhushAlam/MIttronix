@@ -1,87 +1,88 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { MdReceipt, MdPending, MdCheckCircle, MdCancel, MdVisibility, MdEdit, MdDelete, MdAdd } from 'react-icons/md'
+import { invoiceService } from '../api/invoiceService.js'
 
 function InvoicesList() {
-  const invoiceStats = [
-    { 
-      title: 'Total Invoice', 
-      count: '2310', 
-      icon: <MdReceipt size={24} />,
-      color: 'orange'
-    },
-    { 
-      title: 'Pending Invoice', 
-      count: '1000', 
-      icon: <MdPending size={24} />,
-      color: 'orange'
-    },
-    { 
-      title: 'Paid Invoice', 
-      count: '1310', 
-      icon: <MdCheckCircle size={24} />,
-      color: 'orange'
-    },
-    { 
-      title: 'Inactive Invoice', 
-      count: '1243', 
-      icon: <MdCancel size={24} />,
-      color: 'orange'
-    }
-  ]
+  const [invoices, setInvoices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const invoices = [
-    {
-      id: '#INV2540',
-      billingName: 'Michael A. Miner',
-      avatar: 'https://via.placeholder.com/40x40',
-      orderDate: '07 Jan, 2023',
-      total: '$452',
-      paymentMethod: 'Mastercard',
-      status: 'Completed'
-    },
-    {
-      id: '#INV3924',
-      billingName: 'Theresa T. Brose',
-      avatar: 'https://via.placeholder.com/40x40',
-      orderDate: '03 Dec, 2023',
-      total: '$783',
-      paymentMethod: 'Visa',
-      status: 'Cancel'
-    },
-    {
-      id: '#INV5032',
-      billingName: 'James L. Erickson',
-      avatar: 'https://via.placeholder.com/40x40',
-      orderDate: '28 Sep, 2023',
-      total: '$134',
-      paymentMethod: 'Paypal',
-      status: 'Completed'
-    },
-    {
-      id: '#INV1695',
-      billingName: 'Lily W. Wilson',
-      avatar: 'https://via.placeholder.com/40x40',
-      orderDate: '10 Aug, 2023',
-      total: '$945',
-      paymentMethod: 'Mastercard',
-      status: 'Pending'
-    },
-    {
-      id: '#INV8473',
-      billingName: 'Sarah M. Brooks',
-      avatar: 'https://via.placeholder.com/40x40',
-      orderDate: '22 May, 2023',
-      total: '$421',
-      paymentMethod: 'Visa',
-      status: 'Cancel'
+  useEffect(() => {
+    fetchInvoices()
+  }, [])
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const data = await invoiceService.getInvoices()
+      setInvoices(data || [])
+    } catch (error) {
+      console.error('Error fetching invoices:', error)
+      setError('Failed to load invoices')
+      setInvoices([])
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  const handleDelete = async (invoiceId) => {
+    if (window.confirm('Are you sure you want to delete this invoice?')) {
+      try {
+        await invoiceService.deleteInvoice(invoiceId)
+        setInvoices(invoices.filter(invoice => invoice._id !== invoiceId))
+        alert('Invoice deleted successfully!')
+      } catch (error) {
+        console.error('Error deleting invoice:', error)
+        alert('Failed to delete invoice. Please try again.')
+      }
+    }
+  }
+
+  // Calculate statistics from real data
+  const calculateStats = () => {
+    const total = invoices.length
+    const pending = invoices.filter(inv => inv.status === 'draft' || inv.status === 'sent').length
+    const paid = invoices.filter(inv => inv.status === 'paid').length
+    const overdue = invoices.filter(inv => inv.status === 'overdue').length
+
+    return [
+      {
+        title: 'Total Invoice',
+        count: total.toString(),
+        icon: <MdReceipt size={24} />,
+        color: 'orange'
+      },
+      {
+        title: 'Pending Invoice',
+        count: pending.toString(),
+        icon: <MdPending size={24} />,
+        color: 'orange'
+      },
+      {
+        title: 'Paid Invoice',
+        count: paid.toString(),
+        icon: <MdCheckCircle size={24} />,
+        color: 'orange'
+      },
+      {
+        title: 'Overdue Invoice',
+        count: overdue.toString(),
+        icon: <MdCancel size={24} />,
+        color: 'orange'
+      }
+    ]
+  }
+
+  const invoiceStats = calculateStats()
 
   const getStatusBadgeClass = (status) => {
-    switch (status.toLowerCase()) {
-      case 'completed': return 'status-completed'
-      case 'pending': return 'status-pending'
-      case 'cancel': return 'status-cancel'
+    switch (status?.toLowerCase()) {
+      case 'paid': return 'status-completed'
+      case 'draft': return 'status-draft'
+      case 'sent': return 'status-pending'
+      case 'overdue': return 'status-cancel'
       default: return 'status-default'
     }
   }
@@ -125,7 +126,7 @@ function InvoicesList() {
       {/* Invoices Table */}
       <div className="content-card">
         <div className="table-header">
-          <h3>All Invoices List</h3>
+          <h3>All Invoices List ({invoices.length} invoices)</h3>
           <select className="table-filter">
             <option>This Month</option>
             <option>Last Month</option>
@@ -133,76 +134,111 @@ function InvoicesList() {
           </select>
         </div>
 
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" />
-                </th>
-                <th>Invoice ID</th>
-                <th>Billing Name</th>
-                <th>Order Date</th>
-                <th>Total</th>
-                <th>Payment Method</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice, index) => (
-                <tr key={index}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>
-                    <Link to={`/invoices/details/${invoice.id}`} className="order-link">
-                      {invoice.id}
-                    </Link>
-                  </td>
-                  <td>
-                    <div className="billing-info">
-                      <img src={invoice.avatar} alt={invoice.billingName} className="user-avatar-small" />
-                      <span>{invoice.billingName}</span>
-                    </div>
-                  </td>
-                  <td>{invoice.orderDate}</td>
-                  <td className="price-cell">{invoice.total}</td>
-                  <td>{invoice.paymentMethod}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusBadgeClass(invoice.status)}`}>
-                      {invoice.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <Link 
-                        to={`/invoices/details/${invoice.id}`} 
-                        className="action-btn view"
-                        title="View Invoice"
-                      >
-                        <MdVisibility size={16} />
-                      </Link>
-                      <Link 
-                        to={`/invoices/edit/${invoice.id}`} 
-                        className="action-btn edit"
-                        title="Edit Invoice"
-                      >
-                        <MdEdit size={16} />
-                      </Link>
-                      <button 
-                        className="action-btn delete"
-                        title="Delete Invoice"
-                      >
-                        <MdDelete size={16} />
-                      </button>
-                    </div>
-                  </td>
+        {error && (
+          <div style={{
+            backgroundColor: '#fef3c7',
+            borderLeft: '4px solid #f59e0b',
+            marginBottom: '20px',
+            padding: '12px 16px'
+          }}>
+            <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
+              ⚠️ {error}
+            </p>
+          </div>
+        )}
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              border: '3px solid #f3f3f3',
+              borderTop: '3px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 20px'
+            }}></div>
+            <p>Loading invoices...</p>
+          </div>
+        ) : invoices.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p style={{ marginBottom: '20px' }}>No invoices found.</p>
+            <Link to="/invoices/add" className="btn btn-primary">
+              <MdAdd size={16} />
+              Create Your First Invoice
+            </Link>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice Number</th>
+                  <th>Customer</th>
+                  <th>Created Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {invoices.map((invoice, index) => (
+                  <tr key={invoice._id || index}>
+                    <td>
+                      <Link to={`/invoices/details/${invoice._id}`} className="order-link">
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </td>
+                    <td>
+                      <div className="billing-info">
+                        <span>{invoice.customer?.name || 'N/A'}</span>
+                        {invoice.customer?.email && (
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {invoice.customer.email}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td>{new Date(invoice.createdAt).toLocaleDateString()}</td>
+                    <td>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</td>
+                    <td className="price-cell">₹{(invoice.total || 0).toLocaleString()}</td>
+                    <td>
+                      <span className={`status-badge ${getStatusBadgeClass(invoice.status)}`}>
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <Link
+                          to={`/invoices/details/${invoice._id}`}
+                          className="action-btn view"
+                          title="View Invoice"
+                        >
+                          <MdVisibility size={16} />
+                        </Link>
+                        <Link
+                          to={`/invoices/edit/${invoice._id}`}
+                          className="action-btn edit"
+                          title="Edit Invoice"
+                        >
+                          <MdEdit size={16} />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(invoice._id)}
+                          className="action-btn delete"
+                          title="Delete Invoice"
+                        >
+                          <MdDelete size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )

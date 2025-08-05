@@ -41,27 +41,34 @@ function BlogList() {
 
     useEffect(() => {
         fetchBlogs();
-        fetchStats();
     }, [filters]);
 
     const fetchBlogs = async () => {
         try {
             setLoading(true);
+            setError('');
             const response = await blogService.getAll(filters);
-            setBlogs(response.data);
-            setPagination(response.pagination);
-        } catch (error) {
-            setError(error.message || 'Failed to fetch blogs');
-        } finally {
-            setLoading(false);
-        }
-    };
+            let blogsData = [];
 
-    const fetchStats = async () => {
-        try {
-            const response = await blogService.getStats();
-            setStats(response); 
+            // Handle both direct array response and paginated response
+            if (Array.isArray(response)) {
+                blogsData = response;
+                setBlogs(response);
+                setPagination({ current: 1, total: 1, pages: 1 });
+            } else {
+                blogsData = response.data || response.blogs || [];
+                setBlogs(blogsData);
+                setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
+            }
+
+            // Calculate stats from actual data
+            const calculatedStats = calculateStats(blogsData);
+            setStats(calculatedStats);
         } catch (error) {
+            console.log('Blog API error:', error);
+            setError(error.message || 'Failed to fetch blogs');
+            setBlogs([]); // Ensure it's always an array
+            // Set empty stats on error
             setStats({
                 total: 0,
                 published: 0,
@@ -70,7 +77,33 @@ function BlogList() {
                 totalViews: 0,
                 totalLikes: 0
             });
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const calculateStats = (blogsData) => {
+        if (!blogsData || blogsData.length === 0) {
+            return {
+                total: 0,
+                published: 0,
+                draft: 0,
+                featured: 0,
+                totalViews: 0,
+                totalLikes: 0
+            };
+        }
+
+        const stats = {
+            total: blogsData.length,
+            published: blogsData.filter(blog => blog.status === 'published').length,
+            draft: blogsData.filter(blog => blog.status === 'draft').length,
+            featured: blogsData.filter(blog => blog.isFeatured).length,
+            totalViews: blogsData.reduce((sum, blog) => sum + (blog.views || 0), 0),
+            totalLikes: blogsData.reduce((sum, blog) => sum + (blog.likes || 0), 0)
+        };
+
+        return stats;
     };
 
     const handleFilterChange = (key, value) => {
@@ -85,8 +118,7 @@ function BlogList() {
         if (window.confirm('Are you sure you want to delete this blog?')) {
             try {
                 await blogService.delete(id);
-                fetchBlogs();
-                fetchStats();
+                fetchBlogs(); // This will automatically recalculate stats
             } catch (error) {
                 setError(error.message || 'Failed to delete blog');
             }
@@ -94,11 +126,10 @@ function BlogList() {
     };
 
     const handleToggleStatus = async (id, currentStatus) => {
-        const newStatus = currentStatus === 'Published' ? 'Draft' : 'Published';
+        const newStatus = currentStatus === 'published' ? 'draft' : 'published';
         try {
             await blogService.toggleStatus(id, newStatus);
-            fetchBlogs();
-            fetchStats();
+            fetchBlogs(); // This will automatically recalculate stats
         } catch (error) {
             setError(error.message || 'Failed to update blog status');
         }
@@ -106,19 +137,23 @@ function BlogList() {
 
     const handleToggleFeatured = async (id) => {
         try {
+            console.log('Toggling featured for blog ID:', id);
             await blogService.toggleFeatured(id);
-            fetchBlogs();
-            fetchStats();
+            fetchBlogs(); // This will automatically recalculate stats
         } catch (error) {
-            setError(error.message || 'Failed to update featured status');
+            console.error('Error in handleToggleFeatured:', error);
+            // Handle both Error objects and plain objects
+            const errorMessage = error.message || error.msg ||
+                                (typeof error === 'string' ? error : 'Failed to update featured status');
+            setError(errorMessage);
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Published': return 'status-published';
-            case 'Draft': return 'status-draft';
-            case 'Archived': return 'status-archived';
+            case 'published': return 'status-published';
+            case 'draft': return 'status-draft';
+            case 'archived': return 'status-archived';
             default: return 'status-default';
         }
     };
@@ -265,7 +300,7 @@ function BlogList() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {blogs.map((blog) => (
+                                    {(blogs || []).map((blog) => (
                                         <tr key={blog.id}>
                                             <td>
                                                 <div className="title-cell">
@@ -285,7 +320,7 @@ function BlogList() {
                                             </td>
                                             <td>
                                                 <span className={`status-badge ${getStatusColor(blog.status)}`}>
-                                                    {blog.status}
+                                                    {blog.status ? blog.status.charAt(0).toUpperCase() + blog.status.slice(1) : 'Unknown'}
                                                 </span>
                                             </td>
                                             <td>
@@ -324,9 +359,9 @@ function BlogList() {
                                                     <button
                                                         onClick={() => handleToggleStatus(blog.id, blog.status)}
                                                         className="action-btn edit"
-                                                        title={blog.status === 'Published' ? 'Unpublish' : 'Publish'}
+                                                        title={blog.status === 'published' ? 'Unpublish' : 'Publish'}
                                                     >
-                                                        {blog.status === 'Published' ?
+                                                        {blog.status === 'published' ?
                                                             <MdUnpublished size={16} /> :
                                                             <MdPublish size={16} />
                                                         }

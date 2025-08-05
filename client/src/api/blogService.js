@@ -1,3 +1,4 @@
+import { instance } from './axios.config.js'
 import { mockBlogs, mockBlogCategories } from './mockData.js';
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -5,6 +6,12 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export const blogService = {
     getAll: async (params = {}) => {
         try {
+            // Try API first
+            const response = await instance.get('/blogs', { params });
+            return response.data;
+        } catch (apiError) {
+            console.log('Blog API unavailable, using mock data', apiError);
+            // Fallback to mock data
             await delay(500);
 
             let filteredBlogs = [...mockBlogs];
@@ -45,26 +52,34 @@ export const blogService = {
                     count: filteredBlogs.length
                 }
             };
-        } catch (error) {
-            throw error;
         }
     },
 
     getById: async (id) => {
         try {
+            // Try API first
+            const response = await instance.get(`/blogs/${id}`);
+            return response.data;
+        } catch (apiError) {
+            console.log('Blog getById API unavailable, using mock data', apiError);
+            // Fallback to mock data
             await delay(300);
             const blog = mockBlogs.find(blog => blog.id === id || blog.slug === id);
             if (!blog) {
-                throw { message: 'Blog not found' };
+                throw new Error('Blog not found');
             }
             return blog;
-        } catch (error) {
-            throw error;
         }
     },
 
     create: async (data) => {
         try {
+            // Try API first
+            const response = await instance.post('/blogs', data);
+            return response.data;
+        } catch (apiError) {
+            console.log('Blog create API unavailable, using mock data', apiError);
+            // Fallback to mock data creation
             await delay(800);
             const newBlog = {
                 id: `blog-${String(mockBlogs.length + 1).padStart(3, '0')}`,
@@ -85,40 +100,88 @@ export const blogService = {
             };
             mockBlogs.unshift(newBlog);
             return newBlog;
-        } catch (error) {
-            throw error;
         }
     },
 
     update: async (id, data) => {
         try {
-            const response = await axiosInstance.put(`${BLOG_API}/${id}`, data);
-            return response.data;
+            await delay(600);
+            const blogIndex = mockBlogs.findIndex(blog => blog.id === id || blog.slug === id);
+            if (blogIndex === -1) {
+                throw new Error(`Blog not found with id: ${id}`);
+            }
+
+            const updatedBlog = {
+                ...mockBlogs[blogIndex],
+                ...data,
+                updatedAt: new Date().toISOString(),
+                readTime: data.content ? Math.ceil(data.content.length / 1000) : mockBlogs[blogIndex].readTime
+            };
+
+            if (data.title && data.title !== mockBlogs[blogIndex].title) {
+                updatedBlog.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            }
+
+            mockBlogs[blogIndex] = updatedBlog;
+            return updatedBlog;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Error updating blog:', error);
+            throw error;
         }
     },
 
     toggleStatus: async (id, status) => {
         try {
-            const response = await axiosInstance.put(`${BLOG_API}/${id}/status`, { status });
-            return response.data;
+            await delay(400);
+            const blogIndex = mockBlogs.findIndex(blog => blog.id === id || blog.slug === id);
+            if (blogIndex === -1) {
+                throw new Error(`Blog not found with id: ${id}`);
+            }
+
+            mockBlogs[blogIndex].status = status.toLowerCase();
+            mockBlogs[blogIndex].updatedAt = new Date().toISOString();
+
+            if (status.toLowerCase() === 'published' && !mockBlogs[blogIndex].publishedAt) {
+                mockBlogs[blogIndex].publishedAt = new Date().toISOString();
+            }
+
+            return mockBlogs[blogIndex];
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Error toggling blog status:', error);
+            throw error;
         }
     },
 
     toggleFeatured: async (id) => {
         try {
-            const response = await axiosInstance.put(`${BLOG_API}/${id}/featured`);
-            return response.data;
+            await delay(400);
+            console.log('toggleFeatured called with id:', id);
+            console.log('Available blogs:', mockBlogs.map(b => ({ id: b.id, title: b.title })));
+
+            const blogIndex = mockBlogs.findIndex(blog => blog.id === id || blog.slug === id);
+            if (blogIndex === -1) {
+                throw new Error(`Blog not found with id: ${id}`);
+            }
+
+            mockBlogs[blogIndex].isFeatured = !mockBlogs[blogIndex].isFeatured;
+            mockBlogs[blogIndex].updatedAt = new Date().toISOString();
+
+            console.log('Blog featured status updated:', mockBlogs[blogIndex]);
+            return mockBlogs[blogIndex];
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Error toggling featured status:', error);
+            throw error;
         }
     },
 
     getStats: async () => {
         try {
+            // Try API first
+            const response = await instance.get('/blogs/stats');
+            return response.data;
+        } catch (apiError) {
+            console.log('Blog stats API unavailable, using mock data', apiError);
+            // Fallback to mock data
             await delay(400);
             const stats = {
                 total: mockBlogs.length,
@@ -129,8 +192,6 @@ export const blogService = {
                 totalLikes: mockBlogs.reduce((sum, blog) => sum + blog.likes, 0)
             };
             return stats;
-        } catch (error) {
-            throw error;
         }
     },
 
@@ -149,10 +210,17 @@ export const blogService = {
 
     delete: async (id) => {
         try {
-            const response = await axiosInstance.delete(`${BLOG_API}/${id}`);
-            return response.data;
+            await delay(400);
+            const blogIndex = mockBlogs.findIndex(blog => blog.id === id || blog.slug === id);
+            if (blogIndex === -1) {
+                throw new Error(`Blog not found with id: ${id}`);
+            }
+
+            const deletedBlog = mockBlogs.splice(blogIndex, 1)[0];
+            return { message: 'Blog deleted successfully', blog: deletedBlog };
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Error deleting blog:', error);
+            throw error;
         }
     }
 };

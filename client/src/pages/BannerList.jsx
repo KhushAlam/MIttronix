@@ -128,10 +128,16 @@ function BannerList() {
             
             try {
                 const response = await bannerService.getAll(filters);
-                setBanners(response.data);
-                setPagination(response.pagination);
+                // Handle both direct array response and paginated response
+                if (Array.isArray(response)) {
+                    setBanners(response);
+                    setPagination({ current: 1, total: 1, pages: 1 });
+                } else {
+                    setBanners(response.data || response.banners || []);
+                    setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
+                }
             } catch (apiError) {
-                console.log('API unavailable, using mock data');
+                console.log('Banner API unavailable, using mock data', apiError);
                 setBanners(mockBanners);
                 setPagination({ current: 1, total: 1, pages: 1 });
             }
@@ -146,7 +152,7 @@ function BannerList() {
     const fetchStats = async () => {
         try {
             const response = await bannerService.getStats();
-            setStats(response.data);
+            setStats(response.data || response);
         } catch (error) {
             setStats(mockStats);
         }
@@ -344,7 +350,7 @@ function BannerList() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {banners.map((banner) => (
+                                    {(banners || []).map((banner) => (
                                         <tr key={banner._id}>
                                             <td>
                                                 <div className="banner-info">

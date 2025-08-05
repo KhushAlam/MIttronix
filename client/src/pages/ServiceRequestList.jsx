@@ -46,28 +46,47 @@ function ServiceRequestList() {
 
   useEffect(() => {
     fetchServiceRequests();
-    fetchStats();
   }, [filters]);
 
   const fetchServiceRequests = async () => {
     try {
       setLoading(true);
+      setError("");
       const response = await serviceRequestService.getAll(filters);
-      setServiceRequests(response.data);
-      setPagination(response.pagination);
+      let requestsData = [];
+
+      // Handle both direct array response and paginated response
+      if (Array.isArray(response)) {
+        requestsData = response;
+        setServiceRequests(response);
+        setPagination({ current: 1, total: 1, pages: 1 });
+      } else {
+        requestsData = response.data || response.serviceRequests || [];
+        setServiceRequests(requestsData);
+        setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
+      }
+
+      // Calculate stats from actual data
+      const calculatedStats = calculateStats(requestsData);
+      setStats(calculatedStats);
     } catch (error) {
+      console.log('ServiceRequest API error:', error);
       setError(error.message || "Failed to fetch service requests");
+      setServiceRequests([]); // Ensure it's always an array
+      // Set empty stats on error
+      setStats({
+        overview: { open: 0, inProgress: 0, resolved: 0, closed: 0 },
+        byPriority: { high: 0, medium: 0, low: 0 },
+        total: 0
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const response = await serviceRequestService.getStats();
-      setStats(response);
-    } catch (error) {
-      setStats({
+  const calculateStats = (requestsData) => {
+    if (!requestsData || requestsData.length === 0) {
+      return {
         overview: {
           open: 0,
           inProgress: 0,
@@ -80,8 +99,25 @@ function ServiceRequestList() {
           low: 0
         },
         total: 0
-      });
+      };
     }
+
+    const stats = {
+      overview: {
+        open: requestsData.filter(req => req.status === 'Open').length,
+        inProgress: requestsData.filter(req => req.status === 'In Progress').length,
+        resolved: requestsData.filter(req => req.status === 'Resolved').length,
+        closed: requestsData.filter(req => req.status === 'Closed').length
+      },
+      byPriority: {
+        high: requestsData.filter(req => req.priority === 'High').length,
+        medium: requestsData.filter(req => req.priority === 'Medium').length,
+        low: requestsData.filter(req => req.priority === 'Low').length
+      },
+      total: requestsData.length
+    };
+
+    return stats;
   };
 
   const handleFilterChange = (key, value) => {
@@ -98,8 +134,7 @@ function ServiceRequestList() {
     ) {
       try {
         await serviceRequestService.delete(id);
-        fetchServiceRequests();
-        fetchStats();
+        fetchServiceRequests(); // This will automatically recalculate stats
       } catch (error) {
         setError(error.message || "Failed to delete service request");
       }
@@ -276,7 +311,7 @@ function ServiceRequestList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {serviceRequests.map((request) => (
+                  {(serviceRequests || []).map((request) => (
                     <tr key={request.id}>
                       <td>
                         <span className="ticket-id">{request.id}</span>
@@ -293,9 +328,9 @@ function ServiceRequestList() {
                       </td>
                       <td>
                         <div className="user-info">
-                          <strong>{request.userInfo.name}</strong>
+                          <strong>{request.userInfo?.name || 'N/A'}</strong>
                           <br />
-                          <small>{request.userInfo.email}</small>
+                          <small>{request.userInfo?.email || 'N/A'}</small>
                         </div>
                       </td>
                       <td>

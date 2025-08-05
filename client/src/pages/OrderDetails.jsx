@@ -1,85 +1,218 @@
 import { Link, useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { MdArrowBack, MdPrint, MdEdit, MdLocalShipping, MdCheckCircle } from 'react-icons/md'
+import { orderService } from '../api/orderService.js'
 
 function OrderDetails() {
   const { id } = useParams()
+  const [order, setOrder] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const order = {
-    id: id || '#ORD-001',
-    date: '2024-01-15',
-    status: 'Processing',
-    customer: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+1 234 567 8900',
-      address: '123 Main Street, New York, NY 10001'
-    },
-    billing: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+1 234 567 8900',
-      address: '123 Main Street, New York, NY 10001'
-    },
-    shipping: {
-      method: 'Standard Shipping',
-      cost: 500,
-      estimatedDelivery: '2024-01-22'
-    },
-    payment: {
-      method: 'Credit Card',
-      status: 'Paid',
-      transactionId: 'TXN-123456789'
-    },
-    items: [
-      {
-        id: 1,
-        name: 'Smartphone Case',
-        image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=150',
-        sku: 'PHN-001',
-        price: 500,
-        quantity: 2,
-        total: 1000
-      },
-      {
-        id: 2,
-        name: 'Wireless Charger',
-        image: 'https://images.unsplash.com/photo-1586953269623-c5c0f4c48ebc?w=150',
-        sku: 'CHG-002',
-        price: 2000,
-        quantity: 1,
-        total: 2000
+  useEffect(() => {
+    if (id) {
+      loadOrderData()
+    }
+  }, [id])
+
+  const loadOrderData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      // Get all orders and find the one with matching ID
+      const orders = await orderService.getOrders()
+      const foundOrder = orders.find(o => o._id === id)
+
+      if (foundOrder) {
+        setOrder(foundOrder)
+      } else {
+        setError('Order not found')
       }
-    ],
-    shippingCost: 15.00,
-    taxRate: 10.74, 
-    discountAmount: 0
+    } catch (error) {
+      console.error('Error loading order:', error)
+      setError('Failed to load order data')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const calculateTotals = () => {
-    const subtotal = order.items.reduce((sum, item) => sum + item.total, 0)
-    const tax = (subtotal * order.taxRate) / 100
-    const total = subtotal + tax + order.shippingCost - order.discountAmount
-    return { subtotal, tax, total }
+    if (!order || !order.products) return { subtotal: 0, tax: 0, total: 0 }
+
+    const subtotal = order.products.reduce((sum, product) => {
+      const productTotal = (product.quantity || 0) * (product.price || 0)
+      return sum + productTotal
+    }, 0)
+
+    const taxRate = parseFloat(order.taxRate) || 0
+    const shippingCost = parseFloat(order.shippingCost) || 0
+    const discountAmount = parseFloat(order.discountAmount) || 0
+
+    const tax = (subtotal * taxRate) / 100
+    const total = subtotal + tax + shippingCost - discountAmount
+
+    return {
+      subtotal: Math.max(0, subtotal),
+      tax: Math.max(0, tax),
+      total: Math.max(0, total)
+    }
   }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Delivered': return 'status-success'
-      case 'Processing': return 'status-warning'
-      case 'Shipped': return 'status-info'
-      case 'Cancelled': return 'status-danger'
+      // Order statuses
+      case 'Delivered':
+      case 'Completed':
+      case 'Paid': return 'status-success'
+      case 'Processing':
+      case 'Packaging':
+      case 'Pending': return 'status-warning'
+      case 'Shipped':
+      case 'Draft': return 'status-info'
+      case 'Cancelled':
+      case 'Failed':
+      case 'Refunded': return 'status-danger'
       default: return 'status-secondary'
     }
   }
 
+  const getProgressSteps = () => {
+    const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'
+    const currentStatus = order.orderStatus || 'Pending'
+    const paymentStatus = order.paymentStatus || 'Pending'
+
+    const steps = [
+      {
+        id: 'placed',
+        title: 'Order Placed',
+        date: orderDate,
+        icon: MdCheckCircle,
+        statuses: ['Pending', 'Processing', 'Packaging', 'Shipped', 'Delivered', 'Completed']
+      },
+      {
+        id: 'payment',
+        title: 'Payment Confirmed',
+        date: paymentStatus === 'Paid' ? orderDate : (paymentStatus === 'Failed' ? 'Failed' : 'Pending'),
+        icon: MdCheckCircle,
+        statuses: paymentStatus === 'Paid' ? ['Processing', 'Packaging', 'Shipped', 'Delivered', 'Completed'] : []
+      },
+      {
+        id: 'processing',
+        title: 'Processing',
+        date: ['Processing', 'Packaging', 'Shipped', 'Delivered', 'Completed'].includes(currentStatus) ? 'In progress' : 'Pending',
+        icon: MdEdit,
+        statuses: ['Processing', 'Packaging', 'Shipped', 'Delivered', 'Completed']
+      },
+      {
+        id: 'shipped',
+        title: 'Shipped',
+        date: ['Shipped', 'Delivered', 'Completed'].includes(currentStatus) ? 'In transit' : 'Pending',
+        icon: MdLocalShipping,
+        statuses: ['Shipped', 'Delivered', 'Completed']
+      },
+      {
+        id: 'delivered',
+        title: 'Delivered',
+        date: ['Delivered', 'Completed'].includes(currentStatus) ? (order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : 'Delivered') : 'Pending',
+        icon: MdCheckCircle,
+        statuses: ['Delivered', 'Completed']
+      }
+    ]
+
+    return steps.map(step => {
+      let stepClass = ''
+      let isActive = false
+
+      if (currentStatus === 'Cancelled' || currentStatus === 'Failed') {
+        // Show order as placed but everything else as cancelled
+        if (step.id === 'placed') {
+          stepClass = 'completed'
+        } else {
+          stepClass = 'cancelled'
+        }
+      } else if (step.statuses.includes(currentStatus)) {
+        if (step.id === 'payment' && paymentStatus === 'Failed') {
+          stepClass = 'cancelled'
+        } else if (step.id === 'payment' && paymentStatus !== 'Paid') {
+          stepClass = 'pending'
+        } else if (
+          (step.id === 'processing' && (currentStatus === 'Processing' || currentStatus === 'Packaging')) ||
+          (step.id === 'shipped' && currentStatus === 'Shipped')
+        ) {
+          stepClass = 'active'
+          isActive = true
+        } else {
+          stepClass = 'completed'
+        }
+      } else {
+        stepClass = 'pending'
+      }
+
+      return { ...step, stepClass, isActive }
+    })
+  }
+
   const { subtotal, tax, total } = calculateTotals()
+
+  if (loading) {
+    return (
+      <div>
+        <div className="page-header">
+          <div className="page-title-section">
+            <h1 className="page-title">Order Details</h1>
+            <p className="page-subtitle">Loading order...</p>
+          </div>
+        </div>
+        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p>Loading order details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !order) {
+    return (
+      <div>
+        <div className="page-header">
+          <div className="page-title-section">
+            <h1 className="page-title">Order Details</h1>
+            <p className="page-subtitle">Error loading order</p>
+          </div>
+          <div className="page-actions">
+            <Link to="/orders/list" className="btn btn-secondary">
+              <MdArrowBack size={16} />
+              Back to Orders
+            </Link>
+          </div>
+        </div>
+        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <p style={{ color: '#dc2626', marginBottom: '20px' }}>
+            ❌ {error || 'Order not found'}
+          </p>
+          <Link to="/orders/list" className="btn btn-primary">
+            Back to Orders List
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
       <div className="page-header">
         <div className="page-title-section">
           <h1 className="page-title">Order Details</h1>
-          <p className="page-subtitle">Order {order.id}</p>
+          <p className="page-subtitle">Order #{order._id?.slice(-8) || 'Unknown'}</p>
         </div>
         <div className="page-actions">
           <Link to="/orders/list" className="btn btn-secondary">
@@ -102,53 +235,31 @@ function OrderDetails() {
         <div className="content-card order-summary">
           <div className="order-summary-header">
             <div className="order-info">
-              <h3>Order {order.id}</h3>
-              <p className="order-date">Placed on {order.date}</p>
+              <h3>Order #{order._id?.slice(-8)}</h3>
+              <p className="order-date">Placed on {new Date(order.orderDate).toLocaleDateString()}</p>
             </div>
             <div className="order-status">
-              <span className={`status-badge ${getStatusColor(order.status)}`}>
-                {order.status}
+              <span className={`status-badge ${getStatusColor(order.orderStatus)}`}>
+                {order.orderStatus}
               </span>
             </div>
           </div>
           
           <div className="order-progress">
-            <div className="progress-step completed">
-              <div className="step-icon">
-                <MdCheckCircle size={20} />
-              </div>
-              <div className="step-content">
-                <h4>Order Placed</h4>
-                <p>Jan 15, 2024</p>
-              </div>
-            </div>
-            <div className="progress-step completed">
-              <div className="step-icon">
-                <MdCheckCircle size={20} />
-              </div>
-              <div className="step-content">
-                <h4>Payment Confirmed</h4>
-                <p>Jan 15, 2024</p>
-              </div>
-            </div>
-            <div className="progress-step active">
-              <div className="step-icon">
-                <MdEdit size={20} />
-              </div>
-              <div className="step-content">
-                <h4>Processing</h4>
-                <p>In progress</p>
-              </div>
-            </div>
-            <div className="progress-step">
-              <div className="step-icon">
-                <MdLocalShipping size={20} />
-              </div>
-              <div className="step-content">
-                <h4>Shipped</h4>
-                <p>Pending</p>
-              </div>
-            </div>
+            {getProgressSteps().map((step, index) => {
+              const IconComponent = step.icon
+              return (
+                <div key={step.id} className={`progress-step ${step.stepClass}`}>
+                  <div className="step-icon">
+                    <IconComponent size={20} />
+                  </div>
+                  <div className="step-content">
+                    <h4>{step.title}</h4>
+                    <p>{step.date}</p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
@@ -159,38 +270,45 @@ function OrderDetails() {
             <div className="customer-info">
               <div className="info-group">
                 <h4>Customer Details</h4>
-                <p><strong>Name:</strong> {order.customer.name}</p>
-                <p><strong>Email:</strong> {order.customer.email}</p>
-                <p><strong>Phone:</strong> {order.customer.phone}</p>
+                <p><strong>Name:</strong> {order.customerName || 'N/A'}</p>
+                <p><strong>Email:</strong> {order.shippingAddress?.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> {order.shippingAddress?.phone || 'N/A'}</p>
+                <p><strong>Company:</strong> {order.shippingAddress?.company || 'N/A'}</p>
               </div>
               <div className="info-group">
                 <h4>Shipping Address</h4>
-                <p>{order.customer.address}</p>
+                <p>{order.shippingAddress?.address || 'N/A'}</p>
+                <p>{order.shippingAddress?.city || ''}</p>
               </div>
               <div className="info-group">
-                <h4>Billing Address</h4>
-                <p>{order.billing.address}</p>
+                <h4>Order Notes</h4>
+                <p>{order.notes || 'No notes provided'}</p>
               </div>
             </div>
           </div>
 
-          {/* Payment & Shipping */}
+          {/* Payment & Order Info */}
           <div className="content-card">
-            <h3>Payment & Shipping</h3>
+            <h3>Payment & Order Information</h3>
             <div className="payment-shipping-info">
               <div className="info-group">
                 <h4>Payment Information</h4>
-                <p><strong>Method:</strong> {order.payment.method}</p>
-                <p><strong>Status:</strong> 
-                  <span className="status-badge status-success">{order.payment.status}</span>
+                <p><strong>Method:</strong> {order.paymentMethod || 'N/A'}</p>
+                <p><strong>Status:</strong>
+                  <span className={`status-badge ${getStatusColor(order.paymentStatus || 'Pending')}`}>
+                    {order.paymentStatus || 'Pending'}
+                  </span>
                 </p>
-                <p><strong>Transaction ID:</strong> {order.payment.transactionId}</p>
+                <p><strong>Priority:</strong> {order.priority || 'Normal'}</p>
               </div>
               <div className="info-group">
-                <h4>Shipping Information</h4>
-                <p><strong>Method:</strong> {order.shipping.method}</p>
-                <p><strong>Cost:</strong> ₹{order.shipping.cost.toFixed(2)}</p>
-                <p><strong>Estimated Delivery:</strong> {order.shipping.estimatedDelivery}</p>
+                <h4>Order Information</h4>
+                <p><strong>Shipping Cost:</strong> ₹{(parseFloat(order.shippingCost) || 0).toFixed(2)}</p>
+                <p><strong>Tax Rate:</strong> {(parseFloat(order.taxRate) || 0)}%</p>
+                <p><strong>Discount:</strong> ₹{(parseFloat(order.discountAmount) || 0).toFixed(2)}</p>
+                {order.deliveryDate && (
+                  <p><strong>Expected Delivery:</strong> {new Date(order.deliveryDate).toLocaleDateString()}</p>
+                )}
               </div>
             </div>
           </div>
@@ -198,28 +316,25 @@ function OrderDetails() {
 
         {/* Order Items */}
         <div className="content-card">
-          <h3>Order Items</h3>
+          <h3>Order Items ({order.products?.length || 0} items)</h3>
           <div className="order-items">
             <div className="items-table">
               <div className="table-header">
                 <div className="col-product">Product</div>
-                <div className="col-sku">SKU</div>
                 <div className="col-price">Price</div>
                 <div className="col-quantity">Quantity</div>
                 <div className="col-total">Total</div>
               </div>
-              {order.items.map((item) => (
-                <div key={item.id} className="table-row">
+              {(order.products || []).map((product, index) => (
+                <div key={product._id || index} className="table-row">
                   <div className="col-product">
                     <div className="product-info">
-                      <img src={item.image} alt={item.name} className="product-image" />
-                      <span className="product-name">{item.name}</span>
+                      <span className="product-name">{product.name || 'Unknown Product'}</span>
                     </div>
                   </div>
-                  <div className="col-sku">{item.sku}</div>
-                  <div className="col-price">₹{item.price}</div>
-                  <div className="col-quantity">{item.quantity}</div>
-                  <div className="col-total">₹{item.total}</div>
+                  <div className="col-price">₹{(product.price || 0).toLocaleString()}</div>
+                  <div className="col-quantity">{product.quantity || 0}</div>
+                  <div className="col-total">₹{((product.quantity || 0) * (product.price || 0)).toLocaleString()}</div>
                 </div>
               ))}
             </div>
@@ -228,25 +343,25 @@ function OrderDetails() {
               <div className="totals-section">
                 <div className="totals-row">
                   <span>Subtotal:</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
+                  <span>₹{(subtotal || 0).toFixed(2)}</span>
                 </div>
                 <div className="totals-row">
                   <span>Shipping:</span>
-                  <span>₹{order.shippingCost.toFixed(2)}</span>
+                  <span>₹{(parseFloat(order.shippingCost) || 0).toFixed(2)}</span>
                 </div>
                 <div className="totals-row">
-                  <span>Tax ({order.taxRate}%):</span>
-                  <span>₹{tax.toFixed(2)}</span>
+                  <span>Tax ({(parseFloat(order.taxRate) || 0)}%):</span>
+                  <span>₹{(tax || 0).toFixed(2)}</span>
                 </div>
-                {order.discountAmount > 0 && (
+                {(parseFloat(order.discountAmount) || 0) > 0 && (
                   <div className="totals-row">
                     <span>Discount:</span>
-                    <span>-₹{order.discountAmount.toFixed(2)}</span>
+                    <span>-₹{(parseFloat(order.discountAmount) || 0).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="totals-row total">
-                  <span>Total:</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>Total Amount:</span>
+                  <span>₹{(order.totalAmount || total || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>

@@ -1,56 +1,92 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MdArrowBack, MdSave, MdAdd, MdDelete, MdSearch } from 'react-icons/md'
+import { orderService } from '../api/orderService.js'
 
 function OrderEdit() {
   const navigate = useNavigate()
   const { id } = useParams()
-  
-  const mockOrder = {
-    id: id || '#ORD-001',
-    orderNumber: '#ORD-001',
-    orderDate: '2024-01-15',
-    deliveryDate: '2024-01-22',
-    priority: 'Normal',
-    status: 'Processing',
-    customer: {
-      name: 'John Doe',
-      company: 'Acme Corp',
-      address: '123 Main Street',
-      city: 'New York, NY 10001',
-      email: 'john.doe@example.com',
-      phone: '+1 234 567 8900'
-    },
-    products: [
-      { 
-        id: 1, 
-        productId: '1', 
-        name: 'Smartphone Case', 
-        sku: 'PHN-001', 
-        quantity: 2, 
-        price: 2599,
-        total: 5198 
-      },
-      { 
-        id: 2, 
-        productId: '2', 
-        name: 'Wireless Charger', 
-        sku: 'CHG-002', 
-        quantity: 1, 
-        price: 3999,
-        total: 3999 
-      }
-    ],
-    notes: 'Handle with care - fragile items',
-    shippingAddress: '123 Main Street, New York, NY 10001',
-    paymentMethod: 'Credit Card',
-    taxRate: 10,
-    shippingCost: 150,
-    discountAmount: 0
-  }
 
-  const [formData, setFormData] = useState(mockOrder)
+  const [formData, setFormData] = useState({
+    customerName: '',
+    orderDate: new Date().toISOString().split('T')[0],
+    deliveryDate: '',
+    priority: 'Normal',
+    orderStatus: 'Processing',
+    shippingAddress: {
+      address: '',
+      city: '',
+      email: '',
+      phone: '',
+      company: ''
+    },
+    products: [],
+    notes: '',
+    paymentMethod: 'COD',
+    paymentStatus: 'Pending',
+    taxRate: 0,
+    shippingCost: 0,
+    discountAmount: 0
+  })
+
   const [showProductSelector, setShowProductSelector] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      loadOrderData()
+    }
+  }, [id])
+
+  const loadOrderData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const orders = await orderService.getOrders()
+      const order = orders.find(o => o._id === id)
+
+      if (order) {
+        setFormData({
+          customerName: order.customerName || '',
+          orderDate: order.orderDate ? new Date(order.orderDate).toISOString().split('T')[0] : '',
+          deliveryDate: order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : '',
+          priority: order.priority || 'Normal',
+          orderStatus: order.orderStatus || 'Processing',
+          shippingAddress: {
+            address: order.shippingAddress?.address || '',
+            city: order.shippingAddress?.city || '',
+            email: order.shippingAddress?.email || '',
+            phone: order.shippingAddress?.phone || '',
+            company: order.shippingAddress?.company || ''
+          },
+          products: order.products?.map(product => ({
+            id: product._id || Date.now(),
+            productId: product.productId,
+            name: product.name || '',
+            sku: product.sku || '',
+            quantity: product.quantity || 1,
+            price: product.price || 0,
+            total: (product.quantity || 1) * (product.price || 0)
+          })) || [],
+          notes: order.notes || '',
+          paymentMethod: order.paymentMethod || 'COD',
+          paymentStatus: order.paymentStatus || 'Pending',
+          taxRate: order.taxRate || 0,
+          shippingCost: order.shippingCost || 0,
+          discountAmount: order.discountAmount || 0
+        })
+      } else {
+        setError('Order not found')
+      }
+    } catch (error) {
+      console.error('Error loading order:', error)
+      setError('Failed to load order data')
+    } finally {
+      setLoading(false)
+    }
+  }
   
   const availableProducts = [
     { id: 1, name: 'Wireless Headphones', sku: 'WH-001', price: 99.99, stock: 50 },
@@ -63,19 +99,26 @@ function OrderEdit() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    if (name.startsWith('customer.')) {
-      const customerField = name.split('.')[1]
+
+    if (name.startsWith('shippingAddress.')) {
+      const addressField = name.split('.')[1]
       setFormData(prev => ({
         ...prev,
-        customer: {
-          ...prev.customer,
-          [customerField]: value
+        shippingAddress: {
+          ...prev.shippingAddress,
+          [addressField]: value
         }
       }))
     } else {
+      // Convert numeric fields to proper numbers
+      let processedValue = value
+      if (['taxRate', 'shippingCost', 'discountAmount'].includes(name)) {
+        processedValue = value === '' ? 0 : parseFloat(value) || 0
+      }
+
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: processedValue
       }))
     }
   }
@@ -144,27 +187,100 @@ function OrderEdit() {
   }
 
   const calculateTotals = () => {
-    const subtotal = formData.products.reduce((sum, product) => sum + product.total, 0)
-    const tax = (subtotal * formData.taxRate) / 100
-    const total = subtotal + tax + formData.shippingCost - formData.discountAmount
-    return { subtotal, tax, total }
+    const subtotal = formData.products.reduce((sum, product) => {
+      const productTotal = parseFloat(product.total) || 0
+      return sum + productTotal
+    }, 0)
+
+    const taxRate = parseFloat(formData.taxRate) || 0
+    const shippingCost = parseFloat(formData.shippingCost) || 0
+    const discountAmount = parseFloat(formData.discountAmount) || 0
+
+    const tax = (subtotal * taxRate) / 100
+    const total = Math.max(0, subtotal + tax + shippingCost - discountAmount)
+
+    return {
+      subtotal: Math.max(0, subtotal),
+      tax: Math.max(0, tax),
+      total: Math.max(0, total)
+    }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Updating order:', formData)
-    // Add update logic here
-    navigate('/orders/list')
+    setUpdating(true)
+    setError('')
+
+    try {
+      const { subtotal, tax, total } = calculateTotals()
+
+      // Prepare order data for API update
+      const orderData = {
+        customerName: formData.customerName,
+        products: formData.products.map(product => ({
+          productId: product.productId && product.productId !== '' ? product.productId : null,
+          name: product.name,
+          quantity: parseInt(product.quantity) || 1,
+          price: parseFloat(product.price) || 0
+        })),
+        shippingAddress: formData.shippingAddress,
+        paymentMethod: formData.paymentMethod || 'COD',
+        paymentStatus: formData.paymentStatus || 'Pending',
+        orderStatus: formData.orderStatus || 'Processing',
+        totalAmount: total,
+        orderDate: new Date(formData.orderDate),
+        deliveryDate: formData.deliveryDate ? new Date(formData.deliveryDate) : null,
+        priority: formData.priority || 'Normal',
+        notes: formData.notes || '',
+        taxRate: parseFloat(formData.taxRate) || 0,
+        shippingCost: parseFloat(formData.shippingCost) || 0,
+        discountAmount: parseFloat(formData.discountAmount) || 0
+      }
+
+      await orderService.updateOrder(id, orderData)
+      alert('Order updated successfully!')
+      navigate(`/orders/details/${id}`)
+    } catch (error) {
+      console.error('Error updating order:', error)
+      setError(error.message || 'Failed to update order. Please try again.')
+    } finally {
+      setUpdating(false)
+    }
   }
 
   const { subtotal, tax, total } = calculateTotals()
+
+  if (loading) {
+    return (
+      <div>
+        <div className="page-header">
+          <div className="page-title-section">
+            <h1 className="page-title">Edit Order</h1>
+            <p className="page-subtitle">Loading order data...</p>
+          </div>
+        </div>
+        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p>Loading order...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
       <div className="page-header">
         <div className="page-title-section">
           <h1 className="page-title">Edit Order</h1>
-          <p className="page-subtitle">Update order {formData.orderNumber}</p>
+          <p className="page-subtitle">Update order #{id?.slice(-8) || 'Unknown'}</p>
         </div>
         <div className="page-actions">
           <Link to="/orders/list" className="btn btn-secondary">
@@ -178,6 +294,18 @@ function OrderEdit() {
       </div>
 
       <div className="form-container">
+        {error && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            borderLeft: '4px solid #ef4444',
+            marginBottom: '20px',
+            padding: '12px 16px'
+          }}>
+            <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>
+              ❌ {error}
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="order-form">
           <div className="form-grid">
             {/* Order Details */}
@@ -186,16 +314,16 @@ function OrderEdit() {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="orderNumber">Order Number *</label>
-                  <input
-                    type="text"
-                    id="orderNumber"
-                    name="orderNumber"
-                    value={formData.orderNumber}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="ORD-2024-001"
-                  />
+                  <label>Order ID</label>
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#f3f4f6',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    color: '#6b7280'
+                  }}>
+                    #{id?.slice(-8) || 'Loading...'}
+                  </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="priority">Priority</label>
@@ -238,11 +366,11 @@ function OrderEdit() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="status">Order Status *</label>
+                <label htmlFor="orderStatus">Order Status *</label>
                 <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
+                  id="orderStatus"
+                  name="orderStatus"
+                  value={formData.orderStatus}
                   onChange={handleInputChange}
                   required
                 >
@@ -253,7 +381,7 @@ function OrderEdit() {
                   <option value="Shipped">Shipped</option>
                   <option value="Delivered">Delivered</option>
                   <option value="Cancelled">Cancelled</option>
-                  <option value="Refunded">Refunded</option>
+                  <option value="Completed">Completed</option>
                 </select>
               </div>
             </div>
@@ -264,24 +392,24 @@ function OrderEdit() {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="customer.name">Customer Name *</label>
+                  <label htmlFor="customerName">Customer Name *</label>
                   <input
                     type="text"
-                    id="customer.name"
-                    name="customer.name"
-                    value={formData.customer.name}
+                    id="customerName"
+                    name="customerName"
+                    value={formData.customerName}
                     onChange={handleInputChange}
                     required
                     placeholder="John Doe"
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="customer.company">Company</label>
+                  <label htmlFor="shippingAddress.company">Company</label>
                   <input
                     type="text"
-                    id="customer.company"
-                    name="customer.company"
-                    value={formData.customer.company}
+                    id="shippingAddress.company"
+                    name="shippingAddress.company"
+                    value={formData.shippingAddress.company}
                     onChange={handleInputChange}
                     placeholder="Company Name"
                   />
@@ -290,24 +418,24 @@ function OrderEdit() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="customer.email">Email *</label>
+                  <label htmlFor="shippingAddress.email">Email *</label>
                   <input
                     type="email"
-                    id="customer.email"
-                    name="customer.email"
-                    value={formData.customer.email}
+                    id="shippingAddress.email"
+                    name="shippingAddress.email"
+                    value={formData.shippingAddress.email}
                     onChange={handleInputChange}
                     required
                     placeholder="john@example.com"
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="customer.phone">Phone</label>
+                  <label htmlFor="shippingAddress.phone">Phone</label>
                   <input
                     type="tel"
-                    id="customer.phone"
-                    name="customer.phone"
-                    value={formData.customer.phone}
+                    id="shippingAddress.phone"
+                    name="shippingAddress.phone"
+                    value={formData.shippingAddress.phone}
                     onChange={handleInputChange}
                     placeholder="+1 234 567 8900"
                   />
@@ -315,11 +443,11 @@ function OrderEdit() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="customer.address">Billing Address</label>
+                <label htmlFor="shippingAddress.address">Address</label>
                 <textarea
-                  id="customer.address"
-                  name="customer.address"
-                  value={formData.customer.address}
+                  id="shippingAddress.address"
+                  name="shippingAddress.address"
+                  value={formData.shippingAddress.address}
                   onChange={handleInputChange}
                   rows="2"
                   placeholder="123 Customer Street"
@@ -327,12 +455,12 @@ function OrderEdit() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="customer.city">City</label>
+                <label htmlFor="shippingAddress.city">City</label>
                 <input
                   type="text"
-                  id="customer.city"
-                  name="customer.city"
-                  value={formData.customer.city}
+                  id="shippingAddress.city"
+                  name="shippingAddress.city"
+                  value={formData.shippingAddress.city}
                   onChange={handleInputChange}
                   placeholder="New York, NY 10001"
                 />
@@ -501,23 +629,23 @@ function OrderEdit() {
                 <div className="totals-display">
                   <div className="total-row">
                     <span>Subtotal:</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>₹{(subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
-                    <span>Tax ({formData.taxRate}%):</span>
-                    <span>₹{tax.toLocaleString()}</span>
+                    <span>Tax ({(parseFloat(formData.taxRate) || 0)}%):</span>
+                    <span>₹{(tax || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
                     <span>Shipping:</span>
-                    <span>₹{formData.shippingCost.toLocaleString()}</span>
+                    <span>₹{(parseFloat(formData.shippingCost) || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
                     <span>Discount:</span>
-                    <span>-₹{formData.discountAmount.toLocaleString()}</span>
+                    <span>-₹{(parseFloat(formData.discountAmount) || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row grand-total">
                     <span>Total:</span>
-                    <span>₹{total.toLocaleString()}</span>
+                    <span>₹{(total || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -542,6 +670,23 @@ function OrderEdit() {
                   <option value="PayPal">PayPal</option>
                   <option value="Cash">Cash</option>
                   <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="COD">Cash on Delivery</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="paymentStatus">Payment Status</label>
+                <select
+                  id="paymentStatus"
+                  name="paymentStatus"
+                  value={formData.paymentStatus}
+                  onChange={handleInputChange}
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Refunded">Refunded</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
             </div>
@@ -572,9 +717,9 @@ function OrderEdit() {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={updating}>
               <MdSave size={16} />
-              Update Order
+              {updating ? 'Updating Order...' : 'Update Order'}
             </button>
             <Link to="/orders/list" className="btn btn-secondary">
               Cancel

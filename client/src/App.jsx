@@ -22,12 +22,18 @@ import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
 import ServiceRequestList from './pages/ServiceRequestList'
+import ServiceRequestDetails from './pages/ServiceRequestDetails'
+import ServiceRequestEdit from './pages/ServiceRequestEdit'
 import BlogList from './pages/BlogList'
+import BlogDetails from './pages/BlogDetails'
+import BlogEdit from './pages/BlogEdit'
 import CreateBlog from './pages/CreateBlog'
 import CreateServiceRequest from './pages/CreateServiceRequest'
 import BannerList from './pages/BannerList'
+import BannerDetails from './pages/BannerDetails'
 import CreateBanner from './pages/CreateBanner'
 import RoleList from './pages/RoleList'
+import RoleDetails from './pages/RoleDetails'
 import CreateRole from './pages/CreateRole'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -86,29 +92,29 @@ function AppContent() {
             {/* Service Requests Routes */}
             <Route path="/service-requests" element={<ServiceRequestList />} />
             <Route path="/service-requests/create" element={<CreateServiceRequest />} />
-            <Route path="/service-requests/:id" element={<div className="page-header"><h1>Service Request Details</h1></div>} />
-            <Route path="/service-requests/:id/edit" element={<div className="page-header"><h1>Edit Service Request</h1></div>} />
+            <Route path="/service-requests/:id" element={<ServiceRequestDetails />} />
+            <Route path="/service-requests/:id/edit" element={<ServiceRequestEdit />} />
 
             {/* Blog Routes */}
             <Route path="/blogs" element={<BlogList />} />
             <Route path="/blogs/create" element={<CreateBlog />} />
-            <Route path="/blogs/:id" element={<div className="page-header"><h1>Blog Details</h1></div>} />
-            <Route path="/blogs/:id/edit" element={<div className="page-header"><h1>Edit Blog</h1></div>} />
+            <Route path="/blogs/:id" element={<BlogDetails />} />
+            <Route path="/blogs/:id/edit" element={<BlogEdit />} />
 
             {/* Banner Routes */}
             <Route path="/banners" element={<BannerList />} />
             <Route path="/banners/create" element={<CreateBanner />} />
-            <Route path="/banners/:id" element={<div className="page-header"><h1>Banner Details</h1></div>} />
+            <Route path="/banners/:id" element={<BannerDetails />} />
             <Route path="/banners/:id/edit" element={<div className="page-header"><h1>Edit Banner</h1></div>} />
 
             {/* Role Routes */}
             <Route path="/roles" element={<RoleList />} />
             <Route path="/roles/create" element={<CreateRole />} />
-            <Route path="/roles/:id" element={<div className="page-header"><h1>Role Details</h1></div>} />
+            <Route path="/roles/:id" element={<RoleDetails />} />
             <Route path="/roles/:id/edit" element={<div className="page-header"><h1>Edit Role</h1></div>} />
             
             {/* Placeholder routes for other nav items */}
-            <Route path="/roles" element={<div className="page-header"><h1>Roles Page</h1></div>} />
+
             <Route path="/permissions" element={<div className="page-header"><h1>Permissions Page</h1></div>} />
             <Route path="/customers" element={<div className="page-header"><h1>Customers Page</h1></div>} />
             <Route path="/sellers" element={<div className="page-header"><h1>Sellers Page</h1></div>} />

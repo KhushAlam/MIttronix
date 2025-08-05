@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdArrowBack, MdSave, MdAdd, MdDelete, MdSearch } from 'react-icons/md'
+import { orderService } from '../api/orderService.js'
 
 function OrderAdd() {
   const navigate = useNavigate()
@@ -31,6 +32,8 @@ function OrderAdd() {
   })
 
   const [showProductSelector, setShowProductSelector] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   
   const availableProducts = [
     { id: 1, name: 'Wireless Headphones', sku: 'WH-001', price: 99.99, stock: 50 },
@@ -53,9 +56,15 @@ function OrderAdd() {
         }
       }))
     } else {
+      // Convert numeric fields to proper numbers
+      let processedValue = value
+      if (['taxRate', 'shippingCost', 'discountAmount'].includes(name)) {
+        processedValue = value === '' ? 0 : parseFloat(value) || 0
+      }
+
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: processedValue
       }))
     }
   }
@@ -83,18 +92,18 @@ function OrderAdd() {
     const updatedProducts = [...formData.products]
     updatedProducts[productIndex] = {
       ...updatedProducts[productIndex],
-      productId: product.id,
+      productId: product._id || product.id || null, // Use _id if available, fallback to id, or null
       name: product.name,
       sku: product.sku,
       price: product.price,
       total: updatedProducts[productIndex].quantity * product.price
     }
-    
+
     setFormData(prev => ({
       ...prev,
       products: updatedProducts
     }))
-    
+
     setShowProductSelector(null)
   }
 
@@ -124,17 +133,71 @@ function OrderAdd() {
   }
 
   const calculateTotals = () => {
-    const subtotal = formData.products.reduce((sum, product) => sum + product.total, 0)
-    const tax = (subtotal * formData.taxRate) / 100
-    const total = subtotal + tax + formData.shippingCost - formData.discountAmount
-    return { subtotal, tax, total }
+    const subtotal = formData.products.reduce((sum, product) => {
+      const productTotal = parseFloat(product.total) || 0
+      return sum + productTotal
+    }, 0)
+
+    const taxRate = parseFloat(formData.taxRate) || 0
+    const shippingCost = parseFloat(formData.shippingCost) || 0
+    const discountAmount = parseFloat(formData.discountAmount) || 0
+
+    const tax = (subtotal * taxRate) / 100
+    const total = Math.max(0, subtotal + tax + shippingCost - discountAmount)
+
+    return {
+      subtotal: Math.max(0, subtotal),
+      tax: Math.max(0, tax),
+      total: Math.max(0, total)
+    }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Creating order:', formData)
-    // Add create logic here
-    navigate('/orders/list')
+    setLoading(true)
+    setError('')
+
+    try {
+      const { subtotal, tax, total } = calculateTotals()
+
+      // Prepare order data for API
+      const orderData = {
+        customerName: formData.customer.name,
+        products: formData.products.map(product => ({
+          productId: product.productId && product.productId !== '' ? product.productId : null,
+          name: product.name,
+          quantity: parseInt(product.quantity) || 1,
+          price: parseFloat(product.price) || 0
+        })),
+        shippingAddress: {
+          address: formData.customer.address,
+          city: formData.customer.city,
+          email: formData.customer.email,
+          phone: formData.customer.phone,
+          company: formData.customer.company
+        },
+        paymentMethod: formData.paymentMethod || 'COD',
+        paymentStatus: 'Pending',
+        orderStatus: formData.status || 'Processing',
+        totalAmount: total,
+        orderDate: new Date(formData.orderDate),
+        deliveryDate: formData.deliveryDate ? new Date(formData.deliveryDate) : null,
+        priority: formData.priority || 'Normal',
+        notes: formData.notes || '',
+        taxRate: parseFloat(formData.taxRate) || 0,
+        shippingCost: parseFloat(formData.shippingCost) || 0,
+        discountAmount: parseFloat(formData.discountAmount) || 0
+      }
+
+      await orderService.createOrder(orderData)
+      alert('Order created successfully!')
+      navigate('/orders/list')
+    } catch (error) {
+      console.error('Error creating order:', error)
+      setError(error.message || 'Failed to create order. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const { subtotal, tax, total } = calculateTotals()
@@ -155,6 +218,19 @@ function OrderAdd() {
       </div>
 
       <div className="form-container">
+        {error && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            borderLeft: '4px solid #ef4444',
+            marginBottom: '20px',
+            padding: '12px 16px'
+          }}>
+            <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>
+              ❌ {error}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="order-form">
           <div className="form-grid">
             {/* Order Details */}
@@ -414,7 +490,7 @@ function OrderAdd() {
                     />
                   </div>
                   <div className="col-total">
-                    <span className="total-display">${product.total.toFixed(2)}</span>
+                    <span className="total-display">${(parseFloat(product.total) || 0).toFixed(2)}</span>
                   </div>
                   <div className="col-actions">
                     <button
@@ -475,23 +551,23 @@ function OrderAdd() {
                 <div className="totals-display">
                   <div className="total-row">
                     <span>Subtotal:</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>${(subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
-                    <span>Tax ({formData.taxRate}%):</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>Tax ({(parseFloat(formData.taxRate) || 0)}%):</span>
+                    <span>${(tax || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
                     <span>Shipping:</span>
-                    <span>${formData.shippingCost.toFixed(2)}</span>
+                    <span>${(parseFloat(formData.shippingCost) || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
                     <span>Discount:</span>
-                    <span>-${formData.discountAmount.toFixed(2)}</span>
+                    <span>-${(parseFloat(formData.discountAmount) || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row grand-total">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>${(total || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -546,9 +622,9 @@ function OrderAdd() {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={loading}>
               <MdSave size={16} />
-              Create Order
+              {loading ? 'Creating Order...' : 'Create Order'}
             </button>
             <Link to="/orders/list" className="btn btn-secondary">
               Cancel

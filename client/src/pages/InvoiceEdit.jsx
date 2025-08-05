@@ -1,55 +1,98 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MdArrowBack, MdSave, MdAdd, MdDelete } from 'react-icons/md'
+import { invoiceService } from '../api/invoiceService.js'
 
 function InvoiceEdit() {
   const navigate = useNavigate()
   const { id } = useParams()
-  
-  const mockInvoice = {
-    id: id || 'INV-001',
-    number: 'INV-2024-001',
-    date: '2024-01-15',
-    dueDate: '2024-02-15',
-    status: 'Paid',
+
+  const [formData, setFormData] = useState({
+    number: '',
+    date: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    status: 'Draft',
     customer: {
-      name: 'John Doe',
-      company: 'Acme Corporation',
-      address: '456 Customer Ave',
-      city: 'Mumbai, MH 400001',
-      email: 'john.doe@acme.com',
-      phone: '+91 98765 43210'
+      name: '',
+      company: '',
+      address: '',
+      city: '',
+      email: '',
+      phone: ''
     },
     items: [
       {
-        id: 1,
-        description: 'Samsung 65" QLED 4K Smart TV - Premium Quality',
+        id: Date.now(),
+        description: '',
         quantity: 1,
-        rate: 89999,
-        amount: 89999
-      },
-      {
-        id: 2,
-        description: 'LG 7kg Front Load Washing Machine',
-        quantity: 1,
-        rate: 42999,
-        amount: 42999
-      },
-      {
-        id: 3,
-        description: 'IFB 30L Convection Microwave Oven',
-        quantity: 2,
-        rate: 15999,
-        amount: 31998
+        rate: 0,
+        amount: 0
       }
     ],
-    notes: 'Thank you for your business! Payment terms: Net 30 days.',
-    terms: 'All sales are final. Returns accepted within 7 days with original packaging.',
-    taxRate: 18,
-    discountAmount: 5000
+    notes: '',
+    terms: '',
+    taxRate: 0,
+    discountAmount: 0
+  })
+
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      loadInvoiceData()
+    } else {
+      setLoading(false)
+    }
+  }, [id])
+
+  const loadInvoiceData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const invoice = await invoiceService.getInvoiceById(id)
+
+      setFormData({
+        number: invoice.number || '',
+        date: invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : '',
+        dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : '',
+        status: invoice.status || 'Draft',
+        customer: {
+          name: invoice.customer?.name || '',
+          company: invoice.customer?.company || '',
+          address: invoice.customer?.address || '',
+          city: invoice.customer?.city || '',
+          email: invoice.customer?.email || '',
+          phone: invoice.customer?.phone || ''
+        },
+        items: invoice.items?.map(item => ({
+          id: item.id || item._id || Date.now(),
+          description: item.description || '',
+          quantity: item.quantity || 1,
+          rate: item.rate || 0,
+          amount: item.amount || 0
+        })) || [
+          {
+            id: Date.now(),
+            description: '',
+            quantity: 1,
+            rate: 0,
+            amount: 0
+          }
+        ],
+        notes: invoice.notes || '',
+        terms: invoice.terms || '',
+        taxRate: invoice.taxRate || 0,
+        discountAmount: invoice.discountAmount || 0
+      })
+    } catch (error) {
+      console.error('Error loading invoice:', error)
+      setError('Failed to load invoice data')
+    } finally {
+      setLoading(false)
+    }
   }
-  
-  const [formData, setFormData] = useState(mockInvoice)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -119,15 +162,74 @@ function InvoiceEdit() {
     return { subtotal, tax, total }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Updating invoice:', formData)
-    // Add update logic here
-    alert('Invoice updated successfully!')
-    navigate(`/invoices/details/${id}`)
+    setUpdating(true)
+    setError('')
+
+    try {
+      const { subtotal, tax, total } = calculateTotals()
+
+      const invoiceData = {
+        number: formData.number,
+        date: new Date(formData.date),
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        status: formData.status,
+        customer: formData.customer,
+        items: formData.items.map(item => ({
+          description: item.description,
+          quantity: parseInt(item.quantity) || 1,
+          rate: parseFloat(item.rate) || 0,
+          amount: parseFloat(item.amount) || 0
+        })),
+        notes: formData.notes || '',
+        terms: formData.terms || '',
+        taxRate: parseFloat(formData.taxRate) || 0,
+        discountAmount: parseFloat(formData.discountAmount) || 0,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        amountPaid: 0,
+        balance: total
+      }
+
+      await invoiceService.updateInvoice(id, invoiceData)
+      alert('Invoice updated successfully!')
+      navigate(`/invoices/details/${id}`)
+    } catch (error) {
+      console.error('Error updating invoice:', error)
+      setError(error.message || 'Failed to update invoice. Please try again.')
+    } finally {
+      setUpdating(false)
+    }
   }
 
   const { subtotal, tax, total } = calculateTotals()
+
+  if (loading) {
+    return (
+      <div>
+        <div className="page-header">
+          <div className="page-title-section">
+            <h1 className="page-title">Edit Invoice</h1>
+            <p className="page-subtitle">Loading invoice data...</p>
+          </div>
+        </div>
+        <div className="content-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p>Loading invoice...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -145,6 +247,18 @@ function InvoiceEdit() {
       </div>
 
       <div className="form-container">
+        {error && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            borderLeft: '4px solid #ef4444',
+            marginBottom: '20px',
+            padding: '12px 16px'
+          }}>
+            <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>
+              ❌ {error}
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="invoice-form">
           <div className="form-grid">
             {/* Invoice Details */}
@@ -441,9 +555,9 @@ function InvoiceEdit() {
 
           {/* Form Actions */}
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={updating}>
               <MdSave size={16} />
-              Update Invoice
+              {updating ? 'Updating Invoice...' : 'Update Invoice'}
             </button>
             <Link to={`/invoices/details/${id}`} className="btn btn-secondary">
               Cancel

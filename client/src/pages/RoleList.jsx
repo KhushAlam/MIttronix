@@ -133,17 +133,30 @@ function RoleList() {
         try {
             setLoading(true);
             setError('');
-            
+
             try {
+                console.log('Fetching roles with filters:', filters);
                 const response = await roleService.getAll(filters);
-                setRoles(response.data);
-                setPagination(response.pagination);
+                console.log('Roles API response:', response);
+                // Handle both direct array response and paginated response
+                if (Array.isArray(response)) {
+                    console.log('Setting roles as array:', response);
+                    setRoles(response);
+                    setPagination({ current: 1, total: 1, pages: 1 });
+                } else {
+                    const roles = response.data || response.roles || [];
+                    console.log('Setting roles from response:', roles);
+                    setRoles(roles);
+                    setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
+                }
             } catch (apiError) {
-                console.log('API unavailable, using mock data');
+                console.log('API unavailable, using mock data', apiError);
+                console.log('Mock roles:', mockRoles);
                 setRoles(mockRoles);
                 setPagination({ current: 1, total: 1, pages: 1 });
             }
         } catch (error) {
+            console.log('Error in fetchRoles:', error);
             setError('Failed to load roles');
             setRoles([]);
         } finally {
@@ -154,8 +167,9 @@ function RoleList() {
     const fetchStats = async () => {
         try {
             const response = await roleService.getStats();
-            setStats(response.data);
+            setStats(response.data || response);
         } catch (error) {
+            console.log('Stats API unavailable, using mock data', error);
             setStats(mockStats);
         }
     };
@@ -232,8 +246,11 @@ function RoleList() {
     };
 
     const getPermissionSummary = (permissions) => {
+        if (!permissions || !Array.isArray(permissions)) {
+            return '0 modules, 0 permissions';
+        }
         const moduleCount = permissions.length;
-        const totalActions = permissions.reduce((sum, perm) => sum + perm.actions.length, 0);
+        const totalActions = permissions.reduce((sum, perm) => sum + (perm.actions?.length || 0), 0);
         return `${moduleCount} modules, ${totalActions} permissions`;
     };
 
@@ -338,7 +355,7 @@ function RoleList() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {roles.map((role) => (
+                                    {(roles || []).map((role) => (
                                         <tr key={role._id}>
                                             <td>
                                                 <div className="role-info">
@@ -362,14 +379,14 @@ function RoleList() {
                                                         {getPermissionSummary(role.permissions)}
                                                     </div>
                                                     <div className="permission-modules">
-                                                        {role.permissions.slice(0, 3).map((perm, index) => (
+                                                        {(role.permissions || []).slice(0, 3).map((perm, index) => (
                                                             <span key={index} className="module-tag">
                                                                 {perm.module}
                                                             </span>
                                                         ))}
-                                                        {role.permissions.length > 3 && (
+                                                        {(role.permissions || []).length > 3 && (
                                                             <span className="module-tag more">
-                                                                +{role.permissions.length - 3} more
+                                                                +{(role.permissions || []).length - 3} more
                                                             </span>
                                                         )}
                                                     </div>

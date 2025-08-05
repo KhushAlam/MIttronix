@@ -1,108 +1,164 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { MdArrowBack, MdSave, MdAdd, MdDelete } from 'react-icons/md'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { MdArrowBack, MdSave, MdAdd, MdDelete } from "react-icons/md";
+import { invoiceService } from "../api/invoiceService.js";
 
 function InvoiceAdd() {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    number: '',
-    date: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    status: 'Draft',
+    number: "",
+    date: new Date().toISOString().split("T")[0],
+    dueDate: "",
+    status: "Draft",
     customer: {
-      name: '',
-      company: '',
-      address: '',
-      city: '',
-      email: '',
-      phone: ''
+      name: "",
+      company: "",
+      address: "",
+      city: "",
+      email: "",
+      phone: "",
     },
-    items: [
-      { id: 1, description: '', quantity: 1, rate: 0, amount: 0 }
-    ],
-    notes: '',
-    terms: '',
+    items: [{ id: 1, description: "", quantity: 1, rate: 0, amount: 0 }],
+    notes: "",
+    terms: "",
     taxRate: 12,
-    discountAmount: 0
-  })
+    discountAmount: 0,
+  });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    if (name.startsWith('customer.')) {
-      const customerField = name.split('.')[1]
-      setFormData(prev => ({
+    const { name, value } = e.target;
+    if (name.startsWith("customer.")) {
+      const customerField = name.split(".")[1];
+      setFormData((prev) => ({
         ...prev,
         customer: {
           ...prev.customer,
-          [customerField]: value
-        }
-      }))
+          [customerField]: value,
+        },
+      }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
-      }))
+        [name]: value,
+      }));
     }
-  }
+  };
 
   const handleItemChange = (index, field, value) => {
-    const updatedItems = [...formData.items]
+    const updatedItems = [...formData.items];
     updatedItems[index] = {
       ...updatedItems[index],
-      [field]: value
+      [field]: value,
+    };
+
+    if (field === "quantity" || field === "rate") {
+      const quantity =
+        field === "quantity"
+          ? parseFloat(value) || 0
+          : updatedItems[index].quantity;
+      const rate =
+        field === "rate" ? parseFloat(value) || 0 : updatedItems[index].rate;
+      updatedItems[index].amount = quantity * rate;
     }
-    
-    if (field === 'quantity' || field === 'rate') {
-      const quantity = field === 'quantity' ? parseFloat(value) || 0 : updatedItems[index].quantity
-      const rate = field === 'rate' ? parseFloat(value) || 0 : updatedItems[index].rate
-      updatedItems[index].amount = quantity * rate
-    }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      items: updatedItems
-    }))
-  }
+      items: updatedItems,
+    }));
+  };
 
   const addItem = () => {
     const newItem = {
       id: Date.now(),
-      description: '',
+      description: "",
       quantity: 1,
       rate: 0,
-      amount: 0
-    }
-    setFormData(prev => ({
+      amount: 0,
+    };
+    setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, newItem]
-    }))
-  }
+      items: [...prev.items, newItem],
+    }));
+  };
 
   const removeItem = (index) => {
     if (formData.items.length > 1) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        items: prev.items.filter((_, i) => i !== index)
-      }))
+        items: prev.items.filter((_, i) => i !== index),
+      }));
     }
-  }
+  };
 
   const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.amount, 0)
-    const tax = (subtotal * formData.taxRate) / 100
-    const total = subtotal + tax - formData.discountAmount
-    return { subtotal, tax, total }
-  }
+    const subtotal = formData.items.reduce((sum, item) => sum + item.amount, 0);
+    const tax = (subtotal * formData.taxRate) / 100;
+    const total = subtotal + tax - formData.discountAmount;
+    return { subtotal, tax, total };
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Creating invoice:', formData)
-    // Add create logic here
-    navigate('/invoices/list')
+  e.preventDefault();
+
+  const invoiceNumber = formData?.number?.trim();
+  const customerName = formData?.customer?.name?.trim();
+  const customerEmail = formData?.customer?.email?.trim();
+  const customerAddress = formData?.customer?.address?.trim();
+  const taxRate = parseFloat(formData?.taxRate) || 0;
+  const dueDate = new Date(formData?.dueDate);
+  const notes = formData?.notes || "";
+  const termsAndConditions = formData?.termsAndConditions || "";
+  const items = Array.isArray(formData?.items) ? formData.items : [];
+
+  if (!invoiceNumber || !customerName || items.length === 0) {
+    alert("Please fill all required fields: invoice number, customer name, and at least one item.");
+    return;
   }
 
-  const { subtotal, tax, total } = calculateTotals()
+  const mappedItems = items.map((item, i) => {
+    const description = item.description?.trim();
+    const quantity = parseFloat(item.quantity);
+    const unitPrice = parseFloat(item.rate);
+    const total = quantity * unitPrice;
+
+    console.log(`Item ${i}:`, { description, quantity, unitPrice, total });
+
+    return {
+      description,
+      quantity,
+      unitPrice,
+      total
+    };
+  });
+
+  const orderData = {
+    invoiceNumber,
+    customer: {
+      name: customerName,
+      email: customerEmail,
+      address: customerAddress
+    },
+    items: mappedItems,
+    tax: taxRate,
+    dueDate,
+    notes,
+    termsAndConditions
+  };
+
+  invoiceService.createInvoice(orderData)
+    .then(response => {
+      console.log('Invoice created successfully:', response);
+      navigate('/invoices/list');
+    })
+    .catch(error => {
+      console.error('Error creating invoice:', error);
+      alert('Failed to create invoice: ' + error.message);
+    });
+};
+
+
+  const { subtotal, tax, total } = calculateTotals();
 
   return (
     <div>
@@ -125,7 +181,7 @@ function InvoiceAdd() {
             {/* Invoice Details */}
             <div className="content-card">
               <h3>Invoice Details</h3>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="number">Invoice Number *</label>
@@ -184,7 +240,7 @@ function InvoiceAdd() {
             {/* Customer Information */}
             <div className="content-card">
               <h3>Customer Information</h3>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="customer.name">Customer Name *</label>
@@ -267,7 +323,11 @@ function InvoiceAdd() {
           <div className="content-card">
             <div className="section-header">
               <h3>Invoice Items</h3>
-              <button type="button" onClick={addItem} className="btn btn-outline">
+              <button
+                type="button"
+                onClick={addItem}
+                className="btn btn-outline"
+              >
                 <MdAdd size={16} />
                 Add Item
               </button>
@@ -281,14 +341,16 @@ function InvoiceAdd() {
                 <div className="col-amount">Amount</div>
                 <div className="col-actions">Actions</div>
               </div>
-              
+
               {formData.items.map((item, index) => (
                 <div key={item.id} className="table-row">
                   <div className="col-description">
                     <input
                       type="text"
                       value={item.description}
-                      onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "description", e.target.value)
+                      }
                       placeholder="Item description"
                       required
                     />
@@ -297,7 +359,9 @@ function InvoiceAdd() {
                     <input
                       type="number"
                       value={item.quantity}
-                      onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "quantity", e.target.value)
+                      }
                       min="1"
                       required
                     />
@@ -306,14 +370,18 @@ function InvoiceAdd() {
                     <input
                       type="number"
                       value={item.rate}
-                      onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "rate", e.target.value)
+                      }
                       min="0"
                       step="0.01"
                       required
                     />
                   </div>
                   <div className="col-amount">
-                    <span className="amount-display">₹{item.amount.toLocaleString()}</span>
+                    <span className="amount-display">
+                      ₹{item.amount.toLocaleString()}
+                    </span>
                   </div>
                   <div className="col-actions">
                     <button
@@ -357,7 +425,7 @@ function InvoiceAdd() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="totals-display">
                   <div className="total-row">
                     <span>Subtotal:</span>
@@ -383,7 +451,7 @@ function InvoiceAdd() {
           {/* Additional Information */}
           <div className="content-card">
             <h3>Additional Information</h3>
-            
+
             <div className="form-group">
               <label htmlFor="notes">Notes</label>
               <textarea
@@ -421,7 +489,7 @@ function InvoiceAdd() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default InvoiceAdd
+export default InvoiceAdd;

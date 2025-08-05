@@ -1,3 +1,4 @@
+import { instance } from './axios.config.js'
 import { mockServiceRequests, mockUsers } from "./mockData.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -5,165 +6,105 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const serviceRequestService = {
   getAll: async (params = {}) => {
     try {
-      await delay(500);
-
-      let filteredRequests = [...mockServiceRequests];
-
-      if (params.status && params.status !== "All Status") {
-        filteredRequests = filteredRequests.filter(
-          (req) => req.status === params.status
-        );
-      }
-
-      if (params.priority && params.priority !== "All Priorities") {
-        filteredRequests = filteredRequests.filter(
-          (req) => req.priority === params.priority
-        );
-      }
-
-      if (params.type && params.type !== "All Types") {
-        filteredRequests = filteredRequests.filter(
-          (req) => req.type === params.type
-        );
-      }
-
-      if (params.search) {
-        const searchLower = params.search.toLowerCase();
-        filteredRequests = filteredRequests.filter(
-          (req) =>
-            req.id.toLowerCase().includes(searchLower) ||
-            req.product.toLowerCase().includes(searchLower) ||
-            req.userInfo.name.toLowerCase().includes(searchLower)
-        );
-      }
-
-      const page = parseInt(params.page) || 1;
-      const limit = parseInt(params.limit) || 10;
-      const start = (page - 1) * limit;
-      const end = start + limit;
-
-      const paginatedRequests = filteredRequests.slice(start, end);
-
-      return {
-        data: paginatedRequests,
-        pagination: {
-          current: page,
-          total: Math.ceil(filteredRequests.length / limit),
-          count: filteredRequests.length,
-        },
-      };
-    } catch (error) {
-      throw error;
+      const response = await instance.get('/service-requests', { params });
+      return response.data;
+    } catch (apiError) {
+      console.log('Error while fetching service requests:', apiError);
+      throw apiError;
     }
   },
   getById: async (id) => {
     try {
-      await delay(300);
-      const request = mockServiceRequests.find((req) => req.id === id);
-      if (!request) {
-        throw { message: "Service request not found" };
-      }
-      return request;
-    } catch (error) {
-      throw error;
+      const response = await instance.get(`/service-requests/${id}`);
+      return response.data;
+    } catch (apiError) {
+      console.log('Error while fetching service request by ID:', apiError);
+      throw apiError;
     }
   },
   create: async (data) => {
     try {
-      await delay(800);
-      const newRequest = {
-        id: `SR-2024-${String(mockServiceRequests.length + 1).padStart(
-          3,
-          "0"
-        )}`,
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        assignedTo: "Support Team",
-      };
-      mockServiceRequests.unshift(newRequest);
-      return newRequest;
-    } catch (error) {
-      throw error;
+      const response = await instance.post('/service-requests', data);
+      return response.data;
+    } catch (apiError) {
+      console.log('Error while creating service request:', apiError);
+      throw apiError;
     }
   },
 
   update: async (id, data) => {
     try {
-      const response = await axiosInstance.put(
-        `${SERVICE_REQUEST_API}/${id}`,
-        data
-      );
+      const response = await instance.put(`/service-requests/${id}`, data);
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Error updating service request:', error);
+      throw error;
     }
   },
 
   addComment: async (id, commentData) => {
     try {
-      const response = await axiosInstance.post(
-        `${SERVICE_REQUEST_API}/${id}/comments`,
-        commentData
-      );
-      return response.data;
+      await delay(400);
+      const requestIndex = mockServiceRequests.findIndex(req => req.id === id);
+      if (requestIndex === -1) {
+        throw new Error('Service request not found');
+      }
+
+      if (!mockServiceRequests[requestIndex].comments) {
+        mockServiceRequests[requestIndex].comments = [];
+      }
+
+      const newComment = {
+        id: Date.now().toString(),
+        ...commentData,
+        createdAt: new Date().toISOString()
+      };
+
+      mockServiceRequests[requestIndex].comments.push(newComment);
+      mockServiceRequests[requestIndex].updatedAt = new Date().toISOString();
+
+      return newComment;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Error adding comment:', error);
+      throw error;
     }
   },
 
   assign: async (id, assignedTo) => {
     try {
-      const response = await axiosInstance.put(
-        `${SERVICE_REQUEST_API}/${id}/assign`,
-        { assignedTo }
-      );
-      return response.data;
+      await delay(400);
+      const requestIndex = mockServiceRequests.findIndex(req => req.id === id);
+      if (requestIndex === -1) {
+        throw new Error('Service request not found');
+      }
+
+      mockServiceRequests[requestIndex].assignedTo = assignedTo;
+      mockServiceRequests[requestIndex].updatedAt = new Date().toISOString();
+
+      return mockServiceRequests[requestIndex];
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Error assigning service request:', error);
+      throw error;
     }
   },
 
   getStats: async () => {
     try {
-      await delay(400);
-      const stats = {
-        overview: {
-          open: mockServiceRequests.filter((req) => req.status === "Open")
-            .length,
-          inProgress: mockServiceRequests.filter(
-            (req) => req.status === "In Progress"
-          ).length,
-          resolved: mockServiceRequests.filter(
-            (req) => req.status === "Resolved"
-          ).length,
-          closed: mockServiceRequests.filter((req) => req.status === "Closed")
-            .length,
-        },
-        byPriority: {
-          high: mockServiceRequests.filter((req) => req.priority === "High")
-            .length,
-          medium: mockServiceRequests.filter((req) => req.priority === "Medium")
-            .length,
-          low: mockServiceRequests.filter((req) => req.priority === "Low")
-            .length,
-        },
-        total: mockServiceRequests.length,
-      };
-      return stats;
-    } catch (error) {
-      throw error;
+      const response = await instance.get('/service-requests/stats');
+      return response.data;
+    } catch (apiError) {
+      console.log('Error while fetching service request stats:', apiError);
+      throw apiError;
     }
   },
 
   delete: async (id) => {
     try {
-      const response = await axiosInstance.delete(
-        `${SERVICE_REQUEST_API}/${id}`
-      );
+      const response = await instance.delete(`/service-requests/${id}`);
       return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
+    } catch (apiError) {
+      console.log('Error while deleting service request:', apiError);
+      throw apiError;
     }
   },
 };

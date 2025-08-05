@@ -1,11 +1,11 @@
-import axiosInstance from './axios.config.js';
+import { instance } from './axios.config.js';
 
 const BANNER_API = '/banners';
 
 export const bannerService = {
     getAll: async (params = {}) => {
         try {
-            const response = await axiosInstance.get(BANNER_API, { params });
+            const response = await instance.get(BANNER_API, { params });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -14,7 +14,7 @@ export const bannerService = {
 
     getById: async (id) => {
         try {
-            const response = await axiosInstance.get(`${BANNER_API}/${id}`);
+            const response = await instance.get(`${BANNER_API}/${id}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -23,7 +23,7 @@ export const bannerService = {
 
     create: async (data) => {
         try {
-            const response = await axiosInstance.post(BANNER_API, data);
+            const response = await instance.post(BANNER_API, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -32,7 +32,7 @@ export const bannerService = {
 
     update: async (id, data) => {
         try {
-            const response = await axiosInstance.put(`${BANNER_API}/${id}`, data);
+            const response = await instance.put(`${BANNER_API}/${id}`, data);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -41,7 +41,7 @@ export const bannerService = {
 
     toggleStatus: async (id) => {
         try {
-            const response = await axiosInstance.put(`${BANNER_API}/${id}/status`);
+            const response = await instance.put(`${BANNER_API}/${id}/status`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -50,7 +50,7 @@ export const bannerService = {
 
     getByPlacement: async (placement, targetAudience = 'All Users') => {
         try {
-            const response = await axiosInstance.get(`${BANNER_API}/placement/${placement}`, {
+            const response = await instance.get(`${BANNER_API}/placement/${placement}`, {
                 params: { targetAudience }
             });
             return response.data;
@@ -61,7 +61,7 @@ export const bannerService = {
 
     recordImpression: async (id) => {
         try {
-            const response = await axiosInstance.post(`${BANNER_API}/${id}/impression`);
+            const response = await instance.post(`${BANNER_API}/${id}/impression`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -70,7 +70,7 @@ export const bannerService = {
 
     recordClick: async (id) => {
         try {
-            const response = await axiosInstance.post(`${BANNER_API}/${id}/click`);
+            const response = await instance.post(`${BANNER_API}/${id}/click`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -79,7 +79,7 @@ export const bannerService = {
 
     getStats: async () => {
         try {
-            const response = await axiosInstance.get(`${BANNER_API}/stats`);
+            const response = await instance.get(`${BANNER_API}/stats`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -88,7 +88,7 @@ export const bannerService = {
 
     duplicate: async (id) => {
         try {
-            const response = await axiosInstance.post(`${BANNER_API}/${id}/duplicate`);
+            const response = await instance.post(`${BANNER_API}/${id}/duplicate`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -97,7 +97,7 @@ export const bannerService = {
 
     delete: async (id) => {
         try {
-            const response = await axiosInstance.delete(`${BANNER_API}/${id}`);
+            const response = await instance.delete(`${BANNER_API}/${id}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
