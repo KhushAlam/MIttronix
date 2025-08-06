@@ -1,206 +1,235 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { MdArrowBack, MdSave, MdAdd, MdDelete, MdSearch } from 'react-icons/md'
-import { orderService } from '../api/orderService.js'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { MdArrowBack, MdSave, MdAdd, MdDelete, MdSearch } from "react-icons/md";
+import { orderService } from "../api/orderService.js";
 
 function OrderAdd() {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    orderNumber: '',
-    orderDate: new Date().toISOString().split('T')[0],
-    deliveryDate: '',
-    priority: 'Normal',
-    status: 'Draft',
+    orderNumber: "",
+    orderDate: new Date().toISOString().split("T")[0],
+    deliveryDate: "",
+    priority: "Normal",
+    status: "Draft",
     customer: {
-      name: '',
-      company: '',
-      address: '',
-      city: '',
-      email: '',
-      phone: ''
+      name: "",
+      company: "",
+      address: "",
+      city: "",
+      email: "",
+      phone: "",
     },
     products: [
-      { id: 1, productId: '', name: '', sku: '', quantity: 1, price: 0, total: 0 }
+      {
+        id: 1,
+        productId: "",
+        name: "",
+        sku: "",
+        quantity: 1,
+        price: 0,
+        total: 0,
+      },
     ],
-    notes: '',
-    shippingAddress: '',
-    paymentMethod: 'Credit Card',
+    notes: "",
+    shippingAddress: "",
+    paymentMethod: "Credit Card",
     taxRate: 10,
     shippingCost: 0,
-    discountAmount: 0
-  })
+    discountAmount: 0,
+  });
 
-  const [showProductSelector, setShowProductSelector] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  
+  const [showProductSelector, setShowProductSelector] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const availableProducts = [
-    { id: 1, name: 'Wireless Headphones', sku: 'WH-001', price: 99.99, stock: 50 },
-    { id: 2, name: 'Bluetooth Speaker', sku: 'BS-002', price: 79.99, stock: 30 },
-    { id: 3, name: 'USB-C Cable', sku: 'UC-003', price: 19.99, stock: 100 },
-    { id: 4, name: 'Wireless Mouse', sku: 'WM-004', price: 49.99, stock: 75 },
-    { id: 5, name: 'Laptop Stand', sku: 'LS-005', price: 89.99, stock: 25 },
-    { id: 6, name: 'Phone Case', sku: 'PC-006', price: 29.99, stock: 80 }
-  ]
+    {
+      id: 1,
+      name: "Wireless Headphones",
+      sku: "WH-001",
+      price: 99.99,
+      stock: 50,
+    },
+    {
+      id: 2,
+      name: "Bluetooth Speaker",
+      sku: "BS-002",
+      price: 79.99,
+      stock: 30,
+    },
+    { id: 3, name: "USB-C Cable", sku: "UC-003", price: 19.99, stock: 100 },
+    { id: 4, name: "Wireless Mouse", sku: "WM-004", price: 49.99, stock: 75 },
+    { id: 5, name: "Laptop Stand", sku: "LS-005", price: 89.99, stock: 25 },
+    { id: 6, name: "Phone Case", sku: "PC-006", price: 29.99, stock: 80 },
+  ];
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    if (name.startsWith('customer.')) {
-      const customerField = name.split('.')[1]
-      setFormData(prev => ({
+    const { name, value } = e.target;
+    if (name.startsWith("customer.")) {
+      const customerField = name.split(".")[1];
+      setFormData((prev) => ({
         ...prev,
         customer: {
           ...prev.customer,
-          [customerField]: value
-        }
-      }))
+          [customerField]: value,
+        },
+      }));
     } else {
-      // Convert numeric fields to proper numbers
-      let processedValue = value
-      if (['taxRate', 'shippingCost', 'discountAmount'].includes(name)) {
-        processedValue = value === '' ? 0 : parseFloat(value) || 0
+      let processedValue = value;
+      if (["taxRate", "shippingCost", "discountAmount"].includes(name)) {
+        processedValue = value === "" ? 0 : parseFloat(value) || 0;
       }
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: processedValue
-      }))
+        [name]: processedValue,
+      }));
     }
-  }
+  };
 
   const handleProductChange = (index, field, value) => {
-    const updatedProducts = [...formData.products]
+    const updatedProducts = [...formData.products];
     updatedProducts[index] = {
       ...updatedProducts[index],
-      [field]: value
+      [field]: value,
+    };
+
+    if (field === "quantity" || field === "price") {
+      const quantity =
+        field === "quantity"
+          ? parseFloat(value) || 0
+          : updatedProducts[index].quantity;
+      const price =
+        field === "price"
+          ? parseFloat(value) || 0
+          : updatedProducts[index].price;
+      updatedProducts[index].total = quantity * price;
     }
-    
-    if (field === 'quantity' || field === 'price') {
-      const quantity = field === 'quantity' ? parseFloat(value) || 0 : updatedProducts[index].quantity
-      const price = field === 'price' ? parseFloat(value) || 0 : updatedProducts[index].price
-      updatedProducts[index].total = quantity * price
-    }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      products: updatedProducts
-    }))
-  }
+      products: updatedProducts,
+    }));
+  };
 
   const selectProduct = (productIndex, product) => {
-    const updatedProducts = [...formData.products]
+    const updatedProducts = [...formData.products];
     updatedProducts[productIndex] = {
       ...updatedProducts[productIndex],
-      productId: product._id || product.id || null, // Use _id if available, fallback to id, or null
+      productId: product._id || product.id || null,
       name: product.name,
       sku: product.sku,
       price: product.price,
-      total: updatedProducts[productIndex].quantity * product.price
-    }
+      total: updatedProducts[productIndex].quantity * product.price,
+    };
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      products: updatedProducts
-    }))
+      products: updatedProducts,
+    }));
 
-    setShowProductSelector(null)
-  }
+    setShowProductSelector(null);
+  };
 
   const addProduct = () => {
     const newProduct = {
       id: Date.now(),
-      productId: '',
-      name: '',
-      sku: '',
+      productId: "",
+      name: "",
+      sku: "",
       quantity: 1,
       price: 0,
-      total: 0
-    }
-    setFormData(prev => ({
+      total: 0,
+    };
+    setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, newProduct]
-    }))
-  }
+      products: [...prev.products, newProduct],
+    }));
+  };
 
   const removeProduct = (index) => {
     if (formData.products.length > 1) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        products: prev.products.filter((_, i) => i !== index)
-      }))
+        products: prev.products.filter((_, i) => i !== index),
+      }));
     }
-  }
+  };
 
   const calculateTotals = () => {
     const subtotal = formData.products.reduce((sum, product) => {
-      const productTotal = parseFloat(product.total) || 0
-      return sum + productTotal
-    }, 0)
+      const productTotal = parseFloat(product.total) || 0;
+      return sum + productTotal;
+    }, 0);
 
-    const taxRate = parseFloat(formData.taxRate) || 0
-    const shippingCost = parseFloat(formData.shippingCost) || 0
-    const discountAmount = parseFloat(formData.discountAmount) || 0
+    const taxRate = parseFloat(formData.taxRate) || 0;
+    const shippingCost = parseFloat(formData.shippingCost) || 0;
+    const discountAmount = parseFloat(formData.discountAmount) || 0;
 
-    const tax = (subtotal * taxRate) / 100
-    const total = Math.max(0, subtotal + tax + shippingCost - discountAmount)
+    const tax = (subtotal * taxRate) / 100;
+    const total = Math.max(0, subtotal + tax + shippingCost - discountAmount);
 
     return {
       subtotal: Math.max(0, subtotal),
       tax: Math.max(0, tax),
-      total: Math.max(0, total)
-    }
-  }
+      total: Math.max(0, total),
+    };
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const { subtotal, tax, total } = calculateTotals()
+      const { subtotal, tax, total } = calculateTotals();
 
-      // Prepare order data for API
       const orderData = {
         customerName: formData.customer.name,
-        products: formData.products.map(product => ({
-          productId: product.productId && product.productId !== '' ? product.productId : null,
+        products: formData.products.map((product) => ({
+          productId:
+            product.productId && product.productId !== ""
+              ? product.productId
+              : null,
           name: product.name,
           quantity: parseInt(product.quantity) || 1,
-          price: parseFloat(product.price) || 0
+          price: parseFloat(product.price) || 0,
         })),
         shippingAddress: {
           address: formData.customer.address,
           city: formData.customer.city,
           email: formData.customer.email,
           phone: formData.customer.phone,
-          company: formData.customer.company
+          company: formData.customer.company,
         },
-        paymentMethod: formData.paymentMethod || 'COD',
-        paymentStatus: 'Pending',
-        orderStatus: formData.status || 'Processing',
+        paymentMethod: formData.paymentMethod || "COD",
+        paymentStatus: "Pending",
+        orderStatus: formData.status || "Processing",
         totalAmount: total,
         orderDate: new Date(formData.orderDate),
-        deliveryDate: formData.deliveryDate ? new Date(formData.deliveryDate) : null,
-        priority: formData.priority || 'Normal',
-        notes: formData.notes || '',
+        deliveryDate: formData.deliveryDate
+          ? new Date(formData.deliveryDate)
+          : null,
+        priority: formData.priority || "Normal",
+        notes: formData.notes || "",
         taxRate: parseFloat(formData.taxRate) || 0,
         shippingCost: parseFloat(formData.shippingCost) || 0,
-        discountAmount: parseFloat(formData.discountAmount) || 0
-      }
+        discountAmount: parseFloat(formData.discountAmount) || 0,
+      };
 
-      await orderService.createOrder(orderData)
-      alert('Order created successfully!')
-      navigate('/orders/list')
+      await orderService.createOrder(orderData);
+      alert("Order created successfully!");
+      navigate("/orders/list");
     } catch (error) {
-      console.error('Error creating order:', error)
-      setError(error.message || 'Failed to create order. Please try again.')
+      console.error("Error creating order:", error);
+      setError(error.message || "Failed to create order. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const { subtotal, tax, total } = calculateTotals()
+  const { subtotal, tax, total } = calculateTotals();
 
   return (
     <div>
@@ -219,13 +248,15 @@ function OrderAdd() {
 
       <div className="form-container">
         {error && (
-          <div style={{
-            backgroundColor: '#fef2f2',
-            borderLeft: '4px solid #ef4444',
-            marginBottom: '20px',
-            padding: '12px 16px'
-          }}>
-            <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>
+          <div
+            style={{
+              backgroundColor: "#fef2f2",
+              borderLeft: "4px solid #ef4444",
+              marginBottom: "20px",
+              padding: "12px 16px",
+            }}
+          >
+            <p style={{ color: "#dc2626", margin: 0, fontSize: "14px" }}>
               ❌ {error}
             </p>
           </div>
@@ -236,7 +267,7 @@ function OrderAdd() {
             {/* Order Details */}
             <div className="content-card">
               <h3>Order Details</h3>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="orderNumber">Order Number *</label>
@@ -311,7 +342,7 @@ function OrderAdd() {
             {/* Customer Information */}
             <div className="content-card">
               <h3>Customer Information</h3>
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="customer.name">Customer Name *</label>
@@ -389,12 +420,15 @@ function OrderAdd() {
               </div>
             </div>
           </div>
-
           {/* Products Section */}
           <div className="content-card">
             <div className="section-header">
               <h3>Order Products</h3>
-              <button type="button" onClick={addProduct} className="btn btn-outline">
+              <button
+                type="button"
+                onClick={addProduct}
+                className="btn btn-outline"
+              >
                 <MdAdd size={16} />
                 Add Product
               </button>
@@ -409,7 +443,7 @@ function OrderAdd() {
                 <div className="col-total">Total</div>
                 <div className="col-actions">Actions</div>
               </div>
-              
+
               {formData.products.map((product, index) => (
                 <div key={product.id} className="table-row">
                   <div className="col-product">
@@ -417,7 +451,9 @@ function OrderAdd() {
                       <input
                         type="text"
                         value={product.name}
-                        onChange={(e) => handleProductChange(index, 'name', e.target.value)}
+                        onChange={(e) =>
+                          handleProductChange(index, "name", e.target.value)
+                        }
                         placeholder="Select or enter product name"
                         required
                       />
@@ -428,7 +464,7 @@ function OrderAdd() {
                       >
                         <MdSearch size={16} />
                       </button>
-                      
+
                       {showProductSelector === index && (
                         <div className="product-dropdown">
                           <div className="dropdown-header">
@@ -446,12 +482,18 @@ function OrderAdd() {
                               <div
                                 key={availableProduct.id}
                                 className="product-option"
-                                onClick={() => selectProduct(index, availableProduct)}
+                                onClick={() =>
+                                  selectProduct(index, availableProduct)
+                                }
                               >
                                 <div className="product-info">
-                                  <div className="product-name">{availableProduct.name}</div>
+                                  <div className="product-name">
+                                    {availableProduct.name}
+                                  </div>
                                   <div className="product-details">
-                                    SKU: {availableProduct.sku} | Stock: {availableProduct.stock} | ${availableProduct.price}
+                                    SKU: {availableProduct.sku} | Stock:{" "}
+                                    {availableProduct.stock} | ₹
+                                    {availableProduct.price}
                                   </div>
                                 </div>
                               </div>
@@ -465,7 +507,9 @@ function OrderAdd() {
                     <input
                       type="text"
                       value={product.sku}
-                      onChange={(e) => handleProductChange(index, 'sku', e.target.value)}
+                      onChange={(e) =>
+                        handleProductChange(index, "sku", e.target.value)
+                      }
                       placeholder="SKU"
                       required
                     />
@@ -474,7 +518,9 @@ function OrderAdd() {
                     <input
                       type="number"
                       value={product.quantity}
-                      onChange={(e) => handleProductChange(index, 'quantity', e.target.value)}
+                      onChange={(e) =>
+                        handleProductChange(index, "quantity", e.target.value)
+                      }
                       min="1"
                       required
                     />
@@ -483,14 +529,18 @@ function OrderAdd() {
                     <input
                       type="number"
                       value={product.price}
-                      onChange={(e) => handleProductChange(index, 'price', e.target.value)}
+                      onChange={(e) =>
+                        handleProductChange(index, "price", e.target.value)
+                      }
                       min="0"
                       step="0.01"
                       required
                     />
                   </div>
                   <div className="col-total">
-                    <span className="total-display">${(parseFloat(product.total) || 0).toFixed(2)}</span>
+                    <span className="total-display">
+                      ₹{(parseFloat(product.total) || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="col-actions">
                     <button
@@ -534,7 +584,7 @@ function OrderAdd() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="discountAmount">Discount Amount</label>
                   <input
@@ -547,37 +597,40 @@ function OrderAdd() {
                     step="0.01"
                   />
                 </div>
-                
+
                 <div className="totals-display">
                   <div className="total-row">
                     <span>Subtotal:</span>
-                    <span>${(subtotal || 0).toFixed(2)}</span>
+                    <span>₹{(subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
-                    <span>Tax ({(parseFloat(formData.taxRate) || 0)}%):</span>
-                    <span>${(tax || 0).toFixed(2)}</span>
+                    <span>Tax ({parseFloat(formData.taxRate) || 0}%):</span>
+                    <span>₹{(tax || 0).toFixed(2)}</span>
                   </div>
                   <div className="total-row">
                     <span>Shipping:</span>
-                    <span>${(parseFloat(formData.shippingCost) || 0).toFixed(2)}</span>
+                    <span>
+                      ₹{(parseFloat(formData.shippingCost) || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="total-row">
                     <span>Discount:</span>
-                    <span>-${(parseFloat(formData.discountAmount) || 0).toFixed(2)}</span>
+                    <span>
+                      -₹{(parseFloat(formData.discountAmount) || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="total-row grand-total">
                     <span>Total:</span>
-                    <span>${(total || 0).toFixed(2)}</span>
+                    <span>₹{(total || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
           {/* Additional Information */}
           <div className="content-card">
             <h3>Additional Information</h3>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="paymentMethod">Payment Method</label>
@@ -620,11 +673,14 @@ function OrderAdd() {
               />
             </div>
           </div>
-
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
               <MdSave size={16} />
-              {loading ? 'Creating Order...' : 'Create Order'}
+              {loading ? "Creating Order..." : "Create Order"}
             </button>
             <Link to="/orders/list" className="btn btn-secondary">
               Cancel
@@ -633,7 +689,7 @@ function OrderAdd() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default OrderAdd
+export default OrderAdd;

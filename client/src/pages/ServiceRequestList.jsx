@@ -66,14 +66,12 @@ function ServiceRequestList() {
         setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
       }
 
-      // Calculate stats from actual data
       const calculatedStats = calculateStats(requestsData);
       setStats(calculatedStats);
     } catch (error) {
       console.log('ServiceRequest API error:', error);
       setError(error.message || "Failed to fetch service requests");
-      setServiceRequests([]); // Ensure it's always an array
-      // Set empty stats on error
+      setServiceRequests([]);
       setStats({
         overview: { open: 0, inProgress: 0, resolved: 0, closed: 0 },
         byPriority: { high: 0, medium: 0, low: 0 },
@@ -134,7 +132,7 @@ function ServiceRequestList() {
     ) {
       try {
         await serviceRequestService.delete(id);
-        fetchServiceRequests(); // This will automatically recalculate stats
+        fetchServiceRequests();
       } catch (error) {
         setError(error.message || "Failed to delete service request");
       }

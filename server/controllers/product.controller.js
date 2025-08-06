@@ -98,6 +98,11 @@ export const getProducts = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!req.body) {
+      return res.status(400).json({ message: "Request body is missing." });
+    }
+
     const {
       name,
       description,
@@ -111,7 +116,7 @@ export const updateProduct = async (req, res) => {
       brand,
       isActive,
     } = req.body;
-
+    
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -129,8 +134,9 @@ export const updateProduct = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json({ message: "Product Upadted", updatedProduct });
+    res.status(200).json({ message: "Product Updated", updatedProduct });
   } catch (error) {
+    console.log("Error updating product:", error);
     res.status(500).json({ message: "Error updating Product", error });
   }
 };
@@ -145,6 +151,22 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not Found" });
 
     res.status(200).json({ messgae: "product delted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
+
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error });
   }

@@ -153,3 +153,69 @@ export const deleteBlog = async (req, res) => {
     });
   }
 };
+
+export const getBlogsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    const blogs = await Blogs.find({ category });
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({ message: "No blogs found for this category" });
+    }
+
+    res.status(200).json({
+      message: "Successfully retrieved blogs for category",
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting blogs by category",
+      error: error.message,
+    });
+  }
+};
+
+export const getBlogsByStatus = async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    const blogs = await Blogs.find({ status });
+
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({
+        message: "Blog not found with this status",
+        error: "No blogs found"
+      });
+    }
+
+    res.status(200).json({
+      message: "success in getting blogs by status",
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting blogs by status",
+      error: error.message,
+    });
+  }
+};
+
+export const getBlogsByTag = async (req, res) => {
+  try {
+    const { tags } = req.params;
+    const blogs = await Blogs.find({ tags: { $in: tags.split(",") } });
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({ message: "No blogs found for these tags" });
+    }
+    res.status(200).json({
+      message: "Successfully retrieved blogs by tag",
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting blogs by tag",
+      error: error.message,
+    });
+    
+  }
+};

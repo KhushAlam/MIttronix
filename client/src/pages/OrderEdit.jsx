@@ -110,7 +110,6 @@ function OrderEdit() {
         }
       }))
     } else {
-      // Convert numeric fields to proper numbers
       let processedValue = value
       if (['taxRate', 'shippingCost', 'discountAmount'].includes(name)) {
         processedValue = value === '' ? 0 : parseFloat(value) || 0
@@ -214,7 +213,6 @@ function OrderEdit() {
     try {
       const { subtotal, tax, total } = calculateTotals()
 
-      // Prepare order data for API update
       const orderData = {
         customerName: formData.customerName,
         products: formData.products.map(product => ({

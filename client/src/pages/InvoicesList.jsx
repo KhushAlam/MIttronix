@@ -39,8 +39,7 @@ function InvoicesList() {
       }
     }
   }
-
-  // Calculate statistics from real data
+  
   const calculateStats = () => {
     const total = invoices.length
     const pending = invoices.filter(inv => inv.status === 'draft' || inv.status === 'sent').length

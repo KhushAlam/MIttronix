@@ -343,26 +343,32 @@ function CreateBanner() {
 
                 {/* Optional fallback if editing existing image and no new one is uploaded */}
                 {!imagePreview && formData.imageUrl && (
-                    <div style={{ marginTop: "10px", position: "relative", display: "inline-block" }}>
-                        <img
-                            src={formData.imageUrl}
-                            alt={formData.imageAlt}
-                            style={{ maxHeight: "200px", borderRadius: "8px" }}
-                        />
-                        <button
-                            type="button"
-                            onClick={handleRemoveImage}
-                            title="Remove image"
-                            className="remove-image-btn"
-                        >
-                            <MdDelete size={18} />
-                        </button>
-                    </div>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      position: "relative",
+                      display: "inline-block",
+                    }}
+                  >
+                    <img
+                      src={formData.imageUrl}
+                      alt={formData.imageAlt}
+                      style={{ maxHeight: "200px", borderRadius: "8px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      title="Remove image"
+                      className="remove-image-btn"
+                    >
+                      <MdDelete size={18} />
+                    </button>
+                  </div>
                 )}
-                </div>
-                </div>
+              </div>
+            </div>
 
-                {/* <div className="form-group">
+            {/* <div className="form-group">
                     <label htmlFor="imageUrl">Or Image URL</label>
                     <input
                         type="url"

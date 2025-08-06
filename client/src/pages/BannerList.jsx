@@ -33,12 +33,10 @@ function BannerList() {
         sortOrder: 'desc'
     });
     const [retryCount, setRetryCount] = useState(0);
-    const [serverStatsUnavailable, setServerStatsUnavailable] = useState(true); // Start with assumption that stats API is unavailable
-
+    const [serverStatsUnavailable, setServerStatsUnavailable] = useState(true);
 
     useEffect(() => {
         fetchBanners();
-        // Only fetch stats if server is known to be available, otherwise calculate from banners
         if (!serverStatsUnavailable) {
             fetchStats();
         }
@@ -52,7 +50,6 @@ function BannerList() {
             const response = await bannerService.getAll(filters);
             let bannersData = [];
 
-            // Handle both direct array response and paginated response
             if (Array.isArray(response)) {
                 bannersData = response;
                 setBanners(response);
@@ -63,7 +60,6 @@ function BannerList() {
                 setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
             }
 
-            // If server stats are unavailable, immediately calculate stats from the new banners data
             if (serverStatsUnavailable) {
                 const calculatedStats = {
                     overview: {
@@ -82,7 +78,6 @@ function BannerList() {
         } catch (error) {
             console.error('Error fetching banners:', error);
 
-            // Provide more specific error handling based on error type
             if (error.message?.includes('500')) {
                 setError('Server is temporarily unavailable. Please try again later.');
             } else if (error.message?.includes('404')) {
@@ -130,7 +125,6 @@ function BannerList() {
     };
 
     const fetchStats = async (forceServerAttempt = false) => {
-        // If server stats are known to be unavailable and not forcing, just calculate from banners data
         if (serverStatsUnavailable && !forceServerAttempt) {
             setStats(calculateStatsFromBanners());
             return;
@@ -163,7 +157,7 @@ function BannerList() {
 
     const handleToggleStatus = async (id, currentStatus) => {
         try {
-            setError(''); // Clear any previous errors
+            setError('');
             await bannerService.toggleStatus(id);
             await fetchBanners();
             await fetchStats();
@@ -179,7 +173,7 @@ function BannerList() {
 
     const handleDuplicate = async (id) => {
         try {
-            setError(''); // Clear any previous errors
+            setError('');
             await bannerService.duplicate(id);
             await fetchBanners();
         } catch (error) {
@@ -195,7 +189,7 @@ function BannerList() {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this banner?')) {
             try {
-                setError(''); // Clear any previous errors
+                setError('');
                 await bannerService.delete(id);
                 await fetchBanners();
                 await fetchStats();
@@ -351,7 +345,7 @@ function BannerList() {
                             onClick={() => {
                                 setRetryCount(prev => prev + 1);
                                 fetchBanners();
-                                fetchStats(true); // Force server attempt on retry
+                                fetchStats(true);
                             }}
                             style={{ marginLeft: '10px' }}
                         >

@@ -183,7 +183,7 @@ export const getServiceRequestByPriority = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 export const getServiceRequestsByUser = async (req, res) => {
   try {
@@ -201,4 +201,4 @@ export const getServiceRequestsByUser = async (req, res) => {
       error: error.message,
     });
   }
-}
+};

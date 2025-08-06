@@ -40,10 +40,8 @@ function Login() {
             setLoading(true);
             setError('');
             
-            // Simulate login API call
             await new Promise(resolve => setTimeout(resolve, 1500));
             
-            // For demo purposes, accept any email/password
             localStorage.setItem('isAuthenticated', 'true');
             localStorage.setItem('user', JSON.stringify({
                 email: formData.email,
