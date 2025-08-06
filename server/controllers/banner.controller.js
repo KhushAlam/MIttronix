@@ -1,9 +1,9 @@
 import Banner from "../models/banner.model.js";
+import { uploadBannerImage } from "../utils/cloudinary.js";
 
 export const createBanner = async (req, res) => {
   try {
     const {
-      imageUrl,
       imageAltText,
       title,
       description,
@@ -14,8 +14,24 @@ export const createBanner = async (req, res) => {
       endDate,
     } = req.body;
 
+    if (!req.files || req.files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one image file is required" });
+    }
+
+    const uploadPromises = req.files.map((file) =>
+      uploadBannerImage(file.buffer)
+    );
+    const uploadResults = await Promise.all(uploadPromises);
+
+    const images = uploadResults.map((result) => ({
+      url: result.secure_url,
+      public_id: result.public_id,
+    }));
+
     const newBanner = await Banner.create({
-      imageUrl,
+      imageUrl: images[0].url,
       imageAltText,
       title,
       description,
@@ -35,41 +51,43 @@ export const createBanner = async (req, res) => {
       message: "Error creating banner",
       error,
     });
+    console.log("Error creating banner:     ", error);
+    
   }
 };
 
 export const getBanner = async (req, res) => {
-    try {
-        const banners = await Banner.find();
-        res.status(200).json({
-            message: "Banners fetched successfully",
-            banners,
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "error fetching banners",
-            error
-        })
-    }
-}
+  try {
+    const banners = await Banner.find();
+    res.status(200).json({
+      message: "Banners fetched successfully",
+      banners,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "error fetching banners",
+      error,
+    });
+  }
+};
 
 export const getBannerById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const banner = await Banner.findById(id);
-        if (!banner) {
-            return res.status(404).json({ message: "Banner not found" });
-        }
-        res.status(200).json({
-            message: "Banner fetched successfully",
-            banner,
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "error getting banners"
-        })
+  try {
+    const { id } = req.params;
+    const banner = await Banner.findById(id);
+    if (!banner) {
+      return res.status(404).json({ message: "Banner not found" });
     }
-}
+    res.status(200).json({
+      message: "Banner fetched successfully",
+      banner,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "error getting banners",
+    });
+  }
+};
 
 export const deactivateBanner = async (req, res) => {
   try {

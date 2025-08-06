@@ -37,6 +37,8 @@ import RoleDetails from './pages/RoleDetails'
 import CreateRole from './pages/CreateRole'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import BannerEdit from './pages/BannerEdit'
+import RoleEdit from './pages/EditRoles'
 
 function AppContent() {
   const location = useLocation()
@@ -105,14 +107,14 @@ function AppContent() {
             <Route path="/banners" element={<BannerList />} />
             <Route path="/banners/create" element={<CreateBanner />} />
             <Route path="/banners/:id" element={<BannerDetails />} />
-            <Route path="/banners/:id/edit" element={<div className="page-header"><h1>Edit Banner</h1></div>} />
+            <Route path="/banners/:id/edit" element={<BannerEdit />} />
 
             {/* Role Routes */}
             <Route path="/roles" element={<RoleList />} />
             <Route path="/roles/create" element={<CreateRole />} />
             <Route path="/roles/:id" element={<RoleDetails />} />
-            <Route path="/roles/:id/edit" element={<div className="page-header"><h1>Edit Role</h1></div>} />
-            
+            <Route path="/roles/edit" element={<RoleEdit />} />
+
             {/* Placeholder routes for other nav items */}
 
             <Route path="/permissions" element={<div className="page-header"><h1>Permissions Page</h1></div>} />

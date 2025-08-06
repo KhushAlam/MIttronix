@@ -1,11 +1,18 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
+  customerName: {
+    type: String,
+    required: true,
+  },
   products: [
     {
-      productInfo: {
-        type: mongoose.Schema.Types.ObjectId,
+      productId: {
+        type: mongoose.Schema.Types.Mixed,
         ref: "Product",
+      },
+      name: {
+        type: String,
         required: true,
       },
       quantity: {
@@ -13,26 +20,23 @@ const orderSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
-      priceAtPurchase: {
+      price: {
         type: Number,
         required: true,
       },
     },
   ],
   shippingAddress: {
-    fullName: String,
-    addressLine1: String,
-    addressLine2: String,
+    address: String,
     city: String,
-    state: String,
-    postalCode: String,
-    country: String,
+    email: String,
     phone: String,
+    company: String,
   },
   paymentMethod: {
     type: String,
-    enum: ["COD", "Card", "UPI", "NetBanking"],
-    required: true,
+    enum: ["COD", "Credit Card", "Debit Card", "PayPal", "Cash", "Bank Transfer"],
+    default: "COD",
   },
   paymentStatus: {
     type: String,
@@ -41,7 +45,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderStatus: {
     type: String,
-    enum: ["Processing", "Packaging", "Shipped", "Delivered", "Cancelled"],
+    enum: ["Draft", "Pending", "Processing", "Packaging", "Shipped", "Delivered", "Cancelled", "Completed"],
     default: "Processing",
   },
   totalAmount: {
@@ -51,6 +55,29 @@ const orderSchema = new mongoose.Schema({
   orderDate: {
     type: Date,
     default: Date.now,
+  },
+  deliveryDate: {
+    type: Date,
+  },
+  priority: {
+    type: String,
+    enum: ["Low", "Normal", "High", "Urgent"],
+    default: "Normal",
+  },
+  notes: {
+    type: String,
+  },
+  taxRate: {
+    type: Number,
+    default: 0,
+  },
+  shippingCost: {
+    type: Number,
+    default: 0,
+  },
+  discountAmount: {
+    type: Number,
+    default: 0,
   },
   isActive: {
     type: Boolean,

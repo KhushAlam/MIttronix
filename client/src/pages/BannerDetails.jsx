@@ -23,7 +23,7 @@ function BannerDetails() {
       setBanner(data)
     } catch (error) {
       console.error('Error loading banner:', error)
-      setError('Failed to load banner data')
+      setError(error.message || 'Failed to load banner data from server')
     } finally {
       setLoading(false)
     }
@@ -86,7 +86,7 @@ function BannerDetails() {
       <div className="page-header">
         <div className="page-title-section">
           <h1 className="page-title">Banner Details</h1>
-          <p className="page-subtitle">{banner.title}</p>
+          <p className="page-subtitle">{typeof banner.title === 'object' ? banner.title?.name || banner.title?.value || 'N/A' : (banner.title || 'N/A')}</p>
         </div>
         <div className="page-actions">
           <Link to="/banners" className="btn btn-secondary">
@@ -104,7 +104,7 @@ function BannerDetails() {
         <div className="content-card">
           <h3><MdImage size={20} /> Banner Preview</h3>
           <div className="banner-preview">
-            <img src={banner.imageUrl} alt={banner.title} style={{ width: '100%', maxWidth: '600px', height: 'auto', borderRadius: '8px' }} />
+            <img src={typeof banner.imageUrl === 'object' ? banner.imageUrl?.url || banner.imageUrl?.src : banner.imageUrl} alt={typeof banner.title === 'object' ? banner.title?.name || banner.title?.value : banner.title} style={{ width: '100%', maxWidth: '600px', height: 'auto', borderRadius: '8px' }} />
           </div>
         </div>
 
@@ -114,9 +114,9 @@ function BannerDetails() {
             <div className="banner-info">
               <div className="info-group">
                 <h4>Basic Details</h4>
-                <p><strong>Title:</strong> {banner.title}</p>
-                <p><strong>Description:</strong> {banner.description}</p>
-                <p><strong>Link:</strong> <a href={banner.link} target="_blank" rel="noopener noreferrer">{banner.link}</a></p>
+                <p><strong>Title:</strong> {typeof banner.title === 'object' ? banner.title?.name || banner.title?.value || 'N/A' : (banner.title || 'N/A')}</p>
+                <p><strong>Description:</strong> {typeof banner.description === 'object' ? banner.description?.text || banner.description?.content || 'N/A' : (banner.description || 'N/A')}</p>
+                <p><strong>Link:</strong> <a href={typeof banner.link === 'object' ? banner.link?.url || banner.link?.href : banner.link} target="_blank" rel="noopener noreferrer">{typeof banner.link === 'object' ? banner.link?.url || banner.link?.href : banner.link}</a></p>
                 <p><strong>Status:</strong> 
                   <span className={`status-badge ${banner.status === 'active' ? 'status-success' : 'status-secondary'}`}>
                     {banner.status}

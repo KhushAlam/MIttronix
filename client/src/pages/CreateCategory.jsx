@@ -67,9 +67,9 @@ function CreateCategory() {
       const result = await categoryService.createCategory(dataToSend);
       console.log("Category creation result", result);
 
-      setSuccess("Category created successfully!");
+      alert("Category created successfully!");
 
-      setTimeout(() => navigate("/categories/list"), 1500);
+      setTimeout(() => navigate("/categories/list"), 500);
 
     } catch (err) {
       console.error('Error creating category:', err);

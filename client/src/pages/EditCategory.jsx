@@ -15,33 +15,33 @@ function EditCategory() {
 
   const [parentCategories, setParentCategories] = useState([])
 
-  const categories = {
-    1: { name: 'Electronics', description: 'Electronic devices and gadgets', status: 'Active', parent: '' },
-    2: { name: 'Computers', description: 'Laptops, desktops, and computer accessories', status: 'Active', parent: '' },
-    3: { name: 'Smartphones', description: 'Mobile phones and smartphones', status: 'Active', parent: '1' },
-    4: { name: 'Clothing', description: 'Apparel and fashion items', status: 'Inactive', parent: '' }
+  useEffect(() => {
+  const fetchCategoryAndParents = async () => {
+    try {
+      const allCategories = await categoryService.getCategories()
+      const categoryToEdit = allCategories.find(cat => cat._id === id)
+
+      if (categoryToEdit) {
+        setFormData({
+          name: categoryToEdit.name || '',
+          description: categoryToEdit.description || '',
+          status: categoryToEdit.status || 'Active',
+          parent: categoryToEdit.parent || ''
+        })
+      }
+
+      const parents = allCategories.filter(cat => cat._id !== id)
+      setParentCategories(parents)
+    } catch (error) {
+      console.error('Error loading category data:', error)
+    }
   }
 
-  useEffect(() => {
-    const fetchParentCategories = async () => {
-      try {
-        const mockParentCategories = [
-          { _id: '1', title: 'Electronics' },
-          { _id: '2', title: 'Computers' },
-          { _id: '4', title: 'Clothing' }
-        ].filter(cat => cat._id !== id) 
-        setParentCategories(mockParentCategories)
-      } catch (error) {
-        console.error('Error fetching parent categories:', error)
-      }
-    }
+  if (id) {
+    fetchCategoryAndParents()
+  }
+}, [id])
 
-    if (id && categories[id]) {
-      setFormData(categories[id])
-    }
-
-    fetchParentCategories()
-  }, [id])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -51,12 +51,17 @@ function EditCategory() {
     }))
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Updating category:', formData)
-    // add update logic
+  const handleSubmit = async (e) => {
+  e.preventDefault()
+
+  try {
+    await categoryService.updateCategory(id, formData)
     navigate('/categories/list')
+  } catch (error) {
+    console.error('Error updating category:', error)
   }
+}
+
 
   return (
     <div>

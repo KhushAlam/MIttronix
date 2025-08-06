@@ -10,7 +10,7 @@ export const createServiceRequest = async (req, res) => {
       priority,
       type,
       orderId,
-      user: req.user._id,
+      user: "6891f10b2e34ae607bbba890",
     });
 
     await newServiceRequest.save();

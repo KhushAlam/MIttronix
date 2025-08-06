@@ -27,12 +27,10 @@ export const createProduct = async (req, res) => {
         .status(400)
         .json({ message: "At least one image file is required" });
     }
-
-    // Upload all images to cloudinary
+ 
     const uploadPromises = req.files.map((file) => uploadImage(file.buffer));
     const uploadResults = await Promise.all(uploadPromises);
 
-    // Create images array with url and public_id
     const images = uploadResults.map((result) => ({
       url: result.secure_url,
       public_id: result.public_id,
@@ -66,7 +64,6 @@ export const getProducts = async (req, res) => {
   try {
     const { search, category, minPrice, maxPrice, stockStatus } = req.query;
 
-    // const filter = await Product.find({});
     const filter = {};
 
     if (search) {

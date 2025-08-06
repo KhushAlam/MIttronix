@@ -1792,11 +1792,12 @@ body {
 .timeline-item:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 8px;
-  top: 24px;
+  left: 11px;
+  top: 28px;
   width: 2px;
   height: calc(100% + 5px);
   background-color: #ddd;
+  z-index: 0;
 }
 
 .timeline-marker {
@@ -1811,18 +1812,50 @@ body {
 
 .timeline-marker.completed {
   background-color: #00b894;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.timeline-marker.pending {
+  background-color: #fdcb6e;
+  border: 2px solid #e17055;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.timeline-icon {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timeline-content h4 {
   margin-bottom: 4px;
   color: #2d3436;
   font-size: 14px;
+  font-weight: 600;
 }
 
-.timeline-content p {
+.timeline-description {
   color: #636e72;
-  font-size: 12px;
-  margin: 0;
+  font-size: 13px;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.timeline-timestamp {
+  color: #74b9ff;
+  font-size: 11px;
+  font-weight: 500;
+  display: block;
+  margin-top: 6px;
 }
 
 @media (max-width: 768px) {
@@ -2046,6 +2079,110 @@ body {
 .user-type.admin {
   background-color: #fff7d9;
   color: #b8860b;
+}
+
+/* Image Upload Styles */
+.image-upload-container {
+  border: 2px dashed #e9ecef;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+.image-upload-container:hover {
+  border-color: #74b9ff;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  cursor: pointer;
+  color: #636e72;
+  transition: color 0.3s ease;
+}
+
+.upload-label:hover {
+  color: #74b9ff;
+}
+
+.upload-label:has(input:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-label:has(input:disabled):hover {
+  color: #636e72;
+}
+
+.upload-label span {
+  margin-top: 8px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.upload-label small {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #95a5a6;
+}
+
+.image-preview {
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.preview-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #2d3436;
+}
+
+.remove-image-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: #c0392b;
+}
+
+.preview-image {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.image-info {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #636e72;
 }
 
 .recipients-summary {

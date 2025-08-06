@@ -16,7 +16,7 @@ const serviceRequestSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["Demo", "Repair", "Rellocation", "Installation"],
+    enum: ["demo", "repair", "relocation", "installation"],
     required: true,
   },
   orderId: {
@@ -30,8 +30,8 @@ const serviceRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "in_progress", "completed"],
-    default: "pending",
+    enum: ["open", "in progress", "completed"],
+    default: "open",
   },
   createdAt: {
     type: Date,
@@ -40,6 +40,9 @@ const serviceRequestSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
+  },
+  assignedTo: {
+    type: String
   },
 });
 

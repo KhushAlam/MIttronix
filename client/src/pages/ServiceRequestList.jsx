@@ -312,16 +312,16 @@ function ServiceRequestList() {
                 </thead>
                 <tbody>
                   {(serviceRequests || []).map((request) => (
-                    <tr key={request.id}>
+                    <tr key={request._id || request.id}>
                       <td>
-                        <span className="ticket-id">{request.id}</span>
+                        <span className="ticket-id">{request._id || request.id}</span>
                       </td>
                       <td>
                         <div className="product-cell">
-                          <strong>{request.product}</strong>
+                          <strong>{typeof request.product === 'object' ? request.product?.name || 'N/A' : (request.product || 'N/A')}</strong>
                           {request.description && (
                             <p className="description-preview">
-                              {request.description.substring(0, 60)}...
+                              {String(request.description).substring(0, 60)}...
                             </p>
                           )}
                         </div>
@@ -335,29 +335,29 @@ function ServiceRequestList() {
                       </td>
                       <td>
                         <span className="type-badge">
-                          {request.type}
+                          {typeof request.type === 'object' ? request.type?.name || 'N/A' : (request.type || 'N/A')}
                         </span>
                       </td>
                       <td>
                         <span
                           className={`priority-badge ${getPriorityColor(
-                            request.priority
+                            typeof request.priority === 'object' ? request.priority?.name || request.priority?.level : request.priority
                           )}`}
                         >
-                          {request.priority}
+                          {typeof request.priority === 'object' ? request.priority?.name || request.priority?.level || 'N/A' : (request.priority || 'N/A')}
                         </span>
                       </td>
                       <td>
                         <span
                           className={`status-badge ${getStatusColor(
-                            request.status
+                            typeof request.status === 'object' ? request.status?.name || request.status?.value : request.status
                           )}`}
                         >
-                          {request.status}
+                          {typeof request.status === 'object' ? request.status?.name || request.status?.value || 'N/A' : (request.status || 'N/A')}
                         </span>
                       </td>
                       <td>
-                        <span className="order-id">{request.orderId}</span>
+                        <span className="order-id">{typeof request.orderId === 'object' ? request.orderId?._id || request.orderId?.id || 'N/A' : (request.orderId || 'N/A')}</span>
                       </td>
                       <td>
                         <span className="date-text">
@@ -367,21 +367,21 @@ function ServiceRequestList() {
                       <td>
                         <div className="action-buttons">
                           <Link
-                            to={`/service-requests/${request.id}`}
+                            to={`/service-requests/${request._id || request.id}`}
                             className="action-btn view"
                             title="View Details"
                           >
                             <MdVisibility size={16} />
                           </Link>
                           <Link
-                            to={`/service-requests/${request.id}/edit`}
+                            to={`/service-requests/${request._id || request.id}/edit`}
                             className="action-btn edit"
                             title="Edit"
                           >
                             <MdEdit size={16} />
                           </Link>
                           <button
-                            onClick={() => handleDelete(request.id)}
+                            onClick={() => handleDelete(request._id || request.id)}
                             className="action-btn delete"
                             title="Delete"
                           >

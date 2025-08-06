@@ -32,129 +32,124 @@ function BannerList() {
         sortBy: 'createdAt',
         sortOrder: 'desc'
     });
+    const [retryCount, setRetryCount] = useState(0);
+    const [serverStatsUnavailable, setServerStatsUnavailable] = useState(true); // Start with assumption that stats API is unavailable
 
-    const mockBanners = [
-        {
-            _id: '1',
-            title: 'Summer Sale 2024',
-            description: 'Get up to 50% off on all summer products',
-            imageUrl: 'https://via.placeholder.com/300x150/ffc007/333?text=Summer+Sale',
-            link: '/products?category=summer',
-            placement: 'homepage-hero',
-            targetAudience: 'All Users',
-            status: 'active',
-            startDate: '2024-06-01',
-            endDate: '2024-08-31',
-            impressions: 12540,
-            clicks: 389,
-            clickRate: 3.1,
-            createdAt: '2024-05-15T10:30:00Z',
-            createdBy: 'Admin User'
-        },
-        {
-            _id: '2',
-            title: 'New Product Launch',
-            description: 'Discover our latest collection of premium electronics',
-            imageUrl: 'https://via.placeholder.com/300x150/74b9ff/fff?text=New+Products',
-            link: '/products/new',
-            placement: 'product-page-sidebar',
-            targetAudience: 'Registered Users',
-            status: 'active',
-            startDate: '2024-05-20',
-            endDate: '2024-07-20',
-            impressions: 8920,
-            clicks: 267,
-            clickRate: 3.0,
-            createdAt: '2024-05-10T14:20:00Z',
-            createdBy: 'Marketing Team'
-        },
-        {
-            _id: '3',
-            title: 'Free Shipping Offer',
-            description: 'Free shipping on orders above $99',
-            imageUrl: 'https://via.placeholder.com/300x150/00b894/fff?text=Free+Shipping',
-            link: '/shipping-info',
-            placement: 'checkout-page',
-            targetAudience: 'Cart Users',
-            status: 'inactive',
-            startDate: '2024-04-01',
-            endDate: '2024-05-31',
-            impressions: 5430,
-            clicks: 123,
-            clickRate: 2.3,
-            createdAt: '2024-03-25T09:15:00Z',
-            createdBy: 'Admin User'
-        },
-        {
-            _id: '4',
-            title: 'Holiday Special',
-            description: 'Limited time holiday deals and discounts',
-            imageUrl: 'https://via.placeholder.com/300x150/e17055/fff?text=Holiday+Special',
-            link: '/holiday-deals',
-            placement: 'category-page-header',
-            targetAudience: 'VIP Customers',
-            status: 'scheduled',
-            startDate: '2024-12-15',
-            endDate: '2024-12-31',
-            impressions: 0,
-            clicks: 0,
-            clickRate: 0,
-            createdAt: '2024-05-01T16:45:00Z',
-            createdBy: 'Marketing Team'
-        }
-    ];
-
-    const mockStats = {
-        overview: {
-            total: 4,
-            active: 2,
-            inactive: 1,
-            scheduled: 1,
-            totalImpressions: 26890,
-            totalClicks: 779,
-            averageClickRate: 2.9
-        }
-    };
 
     useEffect(() => {
         fetchBanners();
-        fetchStats();
+        // Only fetch stats if server is known to be available, otherwise calculate from banners
+        if (!serverStatsUnavailable) {
+            fetchStats();
+        }
     }, [filters]);
 
     const fetchBanners = async () => {
         try {
             setLoading(true);
             setError('');
-            
-            try {
-                const response = await bannerService.getAll(filters);
-                // Handle both direct array response and paginated response
-                if (Array.isArray(response)) {
-                    setBanners(response);
-                    setPagination({ current: 1, total: 1, pages: 1 });
-                } else {
-                    setBanners(response.data || response.banners || []);
-                    setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
-                }
-            } catch (apiError) {
-                console.log('Banner API unavailable, using mock data', apiError);
-                setBanners(mockBanners);
+
+            const response = await bannerService.getAll(filters);
+            let bannersData = [];
+
+            // Handle both direct array response and paginated response
+            if (Array.isArray(response)) {
+                bannersData = response;
+                setBanners(response);
                 setPagination({ current: 1, total: 1, pages: 1 });
+            } else {
+                bannersData = response.data || response.banners || [];
+                setBanners(bannersData);
+                setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
+            }
+
+            // If server stats are unavailable, immediately calculate stats from the new banners data
+            if (serverStatsUnavailable) {
+                const calculatedStats = {
+                    overview: {
+                        total: bannersData.length,
+                        active: bannersData.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'active').length,
+                        inactive: bannersData.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'inactive').length,
+                        scheduled: bannersData.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'scheduled').length,
+                        totalImpressions: bannersData.reduce((sum, banner) => sum + (banner.impressions || 0), 0),
+                        totalClicks: bannersData.reduce((sum, banner) => sum + (banner.clicks || 0), 0),
+                        averageClickRate: bannersData.length > 0 ? (bannersData.reduce((sum, banner) => sum + (banner.clickRate || 0), 0) / bannersData.length).toFixed(1) : 0
+                    },
+                    isCalculated: true
+                };
+                setStats(calculatedStats);
             }
         } catch (error) {
-            setError('Failed to load banners');
+            console.error('Error fetching banners:', error);
+
+            // Provide more specific error handling based on error type
+            if (error.message?.includes('500')) {
+                setError('Server is temporarily unavailable. Please try again later.');
+            } else if (error.message?.includes('404')) {
+                setError('Banner management service not found. Please contact support.');
+            } else if (error.message?.includes('Network Error')) {
+                setError('Network connection error. Please check your internet connection.');
+            } else {
+                setError(error.message || 'Failed to load banners from server');
+            }
+
             setBanners([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchStats = async () => {
+    const calculateStatsFromBanners = () => {
+        if (!banners || banners.length === 0) {
+            return {
+                overview: {
+                    total: 0,
+                    active: 0,
+                    inactive: 0,
+                    scheduled: 0,
+                    totalImpressions: 0,
+                    totalClicks: 0,
+                    averageClickRate: 0
+                },
+                isCalculated: true
+            };
+        }
+
+        return {
+            overview: {
+                total: banners.length,
+                active: banners.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'active').length,
+                inactive: banners.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'inactive').length,
+                scheduled: banners.filter(banner => (typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status) === 'scheduled').length,
+                totalImpressions: banners.reduce((sum, banner) => sum + (banner.impressions || 0), 0),
+                totalClicks: banners.reduce((sum, banner) => sum + (banner.clicks || 0), 0),
+                averageClickRate: banners.length > 0 ? (banners.reduce((sum, banner) => sum + (banner.clickRate || 0), 0) / banners.length).toFixed(1) : 0
+            },
+            isCalculated: true
+        };
+    };
+
+    const fetchStats = async (forceServerAttempt = false) => {
+        // If server stats are known to be unavailable and not forcing, just calculate from banners data
+        if (serverStatsUnavailable && !forceServerAttempt) {
+            setStats(calculateStatsFromBanners());
+            return;
+        }
+
         try {
             const response = await bannerService.getStats();
             setStats(response.data || response);
+            
+            setServerStatsUnavailable(false);
         } catch (error) {
-            setStats(mockStats);
+            
+            if (forceServerAttempt) {
+                console.warn('Banner stats API unavailable, calculating from client data:', error.message);
+            }
+
+            setServerStatsUnavailable(true);
+
+            setStats(calculateStatsFromBanners());
         }
     };
 
@@ -168,31 +163,49 @@ function BannerList() {
 
     const handleToggleStatus = async (id, currentStatus) => {
         try {
+            setError(''); // Clear any previous errors
             await bannerService.toggleStatus(id);
-            fetchBanners();
-            fetchStats();
+            await fetchBanners();
+            await fetchStats();
         } catch (error) {
-            setError(error.message || 'Failed to update banner status');
+            console.error('Error toggling banner status:', error);
+            if (error.message?.includes('500')) {
+                setError('Server error: Unable to update banner status. Please try again later.');
+            } else {
+                setError(error.message || 'Failed to update banner status');
+            }
         }
     };
 
     const handleDuplicate = async (id) => {
         try {
+            setError(''); // Clear any previous errors
             await bannerService.duplicate(id);
-            fetchBanners();
+            await fetchBanners();
         } catch (error) {
-            setError(error.message || 'Failed to duplicate banner');
+            console.error('Error duplicating banner:', error);
+            if (error.message?.includes('500')) {
+                setError('Server error: Unable to duplicate banner. Please try again later.');
+            } else {
+                setError(error.message || 'Failed to duplicate banner');
+            }
         }
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this banner?')) {
             try {
+                setError(''); // Clear any previous errors
                 await bannerService.delete(id);
-                fetchBanners();
-                fetchStats();
+                await fetchBanners();
+                await fetchStats();
             } catch (error) {
-                setError(error.message || 'Failed to delete banner');
+                console.error('Error deleting banner:', error);
+                if (error.message?.includes('500')) {
+                    setError('Server error: Unable to delete banner. Please try again later.');
+                } else {
+                    setError(error.message || 'Failed to delete banner');
+                }
             }
         }
     };
@@ -236,7 +249,9 @@ function BannerList() {
         <div>
             <div className="page-header">
                 <div className="page-title-section">
-                    <h1 className="page-title">Banner Management</h1>
+                    <h1 className="page-title">
+                        Banner Management
+                    </h1>
                     <p className="page-subtitle">Manage promotional banners and advertisements</p>
                 </div>
                 <div className="page-actions">
@@ -328,7 +343,22 @@ function BannerList() {
                     </div>
                 </div>
 
-                {error && <div className="error-message">{error}</div>}
+                {error && (
+                    <div className="error-message">
+                        {error}
+                        <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => {
+                                setRetryCount(prev => prev + 1);
+                                fetchBanners();
+                                fetchStats(true); // Force server attempt on retry
+                            }}
+                            style={{ marginLeft: '10px' }}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
 
                 {loading ? (
                     <div className="content-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
@@ -363,26 +393,26 @@ function BannerList() {
                                                         }}
                                                     />
                                                     <div className="banner-details">
-                                                        <strong className="banner-title">{banner.title}</strong>
-                                                        <p className="banner-description">{banner.description}</p>
+                                                        <strong className="banner-title">{typeof banner.title === 'object' ? banner.title?.name || banner.title?.value || 'N/A' : (banner.title || 'N/A')}</strong>
+                                                        <p className="banner-description">{typeof banner.description === 'object' ? banner.description?.text || banner.description?.content || 'N/A' : (banner.description || 'N/A')}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div className="placement-info">
                                                     <MdLocationOn size={16} className="placement-icon" />
-                                                    <span>{getPlacementLabel(banner.placement)}</span>
+                                                    <span>{getPlacementLabel(typeof banner.placement === 'object' ? banner.placement?.name || banner.placement?.value : banner.placement)}</span>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div className="audience-info">
                                                     <MdPeople size={16} className="audience-icon" />
-                                                    <span>{banner.targetAudience}</span>
+                                                    <span>{typeof banner.targetAudience === 'object' ? banner.targetAudience?.name || banner.targetAudience?.value || 'All Users' : (banner.targetAudience || 'All Users')}</span>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className={`status-badge ${getStatusColor(banner.status)}`}>
-                                                    {banner.status}
+                                                <span className={`status-badge ${getStatusColor(typeof banner.status === 'object' ? banner.status?.name || banner.status?.value : banner.status)}`}>
+                                                    {typeof banner.status === 'object' ? banner.status?.name || banner.status?.value || 'N/A' : (banner.status || 'N/A')}
                                                 </span>
                                             </td>
                                             <td>

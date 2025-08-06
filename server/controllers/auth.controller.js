@@ -14,7 +14,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
   if (
-    email === process.env.ADMIN_EMAIL &&
+    email === process.env.ADMIN_ID &&
     password === process.env.ADMIN_PASSWORD
   ) {
     const token = jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET, {

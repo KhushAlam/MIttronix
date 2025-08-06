@@ -14,34 +14,62 @@ export const getOrders = async (req, res) => {
 export const createOrder = async (req, res) => {
   try {
     const { products, customerName, totalAmount } = req.body;
+
+    console.log("Incoming order body:", req.body);
+
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
         message: "Products array is required and cannot be empty.",
       });
     }
+
     if (!customerName || typeof customerName !== "string") {
       return res.status(400).json({
         message: "Customer name is required and must be a string.",
       });
     }
+
     if (!totalAmount || typeof totalAmount !== "number" || totalAmount <= 0) {
       return res.status(400).json({
         message: "Total amount is required and must be a positive number.",
       });
     }
+
     const newOrder = await Order.create({
+      customerName,
       products,
       shippingAddress: req.body.shippingAddress || {},
       paymentMethod: req.body.paymentMethod || "COD",
       paymentStatus: req.body.paymentStatus || "Pending",
       orderStatus: req.body.orderStatus || "Processing",
       totalAmount,
-      orderDate: new Date(),
+      orderDate: req.body.orderDate ? new Date(req.body.orderDate) : new Date(),
+      deliveryDate: req.body.deliveryDate ? new Date(req.body.deliveryDate) : null,
+      priority: req.body.priority || "Normal",
+      notes: req.body.notes || "",
+      taxRate: req.body.taxRate || 0,
+      shippingCost: req.body.shippingCost || 0,
+      discountAmount: req.body.discountAmount || 0,
       isActive: true,
     });
+
+    res.status(201).json({
+      message: "Order created successfully",
+      data: newOrder,
+    });
   } catch (error) {
+    console.error("Order creation failed:", error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation Error",
+        errors: error.errors,
+      });
+    }
+
     res.status(500).json({
       message: "Couldn't create order",
+      error: error.message,
     });
   }
 };

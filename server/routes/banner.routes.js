@@ -10,11 +10,12 @@ import {
     getBannerById,
     editBanner
 } from '../controllers/banner.controller.js'
+import upload from '../middlewares/multer.js'
 
 const router = express.Router();
 
 router.get('/', getBanner)
-router.post('/', createBanner)
+router.post('/', upload.array('image'), createBanner)
 router.patch('/:id', editBanner)
 router.get('/:id', getBannerById)
 router.delete('/:id', deleteBanner)

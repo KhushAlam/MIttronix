@@ -1,5 +1,4 @@
 import { instance } from './axios.config.js'
-import { localStorageService } from './localStorageService.js'
 import { mockProducts } from './mockData.js'
 
 export const productService = {

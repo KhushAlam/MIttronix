@@ -23,3 +23,32 @@ export const uploadImage = (fileBuffer) => {
     ).end(fileBuffer);
   });
 };
+
+export const uploadBlogImage = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      {
+        folder: "blogs",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    ).end(fileBuffer);
+  });
+};
+export const uploadBannerImage = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      {
+        folder: "banners",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    ).end(fileBuffer);
+  });
+};

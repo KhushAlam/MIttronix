@@ -1,468 +1,589 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
-    MdAdd,
-    MdSearch,
-    MdEdit,
-    MdDelete,
-    MdSecurity,
-    MdPeople,
-    MdContentCopy,
-    MdToggleOn,
-    MdToggleOff,
-    MdShield,
-    MdVerifiedUser,
-    MdAdminPanelSettings,
-    MdGroup
-} from 'react-icons/md';
-import roleService from '../api/roleService';
+  MdAdd,
+  MdSearch,
+  MdEdit,
+  MdDelete,
+  MdSecurity,
+  MdPeople,
+  MdContentCopy,
+  MdToggleOn,
+  MdToggleOff,
+  MdShield,
+  MdVerifiedUser,
+  MdAdminPanelSettings,
+  MdGroup,
+} from "react-icons/md";
+import roleService from "../api/roleService";
 
 function RoleList() {
-    const [roles, setRoles] = useState([]);
-    const [stats, setStats] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [pagination, setPagination] = useState({});
-    const [filters, setFilters] = useState({
-        page: 1,
-        limit: 10,
-        search: '',
-        status: '',
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-    });
+  const [roles, setRoles] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [pagination, setPagination] = useState({});
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+    status: "",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
+  const [retryCount, setRetryCount] = useState(0);
+  const [serverStatsUnavailable, setServerStatsUnavailable] = useState(true);
 
-    const mockRoles = [
-        {
-            _id: '1',
-            name: 'Super Administrator',
-            description: 'Full system access with all permissions',
-            permissions: [
-                { module: 'users', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'products', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'orders', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'analytics', actions: ['read'] },
-                { module: 'settings', actions: ['read', 'update'] }
-            ],
-            userCount: 2,
-            status: 'active',
-            isSystemRole: true,
-            createdAt: '2024-01-15T10:00:00Z',
-            createdBy: 'System'
-        },
-        {
-            _id: '2',
-            name: 'Store Manager',
-            description: 'Manage products, orders, and customer service',
-            permissions: [
-                { module: 'products', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'orders', actions: ['read', 'update'] },
-                { module: 'customers', actions: ['read', 'update'] },
-                { module: 'analytics', actions: ['read'] }
-            ],
-            userCount: 5,
-            status: 'active',
-            isSystemRole: false,
-            createdAt: '2024-02-10T14:30:00Z',
-            createdBy: 'Admin User'
-        },
-        {
-            _id: '3',
-            name: 'Customer Service',
-            description: 'Handle customer inquiries and support',
-            permissions: [
-                { module: 'customers', actions: ['read', 'update'] },
-                { module: 'orders', actions: ['read', 'update'] },
-                { module: 'support', actions: ['create', 'read', 'update'] }
-            ],
-            userCount: 8,
-            status: 'active',
-            isSystemRole: false,
-            createdAt: '2024-02-20T09:15:00Z',
-            createdBy: 'HR Manager'
-        },
-        {
-            _id: '4',
-            name: 'Content Editor',
-            description: 'Manage blogs, banners, and website content',
-            permissions: [
-                { module: 'blogs', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'banners', actions: ['create', 'read', 'update', 'delete'] },
-                { module: 'categories', actions: ['read', 'update'] }
-            ],
-            userCount: 3,
-            status: 'active',
-            isSystemRole: false,
-            createdAt: '2024-03-05T11:45:00Z',
-            createdBy: 'Marketing Lead'
-        },
-        {
-            _id: '5',
-            name: 'Viewer',
-            description: 'Read-only access for reporting and analytics',
-            permissions: [
-                { module: 'analytics', actions: ['read'] },
-                { module: 'orders', actions: ['read'] },
-                { module: 'products', actions: ['read'] }
-            ],
-            userCount: 12,
-            status: 'inactive',
-            isSystemRole: false,
-            createdAt: '2024-03-15T16:20:00Z',
-            createdBy: 'Admin User'
-        }
-    ];
+  useEffect(() => {
+    fetchRoles();
+    if (!serverStatsUnavailable) {
+      fetchStats();
+    }
+  }, [filters]);
 
-    const mockStats = {
+  const fetchRoles = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await roleService.getAll(filters);
+      let rolesData = [];
+
+      if (Array.isArray(response)) {
+        rolesData = response;
+        setRoles(response);
+        setPagination({ current: 1, total: 1, pages: 1 });
+      } else {
+        rolesData = response.data || response.roles || [];
+        setRoles(rolesData);
+        setPagination(
+          response.pagination || { current: 1, total: 1, pages: 1 }
+        );
+      }
+
+      if (serverStatsUnavailable) {
+        const calculatedStats = {
+          overview: {
+            total: rolesData.length,
+            active: rolesData.filter(
+              (role) =>
+                (typeof role.status === "object"
+                  ? role.status?.name || role.status?.value
+                  : role.status) === "active"
+            ).length,
+            inactive: rolesData.filter(
+              (role) =>
+                (typeof role.status === "object"
+                  ? role.status?.name || role.status?.value
+                  : role.status) === "inactive"
+            ).length,
+            system: rolesData.filter((role) => role.isSystemRole).length,
+          },
+          permissions: {
+            totalPermissions: rolesData.reduce(
+              (sum, role) => sum + (role.permissions?.length || 0),
+              0
+            ),
+            averagePermissionsPerRole:
+              rolesData.length > 0
+                ? Math.round(
+                    rolesData.reduce(
+                      (sum, role) => sum + (role.permissions?.length || 0),
+                      0
+                    ) / rolesData.length
+                  )
+                : 0,
+          },
+          isCalculated: true,
+        };
+        setStats(calculatedStats);
+      }
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+
+      if (error.message?.includes("500")) {
+        setError("Server is temporarily unavailable. Please try again later.");
+      } else if (error.message?.includes("404")) {
+        setError("Role management service not found. Please contact support.");
+      } else if (error.message?.includes("Network Error")) {
+        setError(
+          "Network connection error. Please check your internet connection."
+        );
+      } else {
+        setError(error.message || "Failed to load roles from server");
+      }
+
+      setRoles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStatsFromRoles = () => {
+    if (!roles || roles.length === 0) {
+      return {
         overview: {
-            total: 5,
-            active: 4,
-            inactive: 1,
-            totalUsers: 30,
-            systemRoles: 1,
-            customRoles: 4
-        }
+          total: 0,
+          active: 0,
+          inactive: 0,
+          system: 0,
+        },
+        permissions: {
+          totalPermissions: 0,
+          averagePermissionsPerRole: 0,
+        },
+        isCalculated: true,
+      };
+    }
+
+    return {
+      overview: {
+        total: roles.length,
+        active: roles.filter(
+          (role) =>
+            (typeof role.status === "object"
+              ? role.status?.name || role.status?.value
+              : role.status) === "active"
+        ).length,
+        inactive: roles.filter(
+          (role) =>
+            (typeof role.status === "object"
+              ? role.status?.name || role.status?.value
+              : role.status) === "inactive"
+        ).length,
+        system: roles.filter((role) => role.isSystemRole).length,
+      },
+      permissions: {
+        totalPermissions: roles.reduce(
+          (sum, role) => sum + (role.permissions?.length || 0),
+          0
+        ),
+        averagePermissionsPerRole:
+          roles.length > 0
+            ? Math.round(
+                roles.reduce(
+                  (sum, role) => sum + (role.permissions?.length || 0),
+                  0
+                ) / roles.length
+              )
+            : 0,
+      },
+      isCalculated: true,
     };
+  };
 
-    useEffect(() => {
-        fetchRoles();
-        fetchStats();
-    }, [filters]);
+  const fetchStats = async (forceServerAttempt = false) => {
+    if (serverStatsUnavailable && !forceServerAttempt) {
+      setStats(calculateStatsFromRoles());
+      return;
+    }
 
-    const fetchRoles = async () => {
-        try {
-            setLoading(true);
-            setError('');
+    try {
+      const response = await roleService.getStats();
+      setStats(response.data || response);
+      setServerStatsUnavailable(false);
+    } catch (error) {
+      if (forceServerAttempt) {
+        console.warn(
+          "Role stats API unavailable, calculating from client data:",
+          error.message
+        );
+      }
 
-            try {
-                console.log('Fetching roles with filters:', filters);
-                const response = await roleService.getAll(filters);
-                console.log('Roles API response:', response);
-                // Handle both direct array response and paginated response
-                if (Array.isArray(response)) {
-                    console.log('Setting roles as array:', response);
-                    setRoles(response);
-                    setPagination({ current: 1, total: 1, pages: 1 });
-                } else {
-                    const roles = response.data || response.roles || [];
-                    console.log('Setting roles from response:', roles);
-                    setRoles(roles);
-                    setPagination(response.pagination || { current: 1, total: 1, pages: 1 });
-                }
-            } catch (apiError) {
-                console.log('API unavailable, using mock data', apiError);
-                console.log('Mock roles:', mockRoles);
-                setRoles(mockRoles);
-                setPagination({ current: 1, total: 1, pages: 1 });
-            }
-        } catch (error) {
-            console.log('Error in fetchRoles:', error);
-            setError('Failed to load roles');
-            setRoles([]);
-        } finally {
-            setLoading(false);
+      setServerStatsUnavailable(true);
+
+      setStats(calculateStatsFromRoles());
+    }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+      page: key !== "page" ? 1 : value,
+    }));
+  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
+    try {
+      setError("");
+      await roleService.toggleStatus(id);
+      await fetchRoles();
+      await fetchStats();
+    } catch (error) {
+      console.error("Error toggling role status:", error);
+      if (error.message?.includes("500")) {
+        setError(
+          "Server error: Unable to update role status. Please try again later."
+        );
+      } else {
+        setError(error.message || "Failed to update role status");
+      }
+    }
+  };
+
+  const handleDuplicate = async (id) => {
+    try {
+      setError("");
+      await roleService.duplicate(id);
+      await fetchRoles();
+    } catch (error) {
+      console.error("Error duplicating role:", error);
+      if (error.message?.includes("500")) {
+        setError(
+          "Server error: Unable to duplicate role. Please try again later."
+        );
+      } else {
+        setError(error.message || "Failed to duplicate role");
+      }
+    }
+  };
+
+  const handleDelete = async (id, isSystemRole) => {
+    if (isSystemRole) {
+      setError("System roles cannot be deleted");
+      return;
+    }
+
+    if (
+      window.confirm(
+        "Are you sure you want to delete this role? This action cannot be undone."
+      )
+    ) {
+      try {
+        setError("");
+        await roleService.delete(id);
+        await fetchRoles();
+        await fetchStats();
+      } catch (error) {
+        console.error("Error deleting role:", error);
+        if (error.message?.includes("500")) {
+          setError(
+            "Server error: Unable to delete role. Please try again later."
+          );
+        } else {
+          setError(error.message || "Failed to delete role");
         }
-    };
+      }
+    }
+  };
 
-    const fetchStats = async () => {
-        try {
-            const response = await roleService.getStats();
-            setStats(response.data || response);
-        } catch (error) {
-            console.log('Stats API unavailable, using mock data', error);
-            setStats(mockStats);
-        }
-    };
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "active":
+        return "status-success";
+      case "inactive":
+        return "status-secondary";
+      default:
+        return "status-default";
+    }
+  };
 
-    const handleFilterChange = (key, value) => {
-        setFilters(prev => ({
-            ...prev,
-            [key]: value,
-            page: key !== 'page' ? 1 : value
-        }));
-    };
+  const getRoleIcon = (name, isSystemRole) => {
+    if (isSystemRole) return <MdAdminPanelSettings size={20} />;
+    if (name.toLowerCase().includes("manager")) return <MdShield size={20} />;
+    if (name.toLowerCase().includes("admin"))
+      return <MdVerifiedUser size={20} />;
+    return <MdGroup size={20} />;
+  };
 
-    const handleToggleStatus = async (id, currentStatus) => {
-        try {
-            await roleService.toggleStatus(id);
-            fetchRoles();
-            fetchStats();
-        } catch (error) {
-            setError(error.message || 'Failed to update role status');
-        }
-    };
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-    const handleDuplicate = async (id) => {
-        try {
-            await roleService.duplicate(id);
-            fetchRoles();
-        } catch (error) {
-            setError(error.message || 'Failed to duplicate role');
-        }
-    };
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat().format(num);
+  };
 
-    const handleDelete = async (id, isSystemRole) => {
-        if (isSystemRole) {
-            setError('System roles cannot be deleted');
-            return;
-        }
+  const getPermissionSummary = (permissions) => {
+    if (!permissions || !Array.isArray(permissions)) {
+      return "0 modules, 0 permissions";
+    }
+    const moduleCount = permissions.length;
+    const totalActions = permissions.reduce(
+      (sum, perm) => sum + (perm.actions?.length || 0),
+      0
+    );
+    return `${moduleCount} modules, ${totalActions} permissions`;
+  };
 
-        if (window.confirm('Are you sure you want to delete this role? This action cannot be undone.')) {
-            try {
-                await roleService.delete(id);
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title-section">
+          <h1 className="page-title">Role Management</h1>
+          <p className="page-subtitle">Manage user roles and permissions</p>
+        </div>
+        <div className="page-actions">
+          <Link to="/roles/create" className="btn btn-primary">
+            <MdAdd size={20} />
+            Create Role
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="stats-grid">
+        <div className="stats-card">
+          <div className="stats-icon total">
+            <MdSecurity size={24} />
+          </div>
+          <div className="stats-content">
+            <h3>{stats.overview?.total || 0}</h3>
+            <p>Total Roles</p>
+          </div>
+        </div>
+        <div className="stats-card">
+          <div className="stats-icon active">
+            <MdToggleOn size={24} />
+          </div>
+          <div className="stats-content">
+            <h3>{stats.overview?.active || 0}</h3>
+            <p>Active Roles</p>
+          </div>
+        </div>
+        <div className="stats-card">
+          <div className="stats-icon users">
+            <MdPeople size={24} />
+          </div>
+          <div className="stats-content">
+            <h3>{formatNumber(stats.overview?.totalUsers || 0)}</h3>
+            <p>Total Users</p>
+          </div>
+        </div>
+        <div className="stats-card">
+          <div className="stats-icon system">
+            <MdAdminPanelSettings size={24} />
+          </div>
+          <div className="stats-content">
+            <h3>{stats.overview?.systemRoles || 0}</h3>
+            <p>System Roles</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="content-card">
+        <div className="filters-section">
+          <div className="search-box">
+            <MdSearch size={20} />
+            <input
+              type="text"
+              placeholder="Search roles..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange("status", e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        {error && (
+          <div className="error-message">
+            {error}
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={() => {
+                setRetryCount((prev) => prev + 1);
                 fetchRoles();
-                fetchStats();
-            } catch (error) {
-                setError(error.message || 'Failed to delete role');
-            }
-        }
-    };
+                fetchStats(true);
+              }}
+              style={{ marginLeft: "10px" }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'active': return 'status-success';
-            case 'inactive': return 'status-secondary';
-            default: return 'status-default';
-        }
-    };
-
-    const getRoleIcon = (name, isSystemRole) => {
-        if (isSystemRole) return <MdAdminPanelSettings size={20} />;
-        if (name.toLowerCase().includes('manager')) return <MdShield size={20} />;
-        if (name.toLowerCase().includes('admin')) return <MdVerifiedUser size={20} />;
-        return <MdGroup size={20} />;
-    };
-
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
-
-    const formatNumber = (num) => {
-        return new Intl.NumberFormat().format(num);
-    };
-
-    const getPermissionSummary = (permissions) => {
-        if (!permissions || !Array.isArray(permissions)) {
-            return '0 modules, 0 permissions';
-        }
-        const moduleCount = permissions.length;
-        const totalActions = permissions.reduce((sum, perm) => sum + (perm.actions?.length || 0), 0);
-        return `${moduleCount} modules, ${totalActions} permissions`;
-    };
-
-    return (
-        <div>
-            <div className="page-header">
-                <div className="page-title-section">
-                    <h1 className="page-title">Role Management</h1>
-                    <p className="page-subtitle">Manage user roles and permissions</p>
-                </div>
-                <div className="page-actions">
-                    <Link to="/roles/create" className="btn btn-primary">
-                        <MdAdd size={20} />
-                        Create Role
-                    </Link>
-                </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="stats-grid">
-                <div className="stats-card">
-                    <div className="stats-icon total">
-                        <MdSecurity size={24} />
-                    </div>
-                    <div className="stats-content">
-                        <h3>{stats.overview?.total || 0}</h3>
-                        <p>Total Roles</p>
-                    </div>
-                </div>
-                <div className="stats-card">
-                    <div className="stats-icon active">
-                        <MdToggleOn size={24} />
-                    </div>
-                    <div className="stats-content">
-                        <h3>{stats.overview?.active || 0}</h3>
-                        <p>Active Roles</p>
-                    </div>
-                </div>
-                <div className="stats-card">
-                    <div className="stats-icon users">
-                        <MdPeople size={24} />
-                    </div>
-                    <div className="stats-content">
-                        <h3>{formatNumber(stats.overview?.totalUsers || 0)}</h3>
-                        <p>Total Users</p>
-                    </div>
-                </div>
-                <div className="stats-card">
-                    <div className="stats-icon system">
-                        <MdAdminPanelSettings size={24} />
-                    </div>
-                    <div className="stats-content">
-                        <h3>{stats.overview?.systemRoles || 0}</h3>
-                        <p>System Roles</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="content-card">
-                <div className="filters-section">
-                    <div className="search-box">
-                        <MdSearch size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search roles..."
-                            value={filters.search}
-                            onChange={(e) => handleFilterChange('search', e.target.value)}
-                        />
-                    </div>
-
-                    <div className="filter-group">
-                        <select
-                            value={filters.status}
-                            onChange={(e) => handleFilterChange('status', e.target.value)}
-                        >
-                            <option value="">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-
-                {error && <div className="error-message">{error}</div>}
-
-                {loading ? (
-                    <div className="content-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
-                        <p>Loading roles...</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="data-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Role</th>
-                                        <th>Permissions</th>
-                                        <th>Users</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(roles || []).map((role) => (
-                                        <tr key={role._id}>
-                                            <td>
-                                                <div className="role-info">
-                                                    <div className="role-icon">
-                                                        {getRoleIcon(role.name, role.isSystemRole)}
-                                                    </div>
-                                                    <div className="role-details">
-                                                        <div className="role-name">
-                                                            {role.name}
-                                                            {role.isSystemRole && (
-                                                                <span className="system-badge">System</span>
-                                                            )}
-                                                        </div>
-                                                        <p className="role-description">{role.description}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="permissions-summary">
-                                                    <div className="permission-count">
-                                                        {getPermissionSummary(role.permissions)}
-                                                    </div>
-                                                    <div className="permission-modules">
-                                                        {(role.permissions || []).slice(0, 3).map((perm, index) => (
-                                                            <span key={index} className="module-tag">
-                                                                {perm.module}
-                                                            </span>
-                                                        ))}
-                                                        {(role.permissions || []).length > 3 && (
-                                                            <span className="module-tag more">
-                                                                +{(role.permissions || []).length - 3} more
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="user-count">
-                                                    <MdPeople size={16} className="user-icon" />
-                                                    <span>{role.userCount} users</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${getStatusColor(role.status)}`}>
-                                                    {role.status}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div className="created-info">
-                                                    <div className="created-date">{formatDate(role.createdAt)}</div>
-                                                    <div className="created-by">by {role.createdBy}</div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="action-buttons">
-                                                    <Link
-                                                        to={`/roles/${role._id}/edit`}
-                                                        className="action-btn edit"
-                                                        title="Edit Role"
-                                                    >
-                                                        <MdEdit size={16} />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(role._id, role.isSystemRole)}
-                                                        className="action-btn delete"
-                                                        title={role.isSystemRole ? 'Cannot delete system role' : 'Delete Role'}
-                                                        disabled={role.isSystemRole}
-                                                    >
-                                                        <MdDelete size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {pagination?.total > 1 && (
-                            <div className="pagination">
-                                <button
-                                    className="btn btn-sm"
-                                    disabled={pagination.current === 1}
-                                    onClick={() => handleFilterChange('page', pagination.current - 1)}
-                                >
-                                    Previous
-                                </button>
-
-                                <span className="pagination-info">
-                                    Page {pagination.current} of {pagination.total}
-                                </span>
-
-                                <button
-                                    className="btn btn-sm"
-                                    disabled={pagination.current === pagination.total}
-                                    onClick={() => handleFilterChange('page', pagination.current + 1)}
-                                >
-                                    Next
-                                </button>
+        {loading ? (
+          <div
+            className="content-card"
+            style={{ textAlign: "center", padding: "60px 20px" }}
+          >
+            <p>Loading roles...</p>
+          </div>
+        ) : (
+          <>
+            <div className="data-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Permissions</th>
+                    <th>Users</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(roles || []).map((role) => (
+                    <tr key={role._id}>
+                      <td>
+                        <div className="role-info">
+                          <div className="role-icon">
+                            {getRoleIcon(role.name, role.isSystemRole)}
+                          </div>
+                          <div className="role-details">
+                            <div className="role-name">
+                              {typeof role.name === "object"
+                                ? role.name?.title || role.name?.value || "N/A"
+                                : role.name || "N/A"}
+                              {role.isSystemRole && (
+                                <span className="system-badge">System</span>
+                              )}
                             </div>
-                        )}
-                    </>
-                )}
+                            <p className="role-description">
+                              {typeof role.description === "object"
+                                ? role.description?.text ||
+                                  role.description?.content ||
+                                  "N/A"
+                                : role.description || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="permissions-summary">
+                          <div className="permission-count">
+                            {getPermissionSummary(role.permissions)}
+                          </div>
+                          <div className="permission-modules">
+                            {(role.permissions || [])
+                              .slice(0, 3)
+                              .map((perm, index) => (
+                                <span key={index} className="module-tag">
+                                  {typeof perm === "object"
+                                    ? perm.module || perm.name || "N/A"
+                                    : String(perm)}
+                                </span>
+                              ))}
+                            {(role.permissions || []).length > 3 && (
+                              <span className="module-tag more">
+                                +{(role.permissions || []).length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="user-count">
+                          <MdPeople size={16} className="user-icon" />
+                          <span>
+                            {typeof role.userCount === "object"
+                              ? role.userCount?.count ||
+                                role.userCount?.total ||
+                                0
+                              : role.userCount || 0}{" "}
+                            users
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className={`status-badge ${getStatusColor(
+                            typeof role.status === "object"
+                              ? role.status?.name || role.status?.value
+                              : role.status
+                          )}`}
+                        >
+                          {typeof role.status === "object"
+                            ? role.status?.name || role.status?.value || "N/A"
+                            : role.status || "N/A"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="created-info">
+                          <div className="created-date">
+                            {formatDate(role.createdAt)}
+                          </div>
+                          <div className="created-by">
+                            by{" "}
+                            {typeof role.createdBy === "object"
+                              ? role.createdBy?.name ||
+                                role.createdBy?.email ||
+                                "System"
+                              : role.createdBy || "System"}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <Link
+                            to={`/roles/edit`}
+                            className="action-btn edit"
+                            title="Edit Role"
+                          >
+                            <MdEdit size={16} />
+                          </Link>
+                          <button
+                            onClick={() =>
+                              handleDelete(role._id, role.isSystemRole)
+                            }
+                            className="action-btn delete"
+                            title={
+                              role.isSystemRole
+                                ? "Cannot delete system role"
+                                : "Delete Role"
+                            }
+                            disabled={role.isSystemRole}
+                          >
+                            <MdDelete size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <style>{`
+            {/* Pagination */}
+            {pagination?.total > 1 && (
+              <div className="pagination">
+                <button
+                  className="btn btn-sm"
+                  disabled={pagination.current === 1}
+                  onClick={() =>
+                    handleFilterChange("page", pagination.current - 1)
+                  }
+                >
+                  Previous
+                </button>
+
+                <span className="pagination-info">
+                  Page {pagination.current} of {pagination.total}
+                </span>
+
+                <button
+                  className="btn btn-sm"
+                  disabled={pagination.current === pagination.total}
+                  onClick={() =>
+                    handleFilterChange("page", pagination.current + 1)
+                  }
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <style>{`
                 .stats-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -717,8 +838,8 @@ function RoleList() {
                     }
                 }
             `}</style>
-        </div>
-    );
+    </div>
+  );
 }
 
 export default RoleList;

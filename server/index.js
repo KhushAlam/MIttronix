@@ -11,6 +11,7 @@ import invoiceRoutes from "./routes/invoice.routes.js";
 import serviceRequestRoutes from "./routes/serviceRequest.routes.js";
 import bannerRoutes from './routes/banner.routes.js'
 import blogRoutes from './routes/blog.routes.js'
+import roleRoutes from './routes/roles.routes.js'
 
 const app = express();
 app.use(express.json());
@@ -36,8 +37,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/service-requests", serviceRequestRoutes);
-app.use("/api/banner", bannerRoutes);
+app.use("/api/banners", bannerRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/roles", roleRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`server is running on ${PORT}`);

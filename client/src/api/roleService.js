@@ -8,7 +8,9 @@ export const roleService = {
             const response = await instance.get(ROLE_API, { params });
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -17,7 +19,9 @@ export const roleService = {
             const response = await instance.get(`${ROLE_API}/${id}`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -26,7 +30,9 @@ export const roleService = {
             const response = await instance.post(ROLE_API, data);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -35,7 +41,9 @@ export const roleService = {
             const response = await instance.put(`${ROLE_API}/${id}`, data);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -44,7 +52,9 @@ export const roleService = {
             const response = await instance.put(`${ROLE_API}/${id}/status`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -53,7 +63,9 @@ export const roleService = {
             const response = await instance.post(`${ROLE_API}/${id}/permissions`, { module, action });
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -64,7 +76,9 @@ export const roleService = {
             });
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -73,7 +87,9 @@ export const roleService = {
             const response = await instance.get(`${ROLE_API}/stats`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -82,7 +98,9 @@ export const roleService = {
             const response = await instance.get(`${ROLE_API}/permissions`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -91,7 +109,9 @@ export const roleService = {
             const response = await instance.post(`${ROLE_API}/${id}/duplicate`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     },
 
@@ -100,7 +120,9 @@ export const roleService = {
             const response = await instance.delete(`${ROLE_API}/${id}`);
             return response.data;
         } catch (error) {
-            throw error.response?.data || error.message;
+            console.error('Role service error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+            throw new Error(errorMessage);
         }
     }
 };

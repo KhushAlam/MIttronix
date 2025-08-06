@@ -30,15 +30,14 @@ function CreateServiceRequest() {
   setError('');
 
   try {
-    // Prepare service request data
     const requestData = {
-      orderId: formData.orderId, // must be a valid ObjectId string
-      user: "",       // must be a valid ObjectId string (assigned user)
+      orderId: formData.orderId,
+      user: "",
       product: formData.product || '',
       description: formData.description || '',
-      type: formData.type?.toLowerCase() || 'repair',       // enum: 'repair' | ...
-      priority: formData.priority?.toLowerCase() || 'low',   // enum: 'low' | ...
-      status: formData.status?.toLowerCase() || 'open',      // enum: 'open' | ...
+      type: formData.type?.toLowerCase() || 'repair',
+      priority: formData.priority?.toLowerCase() || 'low',
+      status: formData.status?.toLowerCase() || 'open',
       title: formData.title || 'No title provided',
     };
 
@@ -47,7 +46,7 @@ function CreateServiceRequest() {
     await serviceRequestService.create(requestData);
 
     alert('Service Request created successfully!');
-    navigate('/service-requests/list');
+    navigate('/service-requests');
   } catch (error) {
     console.error('Error creating service request:', error);
     setError(error.message || 'Failed to create service request.');

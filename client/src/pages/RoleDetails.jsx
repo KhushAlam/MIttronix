@@ -23,7 +23,7 @@ function RoleDetails() {
       setRole(data)
     } catch (error) {
       console.error('Error loading role:', error)
-      setError('Failed to load role data')
+      setError(error.message || 'Failed to load role data from server')
     } finally {
       setLoading(false)
     }
@@ -86,7 +86,7 @@ function RoleDetails() {
       <div className="page-header">
         <div className="page-title-section">
           <h1 className="page-title">Role Details</h1>
-          <p className="page-subtitle">{role.name}</p>
+          <p className="page-subtitle">{typeof role.name === 'object' ? role.name?.title || role.name?.value || 'N/A' : (role.name || 'N/A')}</p>
         </div>
         <div className="page-actions">
           <Link to="/roles" className="btn btn-secondary">
@@ -106,18 +106,18 @@ function RoleDetails() {
           <div className="role-info-grid">
             <div className="info-group">
               <h4>Basic Details</h4>
-              <p><strong>Name:</strong> {role.name}</p>
-              <p><strong>Description:</strong> {role.description}</p>
-              <p><strong>Status:</strong> 
-                <span className={`status-badge ${role.status === 'active' ? 'status-success' : 'status-secondary'}`}>
-                  {role.status}
+              <p><strong>Name:</strong> {typeof role.name === 'object' ? role.name?.title || role.name?.value || 'N/A' : (role.name || 'N/A')}</p>
+              <p><strong>Description:</strong> {typeof role.description === 'object' ? role.description?.text || role.description?.content || 'N/A' : (role.description || 'N/A')}</p>
+              <p><strong>Status:</strong>
+                <span className={`status-badge ${(typeof role.status === 'object' ? role.status?.name || role.status?.value : role.status) === 'active' ? 'status-success' : 'status-secondary'}`}>
+                  {typeof role.status === 'object' ? role.status?.name || role.status?.value || 'N/A' : (role.status || 'N/A')}
                 </span>
               </p>
               <p><strong>System Role:</strong> {role.isSystemRole ? 'Yes' : 'No'}</p>
             </div>
             <div className="info-group">
               <h4>Usage Statistics</h4>
-              <p><strong>Users Assigned:</strong> {role.userCount || 0}</p>
+              <p><strong>Users Assigned:</strong> {typeof role.userCount === 'object' ? role.userCount?.count || role.userCount?.total || 0 : (role.userCount || 0)}</p>
               <p><strong>Created:</strong> {new Date(role.createdAt).toLocaleDateString()}</p>
               <p><strong>Created By:</strong> {role.createdBy}</p>
             </div>
@@ -129,11 +129,11 @@ function RoleDetails() {
           <div className="permissions-list">
             {(role.permissions || []).map((permission, index) => (
               <div key={index} className="permission-item">
-                <h4>{permission.module}</h4>
+                <h4>{typeof permission === 'object' ? permission.module || permission.name || 'N/A' : String(permission)}</h4>
                 <div className="permission-actions">
                   {(permission.actions || []).map((action, actionIndex) => (
                     <span key={actionIndex} className="action-badge">
-                      {action}
+                      {typeof action === 'object' ? action.name || action.value || 'N/A' : String(action)}
                     </span>
                   ))}
                 </div>

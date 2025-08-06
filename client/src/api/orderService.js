@@ -13,7 +13,7 @@ export const orderService = {
 
   getOrdersThisMonth: async () => {
     try {
-      const response = await instance.get('/orders/orders/this-month')
+      const response = await instance.get('/orders/this-month')
       return response.data
     } catch (error) {
       console.error('Error fetching orders this month:', error)
@@ -23,7 +23,7 @@ export const orderService = {
 
   getOrdersLastMonth: async () => {
     try {
-      const response = await instance.get('/orders/orders/last-month')
+      const response = await instance.get('/orders/last-month')
       return response.data
     } catch (error) {
       console.error('Error fetching orders last month:', error)
@@ -33,7 +33,7 @@ export const orderService = {
 
   getOrdersThisYear: async () => {
     try {
-      const response = await instance.get('/orders/orders/this-year')
+      const response = await instance.get('/orders/this-year')
       return response.data
     } catch (error) {
       console.error('Error fetching orders this year:', error)

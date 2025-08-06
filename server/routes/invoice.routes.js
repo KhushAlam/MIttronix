@@ -1,7 +1,11 @@
 import express from "express";
 import {
   getInvoices,
-  getInvoicesThisMonth,
+  createInvoice,
+  getInvoiceById,
+  updateInvoiceById,
+  deleteInvoiceById,
+  getInvoicesByMonth,
   getInvoicesLastMonth,
   getInvoicesThisYear,
 } from "../controllers/invoice.controller.js";
@@ -9,8 +13,12 @@ import {
 const router = express.Router();
 
 router.get("/", getInvoices);
-router.get("/this-month", getInvoicesThisMonth);
+router.post("/", createInvoice);
+router.get("/this-month", getInvoicesByMonth);
 router.get("/last-month", getInvoicesLastMonth);
 router.get("/this-year", getInvoicesThisYear);
+router.get("/:id", getInvoiceById);
+router.put("/:id", updateInvoiceById);
+router.delete("/:id", deleteInvoiceById);
 
 export default router;

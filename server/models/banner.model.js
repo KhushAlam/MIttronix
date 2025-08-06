@@ -25,7 +25,6 @@ const bannerSchema = new mongoose.Schema({
     },
     destinationUrl: {
         type: String,
-        required: true
     },
     bannerFor: {
         type: String

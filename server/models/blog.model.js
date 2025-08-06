@@ -9,16 +9,13 @@ const blogSchema = new mongoose.Schema({
     contentBlocks: [{
         text: {
             type: String,
-            required: false,
         },
         image: {
             type: String,
-            required: false,
         }
     }],
     tags: [{
         type: String,
-        required: false,
     }],
     excerpt: {
         type: String
@@ -28,7 +25,7 @@ const blogSchema = new mongoose.Schema({
     },
     author: {
         type: String,
-        required: true,
+        // required: true,
         trim: true,
     },
     createdAt: {
