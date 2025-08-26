@@ -163,25 +163,60 @@ function ProductGrid() {
 
               <div className="product-card-content">
                 <h3 className="product-card-title">{product.name}</h3>
+
+                {product.brand && (
+                  <p className="product-card-brand">Brand: {product.brand}</p>
+                )}
+
                 <p className="product-card-category">{getCategoryName(product.category)}</p>
-                <div className="product-card-price">{product.price}</div>
+
+                {product.sku && (
+                  <p className="product-card-sku">SKU: {product.sku}</p>
+                )}
+
+                <div className="product-card-pricing">
+                  <div className="selling-price">₹{product.price?.toLocaleString()}</div>
+                  {product.mrp && product.mrp > product.price && (
+                    <div className="mrp-price">MRP: ₹{product.mrp?.toLocaleString()}</div>
+                  )}
+                  {product.mrp && product.mrp > product.price && (
+                    <div className="discount-info">
+                      {(((product.mrp - product.price) / product.mrp) * 100).toFixed(0)}% OFF
+                    </div>
+                  )}
+                </div>
+
+                <div className="product-card-variants">
+                  {product.colour && (
+                    <span className="variant-info">Color: {product.colour}</span>
+                  )}
+                  {product.size && (
+                    <span className="variant-info">Size: {product.size}</span>
+                  )}
+                </div>
 
                 <div className="product-card-meta">
                   <span
                     className={`stock-badge ${
-                      product.stock === 0 ? "out-of-stock" : "in-stock"
+                      product.stockQuantity === 0 ? "out-of-stock" : "in-stock"
                     }`}
                   >
-                    Stock: {product.stockQuantity}
+                    Stock: {product.stockQuantity || 0}
                   </span>
                   <span
                     className={`status-badge ${
-                      product.status === "Active" ? "active" : "inactive"
+                      product.stockStatus === "InStock" ? "active" : "inactive"
                     }`}
                   >
-                    {product.stockStatus}
+                    {product.stockStatus === "InStock" ? "In Stock" : "Out of Stock"}
                   </span>
                 </div>
+
+                {product.warranty && (
+                  <div className="product-card-warranty">
+                    <small>📅 {product.warranty}</small>
+                  </div>
+                )}
               </div>
 
               <div className="product-card-actions">
@@ -193,7 +228,7 @@ function ProductGrid() {
                   View
                 </Link>
                 <Link
-                  to={`/products/edit/${product.id}`}
+                  to={`/products/edit/${product._id}`}
                   className="card-action-btn edit"
                 >
                   <MdEdit size={16} className="edit-icon" />

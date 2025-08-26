@@ -8,9 +8,6 @@ import twilio from "twilio";
 
 dotenv.config();
 
-const ADMIN_ID = process.env.ADMIN_ID;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
   if (
@@ -88,7 +85,7 @@ export const userSignup = async (req, res) => {
       {
         id: newUser._id,
         contactNumber: newUser.contactNumber,
-        role: "Seller",
+        role: "user",
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }

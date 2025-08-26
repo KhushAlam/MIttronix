@@ -181,13 +181,38 @@ function ProductDetails() {
                 {product.brand && (
                   <span className="brand">Brand: {product.brand}</span>
                 )}
+                {product.sku && (
+                  <span className="sku">SKU: {product.sku}</span>
+                )}
               </div>
 
-              <div className="price-section">
-                <div className="price-item">
-                  <label>Price:</label>
-                  <span className="price">₹{product.price?.toLocaleString()}</span>
+              <div className="pricing-section">
+                <div className="price-grid">
+                  {product.mrp && product.mrp !== product.price && (
+                    <div className="price-item">
+                      <label>MRP:</label>
+                      <span className="mrp-price">₹{product.mrp?.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="price-item">
+                    <label>Selling Price:</label>
+                    <span className="price">₹{product.price?.toLocaleString()}</span>
+                  </div>
+                  {product.discountPrice && product.discountPrice !== product.price && (
+                    <div className="price-item">
+                      <label>Discounted Price:</label>
+                      <span className="discount-price">₹{product.discountPrice?.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
+                {product.mrp && product.mrp > product.price && (
+                  <div className="savings">
+                    <span className="savings-text">
+                      You save: ₹{(product.mrp - product.price).toLocaleString()}
+                      ({(((product.mrp - product.price) / product.mrp) * 100).toFixed(0)}% off)
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="stock-section">
@@ -202,17 +227,64 @@ function ProductDetails() {
                 <span>{category ? category.title : 'Unknown'}</span>
               </div>
 
-              {product.colour && (
-                <div className="color-section">
-                  <label>Color:</label>
-                  <span>{product.colour}</span>
+              <div className="product-variants">
+                {product.colour && (
+                  <div className="variant-item">
+                    <label>Color:</label>
+                    <span>{product.colour}</span>
+                  </div>
+                )}
+                {product.size && (
+                  <div className="variant-item">
+                    <label>Size:</label>
+                    <span>{product.size}</span>
+                  </div>
+                )}
+                {product.variants && product.variants.length > 0 && (
+                  <div className="variant-item">
+                    <label>Available Variants:</label>
+                    <div className="variants-list">
+                      {product.variants.map((variant, index) => (
+                        <span key={index} className="variant-badge">{variant}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {product.weight || product.dimensions ? (
+                <div className="dimensions-section">
+                  <h4>Physical Details</h4>
+                  {product.weight && (
+                    <div className="detail-item">
+                      <label>Weight:</label>
+                      <span>{product.weight}</span>
+                    </div>
+                  )}
+                  {product.dimensions && (
+                    <div className="detail-item">
+                      <label>Dimensions:</label>
+                      <span>{product.dimensions}</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              ) : null}
 
               <div className="description-section">
                 <label>Description:</label>
                 <p>{product.description}</p>
               </div>
+
+              {product.tags && product.tags.length > 0 && (
+                <div className="tags-section">
+                  <label>Tags:</label>
+                  <div className="tags-list">
+                    {product.tags.map((tag, index) => (
+                      <span key={index} className="tag">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {product.specification && (
@@ -221,6 +293,84 @@ function ProductDetails() {
                 <div className="specifications">
                   <p>{product.specification}</p>
                 </div>
+              </div>
+            )}
+
+            {(product.warranty || product.returnPolicy) && (
+              <div className="content-card">
+                <h3>Warranty & Returns</h3>
+                {product.warranty && (
+                  <div className="detail-item">
+                    <label>Warranty:</label>
+                    <span>{product.warranty}</span>
+                  </div>
+                )}
+                {product.returnPolicy && (
+                  <div className="detail-item">
+                    <label>Return Policy:</label>
+                    <span>{product.returnPolicy}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {product.shipping && (
+              <div className="content-card">
+                <h3>Shipping Information</h3>
+                <div className="detail-item">
+                  <label>Delivery Charges:</label>
+                  <span>{product.shipping.charges}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Delivery Time:</label>
+                  <span>{product.shipping.deliveryTime}</span>
+                </div>
+                {product.shipping.restrictions && (
+                  <div className="detail-item">
+                    <label>Restrictions:</label>
+                    <span>{product.shipping.restrictions}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(product.barcode || product.hsnCode) && (
+              <div className="content-card">
+                <h3>Product Codes</h3>
+                {product.barcode && (
+                  <div className="detail-item">
+                    <label>Barcode:</label>
+                    <span className="code">{product.barcode}</span>
+                  </div>
+                )}
+                {product.hsnCode && (
+                  <div className="detail-item">
+                    <label>HSN Code:</label>
+                    <span className="code">{product.hsnCode}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {product.supplier && (
+              <div className="content-card">
+                <h3>Supplier Details</h3>
+                <div className="detail-item">
+                  <label>Supplier Name:</label>
+                  <span>{product.supplier.name}</span>
+                </div>
+                {product.supplier.contact && (
+                  <div className="detail-item">
+                    <label>Contact:</label>
+                    <span>{product.supplier.contact}</span>
+                  </div>
+                )}
+                {product.supplier.email && (
+                  <div className="detail-item">
+                    <label>Email:</label>
+                    <span>{product.supplier.email}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -238,6 +388,14 @@ function ProductDetails() {
                 <label>Active Status:</label>
                 <span>{product.isActive ? 'Active' : 'Inactive'}</span>
               </div>
+              {product.status && (
+                <div className="history-item">
+                  <label>Status:</label>
+                  <span className={`status-badge ${product.status === 'Active' ? 'active' : 'inactive'}`}>
+                    {product.status}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

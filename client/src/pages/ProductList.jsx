@@ -133,16 +133,18 @@ function ProductList() {
               <thead>
                 <tr>
                   <th>Product</th>
+                  <th>SKU</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock</th>
+                  <th>Brand</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
-                  <tr key={product._id}>
+                {products.map((product, index) => (
+                  <tr key={product._id || product.id || `product-${index}`}>
                     <td>
                       <div className="product-info">
                         <img
@@ -153,15 +155,33 @@ function ProductList() {
                             e.target.src = 'https://via.placeholder.com/50x50?text=No+Image'
                           }}
                         />
-                        <span className="product-name">{product.name}</span>
+                        <div className="product-name-info">
+                          <span className="product-name">{product.name}</span>
+                          {product.colour && (
+                            <small className="product-color">Color: {product.colour}</small>
+                          )}
+                        </div>
                       </div>
                     </td>
+                    <td>
+                      <span className="sku-code">{product.sku || 'N/A'}</span>
+                    </td>
                     <td>{getCategoryName(product.category)}</td>
-                    <td className="price">₹{product.price?.toLocaleString()}</td>
+                    <td className="price">
+                      <div className="price-info">
+                        <span className="selling-price">₹{product.price?.toLocaleString()}</span>
+                        {product.mrp && product.mrp > product.price && (
+                          <small className="mrp-price">MRP: ₹{product.mrp?.toLocaleString()}</small>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <span className={`stock ${product.stockQuantity === 0 ? 'out-of-stock' : 'in-stock'}`}>
                         {product.stockQuantity || 0}
                       </span>
+                    </td>
+                    <td>
+                      <span className="brand-name">{product.brand || 'N/A'}</span>
                     </td>
                     <td>
                       <span className={`status ${product.stockStatus === 'InStock' ? 'active' : 'inactive'}`}>

@@ -12,14 +12,37 @@ function CreateProduct() {
     name: '',
     slug: '',
     category: '',
+    sku: '',
     price: '',
+    mrp: '',
+    discountPrice: '',
     stockQuantity: '',
-    stockStatus: '',
+    stockStatus: 'InStock',
     description: '',
     specification: '',
     colour: '',
+    size: '',
+    variants: '',
     brand: '',
-    isActive: true
+    weight: '',
+    dimensions: '',
+    tags: '',
+    warranty: '',
+    returnPolicy: '',
+    barcode: '',
+    supplier: {
+      name: '',
+      contact: '',
+      email: ''
+    },
+    hsnCode: '',
+    shipping: {
+      charges: '',
+      deliveryTime: '',
+      restrictions: ''
+    },
+    isActive: true,
+    status: 'Active'
   }
 
   const [formData, setFormData] = useState(initialFormState)
@@ -65,6 +88,19 @@ function CreateProduct() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => {
+      // Handle nested objects (supplier, shipping)
+      if (name.includes('.')) {
+        const [parent, child] = name.split('.')
+        const newData = {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: value
+          }
+        }
+        return newData
+      }
+
       const newData = {
         ...prev,
         [name]: value
@@ -160,8 +196,8 @@ function CreateProduct() {
     setError('')
     setSuccess('')
 
-    if (!formData.name || !formData.price || !formData.description || !formData.category) {
-      setError('Please fill in all required fields (Name, Price, Description, Category)')
+    if (!formData.name || !formData.price || !formData.description || !formData.category || !formData.sku) {
+      setError('Please fill in all required fields (Name, SKU, Price, Description, Category)')
       return
     }
 
@@ -180,6 +216,16 @@ function CreateProduct() {
       return
     }
 
+    if (formData.mrp && formData.mrp < formData.price) {
+      setError('MRP cannot be less than selling price')
+      return
+    }
+
+    if (formData.discountPrice && formData.discountPrice > formData.price) {
+      setError('Discount price cannot be more than selling price')
+      return
+    }
+
     if (formData.stockQuantity && formData.stockQuantity < 0) {
       setError('Stock quantity cannot be negative')
       return
@@ -190,7 +236,18 @@ function CreateProduct() {
     try {
       const productData = {
         ...formData,
-        images: images.map(img => img.file)
+        images: images.map(img => img.file),
+        // Convert comma-separated strings to arrays
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+        variants: formData.variants ? formData.variants.split(',').map(variant => variant.trim()).filter(variant => variant) : [],
+        // Ensure numeric fields are properly typed
+        price: parseFloat(formData.price) || 0,
+        mrp: formData.mrp ? parseFloat(formData.mrp) : null,
+        discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
+        stockQuantity: parseInt(formData.stockQuantity) || 0,
+        // Clean up empty nested objects
+        supplier: Object.values(formData.supplier).some(val => val) ? formData.supplier : null,
+        shipping: Object.values(formData.shipping).some(val => val) ? formData.shipping : null
       }
 
       console.log('Submitting product data:', {
@@ -425,7 +482,23 @@ function CreateProduct() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="brand">Brand</label>
+                  <label htmlFor="sku">SKU / Product Code *</label>
+                  <input
+                    type="text"
+                    id="sku"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleInputChange}
+                    placeholder="Enter unique product SKU"
+                    required
+                  />
+                  <small className="form-hint">
+                    Unique identifier for this product
+                  </small>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="brand">Brand / Manufacturer</label>
                   <input
                     type="text"
                     id="brand"
@@ -445,7 +518,7 @@ function CreateProduct() {
                     onChange={handleInputChange}
                     required
                   >
-                    <option value="">Select a category</option>
+                    <option key="select-category" value="">Select a category</option>
                     {categories.map(category => (
                       <option key={category._id} value={category._id}>
                         {category.title}
@@ -472,8 +545,8 @@ function CreateProduct() {
                     value={formData.stockStatus}
                     onChange={handleInputChange}
                   >
-                    <option value="InStock">In Stock</option>
-                    <option value="OutOfStock">Out of Stock</option>
+                    <option key="in-stock" value="InStock">In Stock</option>
+                    <option key="out-of-stock" value="OutOfStock">Out of Stock</option>
                   </select>
                 </div>
 
@@ -488,14 +561,55 @@ function CreateProduct() {
                     placeholder="Enter product color"
                   />
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="size">Size</label>
+                  <input
+                    type="text"
+                    id="size"
+                    name="size"
+                    value={formData.size}
+                    onChange={handleInputChange}
+                    placeholder="Enter product size"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="variants">Color / Size / Variants</label>
+                  <input
+                    type="text"
+                    id="variants"
+                    name="variants"
+                    value={formData.variants}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Red, Blue, Green OR S, M, L, XL"
+                  />
+                  <small className="form-hint">
+                    Separate multiple variants with commas
+                  </small>
+                </div>
               </div>
 
               <div className="content-card">
                 <h3>Pricing & Inventory</h3>
-                
+
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="price">Sale Price *</label>
+                    <label htmlFor="mrp">MRP (Maximum Retail Price)</label>
+                    <input
+                      type="number"
+                      id="mrp"
+                      name="mrp"
+                      value={formData.mrp}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="price">Selling Price *</label>
                     <input
                       type="number"
                       id="price"
@@ -507,6 +621,25 @@ function CreateProduct() {
                       required
                       placeholder="0.00"
                     />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="discountPrice">Discount / Offer Price</label>
+                    <input
+                      type="number"
+                      id="discountPrice"
+                      name="discountPrice"
+                      value={formData.discountPrice}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                    />
+                    <small className="form-hint">
+                      Special promotional price (if different from selling price)
+                    </small>
                   </div>
 
                   <div className="form-group">
@@ -522,7 +655,6 @@ function CreateProduct() {
                     />
                   </div>
                 </div>
-
 
               </div>
             </div>
@@ -555,6 +687,191 @@ function CreateProduct() {
                     rows="8"
                     placeholder="Enter specifications..."
                   />
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Physical Details</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="weight">Weight</label>
+                    <input
+                      type="text"
+                      id="weight"
+                      name="weight"
+                      value={formData.weight}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 2.5 kg"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="dimensions">Dimensions</label>
+                    <input
+                      type="text"
+                      id="dimensions"
+                      name="dimensions"
+                      value={formData.dimensions}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 30 x 20 x 15 cm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Product Tags & Keywords</h3>
+                <div className="form-group">
+                  <label htmlFor="tags">Tags / Keywords</label>
+                  <input
+                    type="text"
+                    id="tags"
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleInputChange}
+                    placeholder="e.g., electronics, smartphone, android"
+                  />
+                  <small className="form-hint">
+                    Separate tags with commas to help customers find your product
+                  </small>
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Warranty & Returns</h3>
+                <div className="form-group">
+                  <label htmlFor="warranty">Warranty / Guarantee Information</label>
+                  <textarea
+                    id="warranty"
+                    name="warranty"
+                    value={formData.warranty}
+                    onChange={handleInputChange}
+                    rows="3"
+                    placeholder="e.g., 1 year manufacturer warranty + 2 years extended warranty available"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="returnPolicy">Return Policy Information</label>
+                  <textarea
+                    id="returnPolicy"
+                    name="returnPolicy"
+                    value={formData.returnPolicy}
+                    onChange={handleInputChange}
+                    rows="3"
+                    placeholder="e.g., 30 days return policy. Product must be in original condition."
+                  />
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Advanced (for eCommerce)</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="barcode">Barcode / QR Code</label>
+                    <input
+                      type="text"
+                      id="barcode"
+                      name="barcode"
+                      value={formData.barcode}
+                      onChange={handleInputChange}
+                      placeholder="Enter barcode or QR code"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="hsnCode">HSN / GST Code</label>
+                    <input
+                      type="text"
+                      id="hsnCode"
+                      name="hsnCode"
+                      value={formData.hsnCode}
+                      onChange={handleInputChange}
+                      placeholder="Enter HSN code"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Supplier / Vendor Details</h3>
+                <div className="form-group">
+                  <label htmlFor="supplier.name">Supplier Name</label>
+                  <input
+                    type="text"
+                    id="supplier.name"
+                    name="supplier.name"
+                    value={formData.supplier.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter supplier name"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="supplier.contact">Supplier Contact</label>
+                    <input
+                      type="text"
+                      id="supplier.contact"
+                      name="supplier.contact"
+                      value={formData.supplier.contact}
+                      onChange={handleInputChange}
+                      placeholder="Enter contact number"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="supplier.email">Supplier Email</label>
+                    <input
+                      type="email"
+                      id="supplier.email"
+                      name="supplier.email"
+                      value={formData.supplier.email}
+                      onChange={handleInputChange}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h3>Shipping Information</h3>
+                <div className="form-group">
+                  <label htmlFor="shipping.charges">Shipping Charges</label>
+                  <input
+                    type="text"
+                    id="shipping.charges"
+                    name="shipping.charges"
+                    value={formData.shipping.charges}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Free delivery, ₹50, etc."
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="shipping.deliveryTime">Delivery Time</label>
+                    <input
+                      type="text"
+                      id="shipping.deliveryTime"
+                      name="shipping.deliveryTime"
+                      value={formData.shipping.deliveryTime}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 2-5 business days"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="shipping.restrictions">Shipping Restrictions</label>
+                    <input
+                      type="text"
+                      id="shipping.restrictions"
+                      name="shipping.restrictions"
+                      value={formData.shipping.restrictions}
+                      onChange={handleInputChange}
+                      placeholder="e.g., No cash on delivery"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,53 +1,117 @@
+import { useState, useEffect } from 'react'
+
 function ConversionsChart() {
-  const conversionRate = 66.7
+  const [animatedRate, setAnimatedRate] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+  const targetRate = 66.7
+  const returningCustomers = 1247
+  const totalCustomers = 1870
+
+  useEffect(() => {
+    // Animate the conversion rate from 0 to target
+    const duration = 2000 // 2 seconds
+    const steps = 60
+    const increment = targetRate / steps
+    let current = 0
+
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= targetRate) {
+        current = targetRate
+        clearInterval(timer)
+      }
+      setAnimatedRate(current)
+    }, duration / steps)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const circumference = 2 * Math.PI * 50
+  const strokeDashoffset = circumference * (1 - animatedRate / 100)
 
   return (
-    <div className="chart-card conversion-chart">
+    <div className="conversions-chart-card">
       <div className="chart-header">
-        <h3 className="chart-title">Conversions</h3>
+        <h3 className="chart-title">Conversion Analytics</h3>
+        <div className="chart-period">Last 30 days</div>
       </div>
 
-      <div className="conversion-circle">
-        <svg width="120" height="120" viewBox="0 0 120 120">
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            fill="none"
-            stroke="#f0f0f0"
-            strokeWidth="8"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            fill="none"
-            stroke="#ffc007"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 50}`}
-            strokeDashoffset={`${2 * Math.PI * 50 * (1 - conversionRate / 100)}`}
-            transform="rotate(-90 60 60)"
-            style={{
-              transition: 'stroke-dashoffset 0.5s ease-in-out'
-            }}
-          />
-        </svg>
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          textAlign: 'center'
-        }}>
-          <div style={{fontSize: '24px', fontWeight: '700', color: '#2d3436'}}>
-            {conversionRate}% 
+      <div
+        className="conversion-circle-container"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="conversion-circle">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            {/* Background circle */}
+            <circle
+              cx="75"
+              cy="75"
+              r="50"
+              fill="none"
+              stroke="#f1f3f4"
+              strokeWidth="12"
+            />
+            {/* Progress circle */}
+            <circle
+              cx="75"
+              cy="75"
+              r="50"
+              fill="none"
+              stroke="url(#conversionGradient)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              transform="rotate(-90 75 75)"
+              className="progress-circle"
+            />
+
+            {/* Gradient definition */}
+            <defs>
+              <linearGradient id="conversionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--primary-gold)" />
+                <stop offset="100%" stopColor="var(--primary-gold-dark)" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <div className="conversion-center">
+            <div className="conversion-percentage">
+              {animatedRate.toFixed(1)}%
+            </div>
+            <div className="conversion-subtitle">
+              Conversion Rate
+            </div>
           </div>
         </div>
+
+        {isHovered && (
+          <div className="conversion-tooltip">
+            <div className="tooltip-content">
+              <div className="tooltip-row">
+                <span>Converted:</span>
+                <span className="tooltip-number">{returningCustomers}</span>
+              </div>
+              <div className="tooltip-row">
+                <span>Total Visitors:</span>
+                <span className="tooltip-number">{totalCustomers}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="conversion-value">
-        {conversionRate}% <br />Returning Customers
+      <div className="conversion-metrics">
+        <div className="metric-item">
+          <div className="metric-value">{returningCustomers}</div>
+          <div className="metric-label">Conversions</div>
+        </div>
+        <div className="metric-divider"></div>
+        <div className="metric-item">
+          <div className="metric-value">{totalCustomers}</div>
+          <div className="metric-label">Total Visitors</div>
+        </div>
       </div>
     </div>
   )
