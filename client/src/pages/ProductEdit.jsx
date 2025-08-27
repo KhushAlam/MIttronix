@@ -166,6 +166,11 @@ function ProductEdit() {
       return;
     }
 
+    if (formData.mrp && parseFloat(formData.price) > parseFloat(formData.mrp)) {
+      setError('Selling price cannot be higher than MRP');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -261,17 +266,23 @@ function ProductEdit() {
                 <h3>Pricing & Inventory</h3>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="price">Sale Price *</label>
-                    <input type="number" id="price" name="price" value={formData.price} onChange={handleInputChange} min="0" step="0.01" required />
+                    <label htmlFor="mrp">MRP (Maximum Retail Price)</label>
+                    <input type="number" id="mrp" name="mrp" value={formData.mrp} onChange={handleInputChange} min="0" step="0.01" placeholder="0.00" />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="cost">Cost Price</label>
-                    <input type="number" id="cost" name="cost" value={formData.cost} onChange={handleInputChange} min="0" step="0.01" />
+                    <label htmlFor="price">Selling Price *</label>
+                    <input type="number" id="price" name="price" value={formData.price} onChange={handleInputChange} min="0" step="0.01" required placeholder="0.00" />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="stockQuantity">Stock Quantity</label>
-                  <input type="number" id="stockQuantity" name="stockQuantity" value={formData.stockQuantity} onChange={handleInputChange} min="0" />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="cost">Cost Price</label>
+                    <input type="number" id="cost" name="cost" value={formData.cost} onChange={handleInputChange} min="0" step="0.01" placeholder="0.00" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="stockQuantity">Stock Quantity</label>
+                    <input type="number" id="stockQuantity" name="stockQuantity" value={formData.stockQuantity} onChange={handleInputChange} min="0" />
+                  </div>
                 </div>
               </div>
 

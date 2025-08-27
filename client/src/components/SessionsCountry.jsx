@@ -26,7 +26,7 @@ function SessionsCountry() {
           const percentage = (country.sessions / maxSessions * 100).toFixed(1)
           
           return (
-            <div key={index} className="table-row">
+            <div key={`country-session-${index}-${country.country.replace(/[^a-zA-Z0-9]/g, '')}`} className="table-row">
               <div className="country-info">
                 <span style={{fontSize: '16px', marginRight: '8px'}}>{country.flag}</span>
                 <span>{country.country}</span>

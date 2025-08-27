@@ -755,7 +755,7 @@ function CreateBlog() {
                         {formData.tags.length > 0 && (
                             <div className="tag-list">
                                 {formData.tags.map((tag, index) => (
-                                    <span key={index} className="tag">
+                                    <span key={`create-blog-tag-${index}-${tag.replace(/[^a-zA-Z0-9]/g, '')}`} className="tag">
                                         {tag}
                                         <button
                                             type="button"
@@ -816,7 +816,7 @@ function CreateBlog() {
                         {formData.seoKeywords.length > 0 && (
                             <div className="keyword-list">
                                 {formData.seoKeywords.map((keyword, index) => (
-                                    <span key={index} className="keyword">
+                                    <span key={`create-blog-keyword-${index}-${keyword.replace(/[^a-zA-Z0-9]/g, '')}`} className="keyword">
                                         {keyword}
                                         <button 
                                             type="button" 

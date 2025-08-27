@@ -74,6 +74,8 @@ export const userSignup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    // console.log(hashedPassword);
+    
 
     const newUser = await User.create({
       name,
@@ -124,6 +126,9 @@ export const userLogin = async (req, res) => {
         .status(404)
         .json({ message: "User not found. Please sign up first." });
     }
+
+    console.log(User.hashedPassword);
+    
 
     const isPasswordValid = await bcrypt.compare(password, user.hashedPassword);
     if (!isPasswordValid) {
@@ -193,5 +198,38 @@ export const resetPassword = async (req, res) => {
       message: "Error resetting password",
       error,
     });
+  }
+};
+
+export const userLogout = async (req, res) => {
+  try {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax'
+  });
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Error logging out", error });
+    
+  }
+}
+
+export const testRoute = async (req, res) => {
+  try {
+    // Log the incoming data to your server's console for debugging
+    console.log('Request body received:', req.body);
+
+    // Send a success response back to the frontend
+    res.status(200).json({ 
+      message: 'Data received successfully',
+      data: req.body // It's helpful to send the data back for confirmation
+    });
+
+  } catch (error) {
+    // Basic error handling
+    console.error('Error in testRoute:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };

@@ -132,7 +132,7 @@ function RoleEdit() {
                     <div className="form-group">
                         <label>Permissions *</label>
                         {formData.permissions.map((perm, index) => (
-                            <div key={index} style={{ marginBottom: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
+                            <div key={`edit-role-permission-${index}-${perm.module || 'default'}`} style={{ marginBottom: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
                                 <input
                                     placeholder="Module"
                                     value={perm.module}

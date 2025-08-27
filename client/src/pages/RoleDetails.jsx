@@ -128,11 +128,11 @@ function RoleDetails() {
           <h3><MdPeople size={20} /> Permissions</h3>
           <div className="permissions-list">
             {(role.permissions || []).map((permission, index) => (
-              <div key={index} className="permission-item">
+              <div key={`role-permission-${role._id || 'default'}-${index}-${typeof permission === 'object' ? permission.module || permission.name || index : permission}`} className="permission-item">
                 <h4>{typeof permission === 'object' ? permission.module || permission.name || 'N/A' : String(permission)}</h4>
                 <div className="permission-actions">
                   {(permission.actions || []).map((action, actionIndex) => (
-                    <span key={actionIndex} className="action-badge">
+                    <span key={`role-action-${role._id || 'default'}-${index}-${actionIndex}-${typeof action === 'object' ? action.name || action.value || actionIndex : action}`} className="action-badge">
                       {typeof action === 'object' ? action.name || action.value || 'N/A' : String(action)}
                     </span>
                   ))}

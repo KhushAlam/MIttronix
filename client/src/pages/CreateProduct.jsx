@@ -52,6 +52,7 @@ function CreateProduct() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [priceValidationMessage, setPriceValidationMessage] = useState('')
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -85,6 +86,15 @@ function CreateProduct() {
       .replace(/^-+|-+$/g, '')
   }
 
+  // Function to validate pricing
+  const validatePricing = (price, mrp) => {
+    if (price && mrp && parseFloat(price) > parseFloat(mrp)) {
+      setPriceValidationMessage('⚠️ Selling price cannot be higher than MRP')
+    } else {
+      setPriceValidationMessage('')
+    }
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => {
@@ -108,6 +118,13 @@ function CreateProduct() {
 
       if (name === 'name') {
         newData.slug = generateSlug(value)
+      }
+
+      // Real-time price validation
+      if (name === 'price' || name === 'mrp') {
+        const currentPrice = name === 'price' ? value : newData.price
+        const currentMrp = name === 'mrp' ? value : newData.mrp
+        validatePricing(currentPrice, currentMrp)
       }
 
       return newData
@@ -216,8 +233,8 @@ function CreateProduct() {
       return
     }
 
-    if (formData.mrp && formData.mrp < formData.price) {
-      setError('MRP cannot be less than selling price')
+    if (formData.mrp && parseFloat(formData.price) > parseFloat(formData.mrp)) {
+      setError('Selling price cannot be higher than MRP')
       return
     }
 
@@ -620,7 +637,22 @@ function CreateProduct() {
                       step="0.01"
                       required
                       placeholder="0.00"
+                      style={{
+                        borderColor: priceValidationMessage ? '#dc2626' : undefined
+                      }}
                     />
+                    {priceValidationMessage && (
+                      <div style={{
+                        marginTop: '4px',
+                        fontSize: '14px',
+                        color: '#dc2626',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        {priceValidationMessage}
+                      </div>
+                    )}
                   </div>
                 </div>
 

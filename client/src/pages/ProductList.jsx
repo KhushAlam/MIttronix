@@ -184,8 +184,8 @@ function ProductList() {
                       <span className="brand-name">{product.brand || 'N/A'}</span>
                     </td>
                     <td>
-                      <span className={`status ${product.stockStatus === 'InStock' ? 'active' : 'inactive'}`}>
-                        {product.stockStatus === 'InStock' ? 'In Stock' : 'Out of Stock'}
+                      <span className={`status ${product.stockQuantity > 0 ? 'active' : 'inactive'}`}>
+                        {product.stockQuantity > 0 ? 'In Stock' : 'Out of Stock'}
                       </span>
                     </td>
                     <td>

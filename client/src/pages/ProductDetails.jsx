@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { MdEdit, MdDelete, MdArrowBack } from 'react-icons/md'
+import { MdEdit, MdDelete, MdArrowBack, MdInventory, MdCategory, MdAttachMoney, MdInfo } from 'react-icons/md'
 import { useState, useEffect } from 'react'
 import { productService } from '../api/productService.js'
 import { categoryService } from '../api/categoryService.js'
@@ -13,6 +13,7 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -113,7 +114,8 @@ function ProductDetails() {
   }
 
   return (
-    <div>
+    <div className="admin-product-page">
+      {/* Page Header */}
       <div className="page-header">
         <div className="page-title-section">
           <h1 className="page-title">Product Details</h1>
@@ -139,28 +141,30 @@ function ProductDetails() {
         </div>
       </div>
 
-      <div className="product-details-container">
-        <div className="product-details-grid">
+      {/* Product Content */}
+      <div className="admin-content-container">
+        <div className="product-overview">
           <div className="product-images-section">
-            <div className="main-image-container">
+            <div className="admin-image-container">
               <img
-                className="main-product-image"
-                src={product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/300x300'}
+                className="admin-product-image"
+                src={product.images && product.images.length > 0 ? product.images[selectedImageIndex]?.url || product.images[0].url : 'https://via.placeholder.com/400x400'}
                 alt={product.name}
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'
+                  e.target.src = 'https://via.placeholder.com/400x400?text=No+Image'
                 }}
               />
             </div>
             {product.images && product.images.length > 1 && (
-              <div className="thumbnail-gallery">
-                <div className="thumbnail-scroll">
+              <div className="admin-thumbnail-gallery">
+                <div className="admin-thumbnail-grid">
                   {product.images.map((image, index) => (
                     <img
-                      key={index}
-                      className="thumbnail-image"
+                      key={`product-image-${product._id || 'default'}-${index}-${image.url ? image.url.split('/').pop() : index}`}
+                      className={`admin-thumbnail ${selectedImageIndex === index ? 'active' : ''}`}
                       src={image.url}
                       alt={`${product.name} ${index + 1}`}
+                      onClick={() => setSelectedImageIndex(index)}
                       onError={(e) => {
                         e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'
                       }}
@@ -173,229 +177,307 @@ function ProductDetails() {
 
           <div className="product-info-section">
             <div className="content-card">
-              <h2>{product.name}</h2>
-              <div className="product-meta">
-                <span className={`status-badge ${product.stockStatus === 'InStock' ? 'active' : 'inactive'}`}>
-                  {product.stockStatus === 'InStock' ? 'In Stock' : 'Out of Stock'}
-                </span>
-                {product.brand && (
-                  <span className="brand">Brand: {product.brand}</span>
-                )}
-                {product.sku && (
-                  <span className="sku">SKU: {product.sku}</span>
-                )}
-              </div>
-
-              <div className="pricing-section">
-                <div className="price-grid">
-                  {product.mrp && product.mrp !== product.price && (
-                    <div className="price-item">
-                      <label>MRP:</label>
-                      <span className="mrp-price">₹{product.mrp?.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="price-item">
-                    <label>Selling Price:</label>
-                    <span className="price">₹{product.price?.toLocaleString()}</span>
-                  </div>
-                  {product.discountPrice && product.discountPrice !== product.price && (
-                    <div className="price-item">
-                      <label>Discounted Price:</label>
-                      <span className="discount-price">₹{product.discountPrice?.toLocaleString()}</span>
-                    </div>
-                  )}
+              <div className="product-header-info">
+                <h2 className="product-name">{product.name}</h2>
+                <div className="product-badges">
+                  <span className={`status-badge ${product.stockStatus === 'InStock' ? 'active' : 'inactive'}`}>
+                    {product.stockStatus === 'InStock' ? 'In Stock' : 'Out of Stock'}
+                  </span>
+                  <span className={`status-badge ${product.isActive ? 'active' : 'inactive'}`}>
+                    {product.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
-                {product.mrp && product.mrp > product.price && (
-                  <div className="savings">
-                    <span className="savings-text">
-                      You save: ₹{(product.mrp - product.price).toLocaleString()}
-                      ({(((product.mrp - product.price) / product.mrp) * 100).toFixed(0)}% off)
-                    </span>
-                  </div>
-                )}
               </div>
 
-              <div className="stock-section">
-                <label>Stock Quantity:</label>
-                <span className={`stock ${product.stockQuantity === 0 ? 'out-of-stock' : 'in-stock'}`}>
-                  {product.stockQuantity || 0} units
-                </span>
-              </div>
-
-              <div className="category-section">
-                <label>Category:</label>
-                <span>{category ? category.title : 'Unknown'}</span>
-              </div>
-
-              <div className="product-variants">
-                {product.colour && (
-                  <div className="variant-item">
-                    <label>Color:</label>
-                    <span>{product.colour}</span>
+              <div className="admin-info-grid">
+                <div className="info-card">
+                  <div className="info-header">
+                    <MdAttachMoney className="info-icon" />
+                    <h3>Pricing Information</h3>
                   </div>
-                )}
-                {product.size && (
-                  <div className="variant-item">
-                    <label>Size:</label>
-                    <span>{product.size}</span>
-                  </div>
-                )}
-                {product.variants && product.variants.length > 0 && (
-                  <div className="variant-item">
-                    <label>Available Variants:</label>
-                    <div className="variants-list">
-                      {product.variants.map((variant, index) => (
-                        <span key={index} className="variant-badge">{variant}</span>
-                      ))}
+                  <div className="info-content">
+                    <div className="price-row">
+                      <span className="price-label">Selling Price:</span>
+                      <span className="price-value main-price">₹{product.price?.toLocaleString()}</span>
                     </div>
+                    {product.mrp && product.mrp !== product.price && (
+                      <>
+                        <div className="price-row">
+                          <span className="price-label">MRP:</span>
+                          <span className="price-value">₹{product.mrp?.toLocaleString()}</span>
+                        </div>
+                        <div className="price-row">
+                          <span className="price-label">Discount:</span>
+                          <span className="price-value discount">
+                            {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {product.discountPrice && product.discountPrice !== product.price && (
+                      <div className="price-row">
+                        <span className="price-label">Discounted Price:</span>
+                        <span className="price-value">₹{product.discountPrice?.toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {product.weight || product.dimensions ? (
-                <div className="dimensions-section">
-                  <h4>Physical Details</h4>
-                  {product.weight && (
-                    <div className="detail-item">
-                      <label>Weight:</label>
-                      <span>{product.weight}</span>
-                    </div>
-                  )}
-                  {product.dimensions && (
-                    <div className="detail-item">
-                      <label>Dimensions:</label>
-                      <span>{product.dimensions}</span>
-                    </div>
-                  )}
                 </div>
-              ) : null}
 
-              <div className="description-section">
-                <label>Description:</label>
-                <p>{product.description}</p>
+                <div className="info-card">
+                  <div className="info-header">
+                    <MdInventory className="info-icon" />
+                    <h3>Inventory & Stock</h3>
+                  </div>
+                  <div className="info-content">
+                    <div className="stock-row">
+                      <span className="stock-label">Stock Quantity:</span>
+                      <span className={`stock-value ${product.stockQuantity === 0 ? 'out-of-stock' : 'in-stock'}`}>
+                        {product.stockQuantity || 0} units
+                      </span>
+                    </div>
+                    <div className="stock-row">
+                      <span className="stock-label">Stock Status:</span>
+                      <span className={`stock-status ${product.stockStatus === 'InStock' ? 'in-stock' : 'out-of-stock'}`}>
+                        {product.stockStatus === 'InStock' ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </div>
+                    {product.sku && (
+                      <div className="stock-row">
+                        <span className="stock-label">SKU:</span>
+                        <span className="stock-value">{product.sku}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="info-card">
+                  <div className="info-header">
+                    <MdCategory className="info-icon" />
+                    <h3>Product Details</h3>
+                  </div>
+                  <div className="info-content">
+                    <div className="detail-row">
+                      <span className="detail-label">Category:</span>
+                      <span className="detail-value">{category ? category.title : 'Unknown'}</span>
+                    </div>
+                    {product.brand && (
+                      <div className="detail-row">
+                        <span className="detail-label">Brand:</span>
+                        <span className="detail-value">{product.brand}</span>
+                      </div>
+                    )}
+                    {product.colour && (
+                      <div className="detail-row">
+                        <span className="detail-label">Color:</span>
+                        <span className="detail-value">{product.colour}</span>
+                      </div>
+                    )}
+                    {product.size && (
+                      <div className="detail-row">
+                        <span className="detail-label">Size:</span>
+                        <span className="detail-value">{product.size}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="info-card">
+                  <div className="info-header">
+                    <MdInfo className="info-icon" />
+                    <h3>Additional Information</h3>
+                  </div>
+                  <div className="info-content">
+                    <div className="detail-row">
+                      <span className="detail-label">Created:</span>
+                      <span className="detail-value">{new Date(product.createdAt || Date.now()).toLocaleDateString()}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Last Updated:</span>
+                      <span className="detail-value">{new Date(product.updatedAt || Date.now()).toLocaleDateString()}</span>
+                    </div>
+                    {product.weight && (
+                      <div className="detail-row">
+                        <span className="detail-label">Weight:</span>
+                        <span className="detail-value">{product.weight}</span>
+                      </div>
+                    )}
+                    {product.dimensions && (
+                      <div className="detail-row">
+                        <span className="detail-label">Dimensions:</span>
+                        <span className="detail-value">{product.dimensions}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {product.description && (
+                <div className="description-section">
+                  <h3>Product Description</h3>
+                  <p className="description-text">{product.description}</p>
+                </div>
+              )}
+
+              {product.variants && product.variants.length > 0 && (
+                <div className="variants-section">
+                  <h3>Available Variants</h3>
+                  <div className="variants-list">
+                    {product.variants.map((variant, index) => (
+                      <span key={`variant-${product._id || 'default'}-${index}-${variant.replace(/[^a-zA-Z0-9]/g, '')}`} className="variant-badge">{variant}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {product.tags && product.tags.length > 0 && (
                 <div className="tags-section">
-                  <label>Tags:</label>
+                  <h3>Product Tags</h3>
                   <div className="tags-list">
                     {product.tags.map((tag, index) => (
-                      <span key={index} className="tag">{tag}</span>
+                      <span key={`tag-${product._id || 'default'}-${index}-${tag.replace(/[^a-zA-Z0-9]/g, '')}`} className="tag">{tag}</span>
                     ))}
                   </div>
                 </div>
               )}
             </div>
+          </div>
+        </div>
 
+        {/* Additional Product Information */}
+        <div className="product-additional-info">
+
+          <div className="info-tab-content">
             {product.specification && (
-              <div className="content-card">
+              <div className="tab-section">
                 <h3>Specifications</h3>
-                <div className="specifications">
+                <div className="specifications-content">
                   <p>{product.specification}</p>
                 </div>
               </div>
             )}
 
             {(product.warranty || product.returnPolicy) && (
-              <div className="content-card">
+              <div className="tab-section">
                 <h3>Warranty & Returns</h3>
-                {product.warranty && (
-                  <div className="detail-item">
-                    <label>Warranty:</label>
-                    <span>{product.warranty}</span>
-                  </div>
-                )}
-                {product.returnPolicy && (
-                  <div className="detail-item">
-                    <label>Return Policy:</label>
-                    <span>{product.returnPolicy}</span>
-                  </div>
-                )}
+                <div className="warranty-info">
+                  {product.warranty && (
+                    <div className="info-item">
+                      <h4>Warranty</h4>
+                      <p>{product.warranty}</p>
+                    </div>
+                  )}
+                  {product.returnPolicy && (
+                    <div className="info-item">
+                      <h4>Return Policy</h4>
+                      <p>{product.returnPolicy}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {product.shipping && (
-              <div className="content-card">
+              <div className="tab-section">
                 <h3>Shipping Information</h3>
-                <div className="detail-item">
-                  <label>Delivery Charges:</label>
-                  <span>{product.shipping.charges}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Delivery Time:</label>
-                  <span>{product.shipping.deliveryTime}</span>
-                </div>
-                {product.shipping.restrictions && (
-                  <div className="detail-item">
-                    <label>Restrictions:</label>
-                    <span>{product.shipping.restrictions}</span>
+                <div className="shipping-info">
+                  <div className="shipping-item">
+                    <strong>Delivery:</strong> {product.shipping.charges}
                   </div>
-                )}
+                  <div className="shipping-item">
+                    <strong>Delivery Time:</strong> {product.shipping.deliveryTime}
+                  </div>
+                  {product.shipping.restrictions && (
+                    <div className="shipping-item">
+                      <strong>Note:</strong> {product.shipping.restrictions}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {(product.barcode || product.hsnCode) && (
-              <div className="content-card">
-                <h3>Product Codes</h3>
-                {product.barcode && (
-                  <div className="detail-item">
-                    <label>Barcode:</label>
-                    <span className="code">{product.barcode}</span>
-                  </div>
-                )}
-                {product.hsnCode && (
-                  <div className="detail-item">
-                    <label>HSN Code:</label>
-                    <span className="code">{product.hsnCode}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {product.supplier && (
-              <div className="content-card">
-                <h3>Supplier Details</h3>
-                <div className="detail-item">
-                  <label>Supplier Name:</label>
-                  <span>{product.supplier.name}</span>
+            {(product.weight || product.dimensions) && (
+              <div className="tab-section">
+                <h3>Physical Details</h3>
+                <div className="physical-details">
+                  {product.weight && (
+                    <div className="detail-row">
+                      <span className="detail-label">Weight:</span>
+                      <span className="detail-value">{product.weight}</span>
+                    </div>
+                  )}
+                  {product.dimensions && (
+                    <div className="detail-row">
+                      <span className="detail-label">Dimensions:</span>
+                      <span className="detail-value">{product.dimensions}</span>
+                    </div>
+                  )}
                 </div>
-                {product.supplier.contact && (
-                  <div className="detail-item">
-                    <label>Contact:</label>
-                    <span>{product.supplier.contact}</span>
-                  </div>
-                )}
-                {product.supplier.email && (
-                  <div className="detail-item">
-                    <label>Email:</label>
-                    <span>{product.supplier.email}</span>
-                  </div>
-                )}
               </div>
             )}
 
-            <div className="content-card">
-              <h3>Product History</h3>
-              <div className="history-item">
-                <label>Created:</label>
-                <span>{new Date(product.createdAt || Date.now()).toLocaleDateString()}</span>
-              </div>
-              <div className="history-item">
-                <label>Last Updated:</label>
-                <span>{new Date(product.updatedAt || Date.now()).toLocaleDateString()}</span>
-              </div>
-              <div className="history-item">
-                <label>Active Status:</label>
-                <span>{product.isActive ? 'Active' : 'Inactive'}</span>
-              </div>
-              {product.status && (
-                <div className="history-item">
-                  <label>Status:</label>
-                  <span className={`status-badge ${product.status === 'Active' ? 'active' : 'inactive'}`}>
-                    {product.status}
-                  </span>
+            {/* Admin-only sections */}
+            <div className="admin-only-section">
+              <h3>Admin Information</h3>
+
+              {(product.barcode || product.hsnCode) && (
+                <div className="admin-codes">
+                  <h4>Product Codes</h4>
+                  {product.barcode && (
+                    <div className="code-item">
+                      <span className="code-label">Barcode:</span>
+                      <span className="code-value">{product.barcode}</span>
+                    </div>
+                  )}
+                  {product.hsnCode && (
+                    <div className="code-item">
+                      <span className="code-label">HSN Code:</span>
+                      <span className="code-value">{product.hsnCode}</span>
+                    </div>
+                  )}
                 </div>
               )}
+
+              {product.supplier && (
+                <div className="supplier-info">
+                  <h4>Supplier Details</h4>
+                  <div className="supplier-details">
+                    <div className="supplier-row">
+                      <span className="supplier-label">Name:</span>
+                      <span className="supplier-value">{product.supplier.name}</span>
+                    </div>
+                    {product.supplier.contact && (
+                      <div className="supplier-row">
+                        <span className="supplier-label">Contact:</span>
+                        <span className="supplier-value">{product.supplier.contact}</span>
+                      </div>
+                    )}
+                    {product.supplier.email && (
+                      <div className="supplier-row">
+                        <span className="supplier-label">Email:</span>
+                        <span className="supplier-value">{product.supplier.email}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="product-history">
+                <h4>Product History</h4>
+                <div className="history-details">
+                  <div className="history-row">
+                    <span className="history-label">Created:</span>
+                    <span className="history-value">{new Date(product.createdAt || Date.now()).toLocaleDateString()}</span>
+                  </div>
+                  <div className="history-row">
+                    <span className="history-label">Last Updated:</span>
+                    <span className="history-value">{new Date(product.updatedAt || Date.now()).toLocaleDateString()}</span>
+                  </div>
+                  <div className="history-row">
+                    <span className="history-label">Status:</span>
+                    <span className="history-value">{product.isActive ? 'Active' : 'Inactive'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

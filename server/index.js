@@ -12,10 +12,9 @@ import serviceRequestRoutes from "./routes/serviceRequest.routes.js";
 import bannerRoutes from './routes/banner.routes.js'
 import blogRoutes from './routes/blog.routes.js'
 import roleRoutes from './routes/roles.routes.js'
+import cartRoutes from './routes/cart.routes.js'
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -24,6 +23,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 dotenv.config();
 
@@ -41,6 +43,7 @@ app.use("/api/service-requests", serviceRequestRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 app.listen(PORT, () => {

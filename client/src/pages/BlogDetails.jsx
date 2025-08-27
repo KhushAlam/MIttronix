@@ -169,7 +169,7 @@ function BlogDetails() {
               <h4><MdTag size={16} /> Tags</h4>
               <div className="tags-list">
                 {blog.tags.map((tag, index) => (
-                  <span key={index} className="tag-badge">{tag}</span>
+                  <span key={`blog-tag-${blog.id || 'default'}-${index}-${tag.replace(/[^a-zA-Z0-9]/g, '')}`} className="tag-badge">{tag}</span>
                 ))}
               </div>
             </div>
