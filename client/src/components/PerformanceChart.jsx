@@ -37,12 +37,14 @@ function PerformanceChart() {
   const maxValue = Math.max(...chartData.map(d => Math.max(d.pageViews, d.clicks)))
 
   useEffect(() => {
-    setAnimatedData(chartData.map(() => ({ pageViews: 0, clicks: 0 })))
+    // Compute chartData inside the effect to avoid using a new array reference
+    const newChartData = getFilteredData()
+    setAnimatedData(newChartData.map(() => ({ pageViews: 0, clicks: 0 })))
     const timer = setTimeout(() => {
-      setAnimatedData(chartData)
+      setAnimatedData(newChartData)
     }, 100)
     return () => clearTimeout(timer)
-  }, [activeTab, chartData]) // Added chartData to dependency array for correctness
+  }, [activeTab])
 
   const tabs = ['ALL', '1M', '6M', '1Y']
 

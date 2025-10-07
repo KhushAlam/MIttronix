@@ -18,7 +18,7 @@ function CategoriesList() {
         setCategories(categoriesData)
       } catch (error) {
         console.error('Error fetching categories:', error)
-        setCategories(mockCategories)
+        setCategories(categoryService.getCategories())
         setError('Unable to connect to backend. Showing sample data.')
       } finally {
         setLoading(false)

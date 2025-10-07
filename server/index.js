@@ -27,11 +27,22 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Simple request logger for debugging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} -> ${req.method} ${req.originalUrl}`)
+  next()
+})
+
 dotenv.config();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
-connectDb();
+// Only attempt DB connection if MONGO_URI is provided; this allows running the server in dev without DB.
+if (process.env.MONGO_URI) {
+  connectDb();
+} else {
+  console.warn('MONGO_URI not set; skipping database connection. Some endpoints may not work.')
+}
 
 app.use("/api/products", productRoutes);
 app.use("/api/category", categoryRoutes);
@@ -46,6 +57,12 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/cart", cartRoutes);
 
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled server error:', err.stack || err)
+  res.status(500).json({ message: 'Internal Server Error' })
+})
+
 app.listen(PORT, () => {
-  console.log(`server is running on ${PORT}`);
-});
+  console.log(`server is running on ${PORT}`)
+})

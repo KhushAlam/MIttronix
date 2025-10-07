@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdArrowBack, MdSave, MdAdd, MdDelete, MdSearch } from "react-icons/md";
 import { orderService } from "../api/orderService.js";
+import { productService } from "../api/productService.js";
 
 function OrderAdd() {
   const navigate = useNavigate();
@@ -43,26 +44,27 @@ function OrderAdd() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const availableProducts = [
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      sku: "WH-001",
-      price: 99.99,
-      stock: 50,
-    },
-    {
-      id: 2,
-      name: "Bluetooth Speaker",
-      sku: "BS-002",
-      price: 79.99,
-      stock: 30,
-    },
-    { id: 3, name: "USB-C Cable", sku: "UC-003", price: 19.99, stock: 100 },
-    { id: 4, name: "Wireless Mouse", sku: "WM-004", price: 49.99, stock: 75 },
-    { id: 5, name: "Laptop Stand", sku: "LS-005", price: 89.99, stock: 25 },
-    { id: 6, name: "Phone Case", sku: "PC-006", price: 29.99, stock: 80 },
-  ];
+  const [availableProducts, setAvailableProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const productsData = await productService.getProducts();
+        const list = Array.isArray(productsData)
+          ? productsData
+          : productsData?.data || [];
+        if (mounted) setAvailableProducts(list);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+        if (mounted) setAvailableProducts([]);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -115,13 +117,18 @@ function OrderAdd() {
 
   const selectProduct = (productIndex, product) => {
     const updatedProducts = [...formData.products];
+    const price = product && (product.price !== undefined && product.price !== null) ? parseFloat(product.price) || 0 : 0;
+    const name = product?.name || "";
+    const sku = product?.sku || "";
+    const productId = product?._id || product?.id || "";
+
     updatedProducts[productIndex] = {
       ...updatedProducts[productIndex],
-      productId: product._id || product.id || null,
-      name: product.name,
-      sku: product.sku,
-      price: product.price,
-      total: updatedProducts[productIndex].quantity * product.price,
+      productId,
+      name,
+      sku,
+      price,
+      total: (parseFloat(updatedProducts[productIndex].quantity) || 0) * price,
     };
 
     setFormData((prev) => ({
@@ -480,7 +487,7 @@ function OrderAdd() {
                           <div className="product-list">
                             {availableProducts.map((availableProduct) => (
                               <div
-                                key={availableProduct.id}
+                                key={availableProduct._id || availableProduct.id}
                                 className="product-option"
                                 onClick={() =>
                                   selectProduct(index, availableProduct)

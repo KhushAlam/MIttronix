@@ -8,9 +8,19 @@ export default defineConfig({
     proxy: {
       // Any request starting with /api will be forwarded
       '/api': {
-        target: 'http://localhost:3000', // Your backend server
+        target: 'https://backend-hygn.onrender.com', // Use local mock server during development
         changeOrigin: true,
-        // No rewrite needed here, as the target also expects /api
+        secure: false,
+        // Optional: add a small timeout and error handler
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.error('Proxy error:', err && err.message)
+            if (!res.headersSent) {
+              res.writeHead(502, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: 'Bad gateway (proxy error)' }))
+            }
+          })
+        }
       },
     },
   },
