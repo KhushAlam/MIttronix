@@ -80,6 +80,28 @@ function Sidebar() {
           {!isCollapsed && <span className='nav-text'>Categories</span>}
         </Link>
 
+        {/* Brands */}
+          <Link
+          to="/brands/list"
+          className={`nav-item ${location.pathname.startsWith('/brands') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+              <MdGroup size={20} />
+            </span>
+          {!isCollapsed && <span className='nav-text'>Brands</span>}
+        </Link>
+
+        {/* Inventory */}
+          <Link
+          to="/inventory"
+          className={`nav-item ${isActive('/inventory') ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+              <MdShoppingCart size={20} />
+            </span>
+          {!isCollapsed && <span className='nav-text'>Inventory</span>}
+        </Link>
+
         {/* Orders */}
           <Link
           to="/orders/list"

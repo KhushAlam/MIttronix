@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
 
 function PerformanceChart() {
-  const [activeTab, setActiveTab] = useState('ALL')
-  const [animatedData, setAnimatedData] = useState([])
-  const [hoveredBar, setHoveredBar] = useState(null)
+  const [activeTab, setActiveTab] = useState('ALL');
 
+  // Data remains the same
   const allData = [
     { month: 'Jan', pageViews: 45, clicks: 30, date: '2024-01' },
     { month: 'Feb', pageViews: 65, clicks: 45, date: '2024-02' },
@@ -18,35 +27,27 @@ function PerformanceChart() {
     { month: 'Oct', pageViews: 100, clicks: 80, date: '2024-10' },
     { month: 'Nov', pageViews: 85, clicks: 65, date: '2024-11' },
     { month: 'Dec', pageViews: 75, clicks: 55, date: '2024-12' }
-  ]
+  ];
 
+  // getFilteredData logic remains the same
   const getFilteredData = () => {
-    switch(activeTab) {
+    switch (activeTab) {
       case '1M':
-        return allData.slice(-1)
+        return allData.slice(-1);
       case '6M':
-        return allData.slice(-6)
+        return allData.slice(-6);
       case '1Y':
-        return allData
+        return allData;
       default:
-        return allData
+        return allData;
     }
-  }
+  };
 
-  const chartData = getFilteredData()
-  const maxValue = Math.max(...chartData.map(d => Math.max(d.pageViews, d.clicks)))
+  const chartData = getFilteredData();
+  const tabs = ['ALL', '1M', '6M', '1Y'];
 
-  useEffect(() => {
-    // Compute chartData inside the effect to avoid using a new array reference
-    const newChartData = getFilteredData()
-    setAnimatedData(newChartData.map(() => ({ pageViews: 0, clicks: 0 })))
-    const timer = setTimeout(() => {
-      setAnimatedData(newChartData)
-    }, 100)
-    return () => clearTimeout(timer)
-  }, [activeTab])
-
-  const tabs = ['ALL', '1M', '6M', '1Y']
+  // NOTE: All useEffect, animatedData, hoveredBar, and maxValue states/calculations are no longer needed.
+  // Recharts handles animation and tooltips internally.
 
   return (
     <div className="performance-chart-card">
@@ -64,58 +65,60 @@ function PerformanceChart() {
           ))}
         </div>
       </div>
-      <div className="performance-chart">
-        <div className="chart-bars">
-          {animatedData.map((data, index) => {
-            const originalData = chartData[index] || { pageViews: 0, clicks: 0 }
-            const pageViewsHeight = maxValue > 0 ? (data.pageViews / maxValue) * 200 : 0
-            const clicksHeight = maxValue > 0 ? (data.clicks / maxValue) * 200 : 0
-
-            return (
-              <div
-                // FIX: Key no longer depends on data.month
-                key={`chart-bar-group-${index}`}
-                className="chart-bar-group"
-                onMouseEnter={() => setHoveredBar(index)}
-                onMouseLeave={() => setHoveredBar(null)}
-              >
-                <div className="bar-container">
-                  <div
-                    className="chart-bar page-views-bar"
-                    style={{ height: `${pageViewsHeight}px`, transition: 'height 0.3s ease-out' }}
-                  ></div>
-                  <div
-                    className="chart-bar clicks-bar"
-                    style={{ height: `${clicksHeight}px`, transition: 'height 0.3s ease-out' }}
-                  ></div>
-                </div>
-                {hoveredBar === index && (
-                  <div className="chart-tooltip">
-                    <div className="tooltip-item">
-                      <span className="tooltip-label">Page Views:</span>
-                      <span className="tooltip-value">{originalData.pageViews}</span>
-                    </div>
-                    <div className="tooltip-item">
-                      <span className="tooltip-label">Clicks:</span>
-                      <span className="tooltip-value">{originalData.clicks}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-        <div className="chart-x-axis">
-          {chartData.map((data) => (
-            <span key={`chart-axis-${data.month}`} className="axis-label">{data.month}</span>
-          ))}
-        </div>
+      
+      {/* Recharts chart area */}
+      {/* Set a fixed height for the container */}
+      <div className="performance-chart" style={{ width: '100%', height: 250 }}>
+        <ResponsiveContainer>
+          <LineChart
+            data={chartData}
+            margin={{
+              top: 5,
+              right: 20,
+              left: -20, // Adjust to show Y-axis labels
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+            <XAxis 
+              dataKey="month" 
+              fontSize={12} 
+              tickLine={false} 
+              axisLine={false} 
+            />
+            <YAxis 
+              fontSize={12} 
+              tickLine={false} 
+              axisLine={false} 
+              allowDecimals={false} 
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff', 
+                border: '1px solid #ddd', 
+                borderRadius: '4px' 
+              }} 
+            />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey="pageViews" 
+              stroke="#8884d8" 
+              strokeWidth={2} 
+              activeDot={{ r: 8 }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="clicks" 
+              stroke="#82ca9d" 
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
-      <div className="chart-legend">
-        {/* ... legend items ... */}
-      </div>
+      {/* The original x-axis and legend can be removed, as Recharts provides them */}
     </div>
-  )
+  );
 }
 
-export default PerformanceChart
+export default PerformanceChart;

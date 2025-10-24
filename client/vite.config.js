@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Any request starting with /api will be forwarded
       '/api': {
-        target: 'https://backend-hygn.onrender.com', // Use local mock server during development
+        target: 'http://localhost:3000', // Use local mock server during development
         changeOrigin: true,
         secure: false,
         // Optional: add a small timeout and error handler

@@ -1,6 +1,9 @@
-import StatsCards from "./StatsCards";
+import StatsCardsComponent from "./StatsCards";
 import PerformanceChart from "./PerformanceChart";
 import ConversionsChart from "./ConversionsChart";
+import TopProducts from "./TopProducts";
+import RecentActivities from "./RecentActivities";
+import QuickActions from "./QuickActions";
 import { IoMdNotifications } from "react-icons/io";
 import { MdPerson, MdCheckCircle, MdError } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -28,27 +31,21 @@ function Dashboard() {
       <div className="dashboard-header">
         <div className="welcome-section">
           <h1>WELCOME!</h1>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            marginTop: '4px'
-          }}>
+          <div className="api-status-row">
             {apiStatus === 'connected' && (
               <>
-                <MdCheckCircle size={16} style={{ color: '#10b981' }} />
-                <span style={{ color: '#10b981' }}>API Connected</span>
+                <MdCheckCircle size={16} className="api-status-icon connected" />
+                <span className="api-status-text connected">API Connected</span>
               </>
             )}
             {apiStatus === 'disconnected' && (
               <>
-                <MdError size={16} style={{ color: '#ef4444' }} />
-                <span style={{ color: '#ef4444' }}>API Disconnected</span>
+                <MdError size={16} className="api-status-icon disconnected" />
+                <span className="api-status-text disconnected">API Disconnected</span>
               </>
             )}
             {apiStatus === 'checking' && (
-              <span style={{ color: '#6b7280' }}>Checking connection...</span>
+              <span className="api-status-text checking">Checking connection...</span>
             )}
           </div>
         </div>
@@ -67,13 +64,18 @@ function Dashboard() {
       </div>
 
       <div className="dashboard-content">
-        <StatsCards />
+        <StatsCardsComponent />
+        <QuickActions />
 
         <div className="chart-section">
           <PerformanceChart />
           <ConversionsChart />
         </div>
 
+        <div className="bottom-section">
+          <TopProducts />
+          <RecentActivities />
+        </div>
       </div>
     </div>
   );

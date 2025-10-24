@@ -2438,6 +2438,54 @@ body {
   letter-spacing: -0.025em;
 }
 
+.api-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.api-status-icon.connected { color: #10b981; }
+.api-status-text.connected { color: #10b981; }
+.api-status-icon.disconnected { color: #ef4444; }
+.api-status-text.disconnected { color: #ef4444; }
+.api-status-text.checking { color: #6b7280; }
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1f2937;
+  background: #fff;
+  transition: background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.quick-action:hover {
+  background-color: var(--primary-gold-bg-light);
+  border-color: var(--primary-gold-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.quick-action-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--primary-gold-bg);
+  color: var(--primary-gold-dark);
+}
+.quick-action-text { font-weight: 500; }
+
 /* Sidebar Styles */
 .sidebar {
   width: 60px;
@@ -3219,6 +3267,26 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Utilities for dashboard tables */
+.three-col-grid {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.centered-message {
+  text-align: center;
+  padding: 20px;
+}
+.row-with-thumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mini-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 .country-info {

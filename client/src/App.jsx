@@ -39,6 +39,10 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import BannerEdit from './pages/BannerEdit'
 import RoleEdit from './pages/EditRoles'
+import BrandsList from './pages/BrandsList'
+import CreateBrand from './pages/CreateBrand'
+import EditBrand from './pages/EditBrand'
+import InventoryList from './pages/InventoryList'
 
 function AppContent() {
   const location = useLocation()
@@ -68,7 +72,16 @@ function AppContent() {
             <Route path="/categories/create" element={<CreateCategory />} />
             <Route path="/categories/edit/:id" element={<EditCategory />} />
             <Route path="/categories/edit" element={<EditCategory />} />
-            
+
+            {/* Brands Routes */}
+            <Route path="/brands/list" element={<BrandsList />} />
+            <Route path="/brands/create" element={<CreateBrand />} />
+            <Route path="/brands/edit/:id" element={<EditBrand />} />
+            <Route path="/brands/edit" element={<EditBrand />} />
+
+            {/* Inventory / Stock Control */}
+            <Route path="/inventory" element={<InventoryList />} />
+
             {/* Orders Routes */}
             <Route path="/orders/list" element={<OrdersList />} />
             <Route path="/orders/details/:id" element={<OrderDetails />} />
