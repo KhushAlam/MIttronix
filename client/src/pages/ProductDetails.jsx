@@ -317,19 +317,19 @@ function ProductDetails() {
                   <p className="description-text">{product.description}</p>
                 </div>
               )}
-
-              {product.variants && product.variants.length > 0 && (
+   
+              {/* {product.variants && product.variants.length > 0 && (
                 <div className="variants-section">
                   <h3>Available Variants</h3>
                   <div className="variants-list">
-                    {product.variants.map((variant, index) => (
+                    {product.variants?.map((variant, index) => (
                       <span key={`variant-${product._id || 'default'}-${index}-${variant.replace(/[^a-zA-Z0-9]/g, '')}`} className="variant-badge">{variant}</span>
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
 
-              {product.tags && product.tags.length > 0 && (
+              {/* {product.tags && product.tags.length > 0 && (
                 <div className="tags-section">
                   <h3>Product Tags</h3>
                   <div className="tags-list">
@@ -338,7 +338,7 @@ function ProductDetails() {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>

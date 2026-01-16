@@ -5,24 +5,56 @@ export const productService = {
   createProduct: async (productData) => {
     try {
       const formData = new FormData()
-      
+
       formData.append('name', productData.name)
       formData.append('description', productData.description)
       formData.append('category', productData.category)
-      formData.append('price', productData.price)
-      formData.append('colour', productData.colour || '')
-      formData.append('specification', productData.specification || '')
-      formData.append('stockQuantity', productData.stockQuantity || 0)
-      formData.append('stockStatus', productData.stockStatus || 'InStock')
-      formData.append('brand', productData.brand || '')
-      formData.append('isActive', productData.isActive !== undefined ? productData.isActive : true)
-      
+      formData.append('sellingprice', productData.price)
+      formData.append('warranty', productData.warranty)
+      formData.append('returnPolicy', productData.returnPolicy)
+      formData.append('hsnCode', productData.hsnCode)
+
+      // Optional fields
+      if (productData.slug) formData.append('slug', productData.slug)
+      if (productData.sku) formData.append('sku', productData.sku)
+      if (productData.brand) formData.append('brand', productData.brand)
+      if (productData.colour) formData.append('colour', productData.colour)
+      if (productData.size) formData.append('size', productData.size)
+      if (productData.specification) formData.append('specification', productData.specification)
+      if (productData.mrp) formData.append('mrp', productData.mrp)
+      if (productData.discountPrice) formData.append('discountPrice', productData.discountPrice)
+      if (productData.stockQuantity) formData.append('stockQuantity', productData.stockQuantity)
+      if (productData.stockStatus) formData.append('stockStatus', productData.stockStatus)
+      if (productData.weight) formData.append('weight', productData.weight)
+      if (productData.dimensions) formData.append('dimensions', productData.dimensions)
+      if (productData.variants && productData.variants.length > 0) formData.append('variants', productData.variants.join(','))
+      if (productData.tags && productData.tags.length > 0) formData.append('tags', productData.tags.join(','))
+
+      // Supplier (nested object)
+      if (productData.supplier) {
+        if (productData.supplier.name) formData.append('supplier[name]', productData.supplier.name)
+        if (productData.supplier.contact) formData.append('supplier[contact]', productData.supplier.contact)
+        if (productData.supplier.email) formData.append('supplier[email]', productData.supplier.email)
+      }
+
+      // Shipping (nested object)
+      if (productData.shipping) {
+        if (productData.shipping.charges) formData.append('shipping[charges]', productData.shipping.charges)
+        if (productData.shipping.deliveryTime) formData.append('shipping[deliveryTime]', productData.shipping.deliveryTime)
+        if (productData.shipping.restrictions) formData.append('shipping[restrictions]', productData.shipping.restrictions)
+      }
+
+
+
+
+
+
       if (productData.images && productData.images.length > 0) {
         productData.images.forEach(image => {
-          formData.append('productImages', image)
+          formData.append('images', image)
         })
       }
-      
+
       const response = await instance.post('/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -78,7 +110,7 @@ export const productService = {
       throw error.response?.data || error
     }
   },
-  
+
   deleteProduct: async (id) => {
     try {
       const response = await instance.delete(`/products/${id}`)

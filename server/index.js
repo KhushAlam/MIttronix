@@ -13,6 +13,7 @@ import bannerRoutes from './routes/banner.routes.js'
 import blogRoutes from './routes/blog.routes.js'
 import roleRoutes from './routes/roles.routes.js'
 import cartRoutes from './routes/cart.routes.js'
+import healthRoutes from './routes/apihealth.route.js';
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api/banners", bannerRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api",healthRoutes);
 
 
 // Global error handler

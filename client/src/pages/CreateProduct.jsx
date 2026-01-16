@@ -281,7 +281,7 @@ function CreateProduct() {
       images.forEach(img => URL.revokeObjectURL(img.preview))
 
       resetForm()
-      
+
       setTimeout(() => navigate("/products/grid"), 1500);
 
     } catch (error) {
@@ -291,6 +291,44 @@ function CreateProduct() {
       setLoading(false)
     }
   }
+  //   const handleSubmit = async (e) => {
+  //   e.preventDefault()
+  //   setError('')
+  //   setSuccess('')
+
+  //   setLoading(true)
+
+  //   try {
+  //     const formDataToSend = new FormData()
+
+  //     // 🟢 NORMAL FIELDS
+  //     Object.entries(formData).forEach(([key, value]) => {
+  //       if (typeof value === 'object' && value !== null) {
+  //         formDataToSend.append(key, JSON.stringify(value))
+  //       } else {
+  //         formDataToSend.append(key, value)
+  //       }
+  //     })
+
+  //     // 🟢 IMAGES (IMPORTANT)
+  //     images.forEach(img => {
+  //       formDataToSend.append('images', img.file)
+  //     })
+
+  //     const result = await productService.createProduct(formDataToSend)
+
+  //     setSuccess('Product created successfully!')
+  //     resetForm()
+  //     setTimeout(() => navigate('/products/grid'), 1500)
+
+  //   } catch (err) {
+  //     console.error(err)
+  //     setError('Failed to create product')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
 
   return (
     <div>
@@ -409,7 +447,7 @@ function CreateProduct() {
               <div className="content-card">
                 <h3>Product Images</h3>
                 <div className="image-upload-section">
-                  <div 
+                  <div
                     className={`image-upload-area ${dragOver ? 'dragover' : ''}`}
                     onClick={() => document.getElementById('file-input').click()}
                     onDrop={handleDrop}
@@ -431,7 +469,7 @@ function CreateProduct() {
                       )}
                     </div>
                   </div>
-                  
+
                   <input
                     id="file-input"
                     type="file"
@@ -440,17 +478,17 @@ function CreateProduct() {
                     onChange={handleFileSelect}
                     className="hidden-file-input"
                   />
-                  
+
                   {images.length > 0 && (
                     <div className="image-preview-grid">
                       {images.map((image) => (
                         <div key={image.id} className="image-preview-item">
-                          <img 
-                            src={image.preview} 
-                            alt="Product preview" 
+                          <img
+                            src={image.preview}
+                            alt="Product preview"
                             className="image-preview"
                           />
-                          <button 
+                          <button
                             type="button"
                             className="image-remove-btn"
                             onClick={() => removeImage(image.id)}
@@ -466,7 +504,7 @@ function CreateProduct() {
 
               <div className="content-card">
                 <h3>Basic Information</h3>
-                
+
                 <div className="form-group">
                   <label htmlFor="name">Product Name *</label>
                   <input

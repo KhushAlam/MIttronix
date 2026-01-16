@@ -5,61 +5,139 @@ export const createProduct = async (req, res) => {
   try {
     const {
       name,
+      slug,
       description,
       category,
+
       price,
+      sellingprice,
+      mrp,
+      discountPrice,
+
+      sku,
+      productcode,
+
       colour,
+      size,
+      variants,
+      brand,
       specification,
+
       stockStatus,
       stockQuantity,
-      brand,
+
+      weight,
+      dimensions,
+
+      tag,
+      tags,
+
+      warranty,
+      returnPolicy,
+
+      barcode,
+      hsnCode,
+
+      supplier,   // array
+      shipping,   // array
+
       isActive,
+      status
     } = req.body;
 
-    if (!name || !price || !description || !category) {
+    //  Required validations (schema ke hisaab se)
+    if (
+      !name ||
+      !description ||
+      !category ||
+      !sellingprice||
+      !warranty ||
+      !returnPolicy ||
+      !hsnCode
+    ) {
       return res.status(400).json({
-        message: "name, price, description, category are required",
+        message:
+          "name, description, category, sellingprice, warranty, returnPolicy, hsnCode are required"
       });
     }
 
+    //  Image validation
     if (!req.files || req.files.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "At least one image file is required" });
+      return res.status(400).json({
+        message: "At least one image file is required"
+      });
     }
- 
-    const uploadPromises = req.files.map((file) => uploadImage(file.buffer));
+
+    // ☁️
+    const uploadPromises = req.files.map((file) =>
+      uploadImage(file.buffer)
+    );
     const uploadResults = await Promise.all(uploadPromises);
 
     const images = uploadResults.map((result) => ({
       url: result.secure_url,
-      public_id: result.public_id,
+      public_id: result.public_id
     }));
 
+    // 🧩 Create Product
     const newProduct = await Product.create({
       name,
+      slug,
       description,
       category,
+
       images,
+
       price,
+      sellingprice,
+      mrp,
+      discountPrice,
+
+      sku,
+      productcode,
+
       colour,
-      specification,
-      stockQuantity: stockQuantity || 0,
+      size,
+      variants,
       brand,
+      specification,
+
       stockStatus,
+      stockQuantity: stockQuantity || 0,
+
+      weight,
+      dimensions,
+
+      tag,
+      tags,
+
+      warranty,
+      returnPolicy,
+
+      barcode,
+      hsnCode,
+
+      supplier: supplier ? supplier : [],
+      shipping: shipping ? shipping : [],
+
       isActive,
+      status
     });
 
-    res
-      .status(201)
-      .json({ message: "Product created successfully", newProduct });
+    return res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product: newProduct
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating Product", error: error.message });
+    console.log(error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error creating Product",
+      error: error.message,
+    });
   }
 };
-
 export const getProducts = async (req, res) => {
   try {
     const { search, category, minPrice, maxPrice, stockStatus } = req.query;
@@ -116,7 +194,7 @@ export const updateProduct = async (req, res) => {
       brand,
       isActive,
     } = req.body;
-    
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {

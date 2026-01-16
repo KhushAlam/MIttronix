@@ -3,7 +3,13 @@ import Invoice from "../models/invoice.model.js";
 export const getInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find();
-    res.status(200).json(invoices);
+    if (!invoices) {
+      return res.status(400).json({success:false,
+        message:"No Invoice are Found"
+      })
+    } else {
+      return res.status(200).status(200).json(invoices);
+    }
   } catch (error) {
     res.status(500).json({
       message: "Couldn't get invoices",
@@ -104,7 +110,6 @@ export const createInvoice = async (req, res) => {
           "Invoice number, customer details and at least one item are required.",
       });
     }
-
     const newInvoice = await Invoice.create({
       invoiceNumber,
       customer,
@@ -181,10 +186,55 @@ export const deleteInvoiceById = async (req, res) => {
 
 export const getInvoicesByMonth = async (req, res) => {
   try {
-    const {} = req.query;
+    const { thisMonth } = req.query;
+    if (!thisMonth) {
+      return res.status(400).json({
+        success: false,
+        message: "thisMonth Query is Required"
+      });
+    }
+    // For current date
+    const now = new Date()
+
+    //Start of Month
+    const startofMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(), 1
+    )
+
+    // End of Month
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+    const invoices = invoiceModel.find({
+      createdAt: {
+        $gte: startofMonth,
+        $lte: endOfMonth,
+      },
+    }
+    )
+    if (invoices) {
+      return res.status(200).json({
+        success: true,
+        data: invoices,
+        message: "This Month Data Found Successful"
+      })
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "No Any Invoices are Present"
+      })
+    }
+
   } catch (error) {
     res.status(500).json({
       message: "Couldn't get invoice",
     });
-  }
+  };
 };

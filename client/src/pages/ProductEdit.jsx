@@ -19,6 +19,7 @@ function ProductEdit() {
     category: '',
     price: '',
     cost: '',
+    mrp: '',
     sku: '',
     stockQuantity: '',
     stockStatus: 'InStock',
@@ -51,15 +52,16 @@ function ProductEdit() {
         ]);
 
         const product = products.find(p => p._id === id);
-        
+        console.log(product);
         if (product) {
           // Populate form with data from the fetched product
           setFormData(prev => ({
             ...prev,
             name: product.name || '',
             slug: product.slug || '',
-            category: product.category || '',
+            category: product.categories || '',
             price: product.price || '',
+            mrp: product.mrp || '',
             cost: product.cost || '',
             sku: product.sku || '',
             stockQuantity: product.stockQuantity || '',
@@ -70,7 +72,7 @@ function ProductEdit() {
             brand: product.brand || '',
             isActive: product.isActive !== undefined ? product.isActive : true,
             // Assuming the product object has an 'images' array of URLs
-            existingImages: product.images || [], 
+            existingImages: product.images || [],
           }));
         } else {
           setError('Product not found');
@@ -132,7 +134,7 @@ function ProductEdit() {
       });
     }
   };
-  
+
   // Marks an existing image for deletion upon form submission
   const handleDeleteExistingImage = (imageUrl) => {
     setFormData(prev => ({
@@ -143,7 +145,7 @@ function ProductEdit() {
       imagesToDelete: [...prev.imagesToDelete, imageUrl]
     }));
   };
-  
+
   // Removes a newly selected image from the upload queue before submission
   const handleRemoveNewImage = (index) => {
     // Revoke the specific object URL to free memory
@@ -182,7 +184,7 @@ function ProductEdit() {
           formDataToSend.append(key, formData[key]);
         }
       });
-      
+
       // Append the list of images to delete (as a JSON string for easy parsing on the backend)
       formDataToSend.append('imagesToDelete', JSON.stringify(formData.imagesToDelete));
 
@@ -190,10 +192,10 @@ function ProductEdit() {
       formData.newImageFiles.forEach(file => {
         formDataToSend.append('newImages', file); // Backend will receive an array of files under 'newImages'
       });
-      
+
       // Your API service must be configured to handle FormData
       await productService.updateProduct(id, formDataToSend);
-      
+
       alert('Product updated successfully!');
       navigate(`/products/details/${id}`);
 
@@ -256,7 +258,7 @@ function ProductEdit() {
                   <select id="category" name="category" value={formData.category} onChange={handleInputChange} required>
                     <option value="">Select a Category</option>
                     {categories.map(cat => (
-                      <option key={cat._id} value={cat.name}>{cat.name}</option>
+                      <option key={cat._id} value={cat.title}>{cat.title}</option>
                     ))}
                   </select>
                 </div>
@@ -292,8 +294,8 @@ function ProductEdit() {
                   <label>Existing Images</label>
                   <div className="image-preview-grid">
                     {formData.existingImages.map((imageUrl) => (
-                      <div key={imageUrl} className="image-preview-item">
-                        <img src={imageUrl} alt="Existing product" />
+                      <div key={imageUrl._id} className="image-preview-item">
+                        <img src={imageUrl.url} alt="Existing product" />
                         <button type="button" className="delete-image-btn" onClick={() => handleDeleteExistingImage(imageUrl)}>
                           <MdClose />
                         </button>
@@ -302,15 +304,15 @@ function ProductEdit() {
                   </div>
                   {formData.existingImages.length === 0 && <small>No existing images.</small>}
                 </div>
-                
+
                 {imagePreviews.length > 0 && (
                   <div className="form-group">
                     <label>New Images to Upload</label>
-                     <div className="image-preview-grid">
+                    <div className="image-preview-grid">
                       {imagePreviews.map((previewUrl, index) => (
                         <div key={previewUrl} className="image-preview-item">
                           <img src={previewUrl} alt={`New preview ${index + 1}`} />
-                           <button type="button" className="delete-image-btn" onClick={() => handleRemoveNewImage(index)}>
+                          <button type="button" className="delete-image-btn" onClick={() => handleRemoveNewImage(index)}>
                             <MdClose />
                           </button>
                         </div>
