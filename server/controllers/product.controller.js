@@ -50,7 +50,7 @@ export const createProduct = async (req, res) => {
       !name ||
       !description ||
       !category ||
-      !sellingprice||
+      !sellingprice ||
       !warranty ||
       !returnPolicy ||
       !hsnCode
@@ -173,6 +173,52 @@ export const getProducts = async (req, res) => {
   }
 };
 
+// export const updateProduct = async (req, res) => {
+// try {
+//   const { id } = req.params;
+
+//   if (!req.body) {
+//     return res.status(400).json({ message: "Request body is missing." });
+//   }
+
+//   const {
+//     name,
+//     description,
+//     category,
+//     imageUrl,
+//     price,
+//     colour,
+//     specification,
+//     stockQuantity,
+//     stockStatus,
+//     brand,
+//     isActive,
+//   } = req.body;
+
+//   const updatedProduct = await Product.findByIdAndUpdate(
+//     id,
+//     {
+//       name,
+//       description,
+//       category,
+//       imageUrl,
+//       price,
+//       colour,
+//       specification,
+//       stockQuantity,
+//       stockStatus,
+//       brand,
+//       isActive,
+//     },
+//     { new: true }
+//   );
+//   res.status(200).json({ message: "Product Updated", updatedProduct });
+// } catch (error) {
+//   console.log("Error updating product:", error);
+//   res.status(500).json({ message: "Error updating Product", error });
+// }
+// };
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -181,43 +227,89 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Request body is missing." });
     }
 
+    // Destructure request body
     const {
       name,
+      slug,
       description,
       category,
-      imageUrl,
+      images,
       price,
+      sellingprice,
+      mrp,
+      discountPrice,
       colour,
+      size,
+      variants,
+      brand,
       specification,
       stockQuantity,
       stockStatus,
-      brand,
+      tags,
+      warranty,
+      returnPolicy,
+      barcode,
+      hsnCode,
+      supplier,
+      shipping,
       isActive,
+      status,
+      productcode
     } = req.body;
+
+    // Create update object dynamically
+    const updateData = {
+      name,
+      slug,
+      description,
+      category,
+      images, // array of objects [{url, public_id}]
+      price,
+      sellingprice,
+      mrp,
+      discountPrice,
+      colour,
+      size,
+      variants,
+      brand,
+      specification,
+      stockQuantity,
+      stockStatus,
+      tags,
+      warranty,
+      returnPolicy,
+      barcode,
+      hsnCode,
+      supplier, // array of objects
+      shipping, // array of objects
+      isActive,
+      status,
+      productcode
+    };
+
+    // Remove undefined fields (optional)
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) delete updateData[key];
+    });
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      {
-        name,
-        description,
-        category,
-        imageUrl,
-        price,
-        colour,
-        specification,
-        stockQuantity,
-        stockStatus,
-        brand,
-        isActive,
-      },
+      updateData,
       { new: true }
     );
-    res.status(200).json({ message: "Product Updated", updatedProduct });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+
+    res.status(200).json({ message: "Product updated successfully", updatedProduct });
+
   } catch (error) {
-    console.log("Error updating product:", error);
-    res.status(500).json({ message: "Error updating Product", error });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Error updating product", error });
   }
 };
+
 
 export const deleteProduct = async (req, res) => {
   try {

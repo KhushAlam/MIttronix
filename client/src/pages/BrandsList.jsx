@@ -59,8 +59,12 @@ function BrandsList() {
 
             {brands.map((b) => (
               <div className="table-row" key={b._id || b.name}>
-                <div className="brand-name">{b.name}</div>
-                <div className="brand-actions">
+                <div
+                  className="brand-name"
+                  style={{ textTransform: "capitalize" }}
+                >
+                  {b.name}
+                </div>                <div className="brand-actions">
                   <button className="btn btn-sm btn-secondary" onClick={() => navigate(`/brands/edit/${b._id}`)}>
                     <MdEdit size={16} /> Edit
                   </button>

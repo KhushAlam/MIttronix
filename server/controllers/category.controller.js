@@ -70,7 +70,7 @@ export const editCategory = async (req, res) => {
         isSubCategory: !!parent,
       },
       { new: true }
-    ).populate("parent", "title");
+    ).populate("parent", "name");
 
     if (!editedCategory)
       return res.status(404).json({ message: "Category not Found" });

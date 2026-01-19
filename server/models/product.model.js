@@ -66,7 +66,7 @@ const productSchema = new mongoose.Schema(
 
     colour: { type: String },
     size: { type: String },
-    variants: { type: String },
+    variants: [{ type: String }],
     brand: { type: String },
 
     specification: { type: String },
@@ -81,8 +81,10 @@ const productSchema = new mongoose.Schema(
     weight: { type: String, trim: true },
     dimensions: { type: String, trim: true },
 
-    tag: { type: String, trim: true },
-    tags: { type: String, trim: true },
+    tags: [{
+      type: String,
+      require: true
+    }],
 
     warranty: { type: String, required: true },
     returnPolicy: { type: String, required: true, trim: true },

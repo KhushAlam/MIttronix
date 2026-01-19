@@ -8,6 +8,7 @@ import { categoryService } from '../api/categoryService.js'
 function CreateProduct() {
   const navigate = useNavigate()
 
+  const [productCode, setProductcode] = useState([]);
   const initialFormState = {
     name: '',
     slug: '',
@@ -58,6 +59,10 @@ function CreateProduct() {
     const fetchCategories = async () => {
       try {
         const categoriesData = await categoryService.getCategories()
+        // const productdata = await productService.getProducts()
+        // if (productdata.length > 0) {
+        //   setProductcode(productdata);
+        // }
         setCategories(categoriesData)
         if (categoriesData.length > 0) {
           setFormData(prev => ({ ...prev, category: categoriesData[0]._id }))
@@ -213,8 +218,27 @@ function CreateProduct() {
     setError('')
     setSuccess('')
 
-    if (!formData.name || !formData.price || !formData.description || !formData.category || !formData.sku) {
-      setError('Please fill in all required fields (Name, SKU, Price, Description, Category)')
+    if (!formData.name || !formData.price || !formData.description || !formData.category || !formData.sku || !formData.brand || !formData.colour) {
+      setError('Please fill in all required fields (Name, SKU, Price, Description, Category, Brand)')
+      return
+    }
+
+    if (isNaN(formData.sku)) {
+      setError("Please Enter only Number Not Add Any Character's")
+      return
+    }
+
+    if (!formData.name || !formData.slug || formData.slug.length < 3 || formData.name.length < 3 || formData.slug.length > 500 || formData.name.length > 500) {
+      setError('Please Enter Valid Product Name or Slug')
+      return
+    }
+
+    if (formData.description.length < 10 || formData.description.length > 1000) {
+      setError("Please Enter Description inBetween 5 word's to 50 word's")
+      return
+    }
+    if (formData.specification.length < 5 || formData.specification.length > 1000) {
+      setError("Please Enter Specification inBetween 5 word's to 50 word's")
       return
     }
 
@@ -248,8 +272,47 @@ function CreateProduct() {
       return
     }
 
-    setLoading(true)
+    if (!formData.supplier.name && formData.supplier.name.length < 3) {
+      setError("Please Enter Valid Supplier Name")
+      return
+    }
 
+    if (!formData.supplier.contact || !/^[6-9]\d{9}$/.test(formData.supplier.contact)) {
+      setError("Please Enter 10 digit valid Number")
+      return
+    }
+    if (!formData.supplier.email || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(formData.supplier.email)) {
+      setError("Please enter a valid Gmail address (ending with @gmail.com)");
+      return;
+    }
+    if (!formData.shipping.charges || !formData.shipping.deliveryTime || !formData.shipping.restrictions) {
+      setError("Please Enter All Shipping Requirement's")
+      return
+    } else if (isNaN(formData.shipping.charges) || formData.shipping.charges < 0) {
+      setError("Please Enter a Valid Shipping Charge")
+      return
+    } else {
+      setError('')
+    }
+
+    if (!formData.barcode || isNaN(formData.barcode)) {
+      setError("Please Enter Valid Barcode")
+      return
+    }
+    if (!/^\d{2}(\d{2})?(\d{2})?$/.test(formData.hsnCode)) {
+      setError("HSN must be 2, 4, or 6 digits");
+      return;
+    }
+    if (!formData.warranty || formData.warranty.trim().length < 5) {
+      setError("Please enter valid warranty information (min 5 characters)");
+      return;
+    }
+
+    if (!formData.returnPolicy || formData.returnPolicy.trim().length < 5) {
+      setError("Please enter valid return policy information (min 10 characters)");
+      return;
+    }
+    setLoading(true)
     try {
       const productData = {
         ...formData,
@@ -266,12 +329,10 @@ function CreateProduct() {
         supplier: Object.values(formData.supplier).some(val => val) ? formData.supplier : null,
         shipping: Object.values(formData.shipping).some(val => val) ? formData.shipping : null
       }
-
       console.log('Submitting product data:', {
         ...productData,
         images: `${productData.images.length} images`
       })
-
       const result = await productService.createProduct(productData)
 
       console.log('Product creation result:', result)
@@ -328,8 +389,6 @@ function CreateProduct() {
   //     setLoading(false)
   //   }
   // }
-
-
   return (
     <div>
       <div className="page-header">
@@ -344,7 +403,6 @@ function CreateProduct() {
           </Link>
         </div>
       </div>
-
       <div className="form-container">
         {error && (
           <div className="error-message" style={{

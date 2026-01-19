@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MdArrowBack, MdSave } from 'react-icons/md'
+import { categoryService } from '../api/categoryService'
 
 function EditCategory() {
   const navigate = useNavigate()
   const { id } = useParams()
 
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
     status: 'Active',
     parent: ''
@@ -16,31 +17,32 @@ function EditCategory() {
   const [parentCategories, setParentCategories] = useState([])
 
   useEffect(() => {
-  const fetchCategoryAndParents = async () => {
-    try {
-      const allCategories = await categoryService.getCategories()
-      const categoryToEdit = allCategories.find(cat => cat._id === id)
+    const fetchCategoryAndParents = async () => {
+      try {
+        const allCategories = await categoryService.getCategories()
+        const categoryToEdit = allCategories.find(cat => cat._id === id)
 
-      if (categoryToEdit) {
-        setFormData({
-          name: categoryToEdit.name || '',
-          description: categoryToEdit.description || '',
-          status: categoryToEdit.status || 'Active',
-          parent: categoryToEdit.parent || ''
-        })
+        if (categoryToEdit) {
+          setFormData({
+            title: categoryToEdit.title || '',
+            description: categoryToEdit.description || '',
+            status: categoryToEdit.status || 'Active',
+            parent: categoryToEdit.parent || ''
+          })
+          console.log(categoryToEdit);
+        }
+
+        const parents = allCategories.filter(cat => cat._id !== id)
+        setParentCategories(parents)
+      } catch (error) {
+        console.error('Error loading category data:', error)
       }
-
-      const parents = allCategories.filter(cat => cat._id !== id)
-      setParentCategories(parents)
-    } catch (error) {
-      console.error('Error loading category data:', error)
     }
-  }
 
-  if (id) {
-    fetchCategoryAndParents()
-  }
-}, [id])
+    if (id) {
+      fetchCategoryAndParents()
+    }
+  }, [id])
 
 
   const handleInputChange = (e) => {
@@ -52,17 +54,15 @@ function EditCategory() {
   }
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
+    e.preventDefault()
 
-  try {
-    await categoryService.updateCategory(id, formData)
-    navigate('/categories/list')
-  } catch (error) {
-    console.error('Error updating category:', error)
+    try {
+      await categoryService.updateCategory(id, formData)
+      navigate('/categories/list')
+    } catch (error) {
+      console.error('Error updating category:', error)
+    }
   }
-}
-
-
   return (
     <div>
       <div className="page-header">
@@ -83,14 +83,14 @@ function EditCategory() {
           <div className="form-grid-single">
             <div className="content-card">
               <h3>Category Information</h3>
-              
+
               <div className="form-group">
                 <label htmlFor="name">Category Name *</label>
                 <input
                   type="text"
                   id="name"
-                  name="name"
-                  value={formData.name}
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter category name"

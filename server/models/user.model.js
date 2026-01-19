@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
   hashedPassword: {
     type: String,
   },
+  email:{
+    type:String,
+    required:true,
+    unique:true
+  }
 });
 
 export default mongoose.model("User", userSchema);

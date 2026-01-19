@@ -36,7 +36,7 @@ export const categoryService = {
   updateCategory: async (id, categoryData) => {
     try {
       const response = await instance.put(`/category/${id}`, categoryData)
-      return response.data
+      console.log(categoryData)
     } catch (error) {
       throw error.response?.data || error
     }

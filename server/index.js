@@ -14,6 +14,7 @@ import blogRoutes from './routes/blog.routes.js'
 import roleRoutes from './routes/roles.routes.js'
 import cartRoutes from './routes/cart.routes.js'
 import healthRoutes from './routes/apihealth.route.js';
+import brandRouter from './routes/brand.route.js';
 
 const app = express();
 
@@ -47,6 +48,7 @@ if (process.env.MONGO_URI) {
 
 app.use("/api/products", productRoutes);
 app.use("/api/category", categoryRoutes);
+app.use('/api/brand', brandRouter);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -56,7 +58,7 @@ app.use("/api/banners", bannerRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api",healthRoutes);
+app.use("/api", healthRoutes);
 
 
 // Global error handler
