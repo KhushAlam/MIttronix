@@ -160,15 +160,15 @@ export const userSignup = async (req, res) => {
       });
     }
 
-    const verifyOtp = await sendOtp(contactNumber);
-    const { otp } = req.body;
-    if (!otp) {
-      return res.status(400).json({ message: "OTP is required" });
-    }
+    // const verifyOtp = await sendOtp(contactNumber);
+    // const { otp } = req.body;
+    // if (!otp) {
+    //   return res.status(400).json({ message: "OTP is required" });
+    // }
 
-    if (otp !== verifyOtp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
+    // if (otp !== verifyOtp) {
+    //   return res.status(400).json({ message: "Invalid OTP" });
+    // }
 
 
     const existingUser = await User.findOne({ contactNumber });
