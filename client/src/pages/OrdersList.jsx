@@ -19,7 +19,8 @@ import {
 function OrdersList() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState('');
+  const [monthvalue, setMonthvalue] = useState('')
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -39,7 +40,60 @@ function OrdersList() {
     fetchOrders()
   }, [])
 
+  const thismonthordersdata = async () => {
+    try {
+      setLoading(true)
+      const ordersData = await orderService.getOrdersThisMonth()
+      setOrders(ordersData?.data || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      setError('Failed to load this-month orders. Please try again.')
+      setOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const lastmonthordersdata = async () => {
+    try {
+      setLoading(true)
+      const ordersData = await orderService.getOrdersLastMonth()
+      setOrders(ordersData?.data || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      setError('Failed to load last-month orders. Please try again.')
+      setOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const thisyearordersdata = async () => {
+    try {
+      setLoading(true)
+      const ordersData = await orderService.getOrdersThisYear()
+      setOrders(ordersData?.data || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      setError('Failed to load this-month orders. Please try again.')
+      setOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handlemonthvalue = async (e) => {
+    const value = e.target.value;
+    setMonthvalue(value);
+
+    if (value === "this-month") {
+      await thismonthordersdata();
+    } else if (value === "last-month") {
+      await lastmonthordersdata();
+    } else if (value === "this-year") {
+      await thisyearordersdata();
+    }
+  };
+
   // Calculate order statistics from real data
+
   const calculateOrderStats = () => {
     if (!orders.length) {
       return [
@@ -53,7 +107,6 @@ function OrdersList() {
         { title: "In Progress", count: "0", icon: <MdHourglassEmpty size={24} />, color: "orange" },
       ]
     }
-
     const cancelled = orders.filter(o => o.orderStatus === 'Cancelled').length
     const shipped = orders.filter(o => o.orderStatus === 'Shipped').length
     const delivering = orders.filter(o => o.orderStatus === 'Delivering').length
@@ -74,7 +127,6 @@ function OrdersList() {
       { title: "In Progress", count: inProgress.toString(), icon: <MdHourglassEmpty size={24} />, color: "orange" },
     ]
   }
-
   const orderStats = calculateOrderStats()
 
   const getStatusBadgeClass = (status) => {
@@ -110,7 +162,6 @@ function OrdersList() {
         return "priority-normal";
     }
   };
-
   return (
     <div>
       <div className="page-header">
@@ -118,10 +169,10 @@ function OrdersList() {
           <h1 className="page-title">ORDERS LIST</h1>
         </div>
         <div className="page-actions">
-          <select className="time-filter">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>This Year</option>
+          <select className="time-filter" onChange={handlemonthvalue}>
+            <option value="this-month">This Month</option>
+            <option value="last-month">Last Month</option>
+            <option value="this-year">This Year</option>
           </select>
           <Link to="/orders/add" className="btn btn-primary">
             <MdAdd size={16} />
@@ -149,10 +200,10 @@ function OrdersList() {
       <div className="content-card">
         <div className="table-header">
           <h3>All Order List ({orders.length} orders)</h3>
-          <select className="table-filter">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>This Year</option>
+          <select className="table-filter" onChange={handlemonthvalue}>
+            <option value="this-month">This Month</option>
+            <option value="last-month">Last Month</option>
+            <option value="this-year">This Year</option>
           </select>
         </div>
 
@@ -183,13 +234,12 @@ function OrdersList() {
             <p>Loading orders...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
+          monthvalue === "last-month" ? (<div style={{ textAlign: 'center', padding: '40px' }}>
             <p style={{ marginBottom: '20px' }}>No orders found.</p>
-            <Link to="/orders/add" className="btn btn-primary">
-              <MdAdd size={16} />
-              Create Your First Order
+            <Link  className="btn btn-primary">
+              No Any Order's in last Month
             </Link>
-          </div>
+          </div>) : null
         ) : (
           <div className="table-container">
             <table className="data-table">
@@ -209,7 +259,7 @@ function OrdersList() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order, index) => (
+                {orders?.map((order, index) => (
                   <tr key={order._id || index}>
                     <td>
                       <Link

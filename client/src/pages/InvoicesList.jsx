@@ -7,6 +7,7 @@ function InvoicesList() {
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [monthvalue, setMonthvalue] = useState('')
 
   useEffect(() => {
     fetchInvoices()
@@ -27,6 +28,57 @@ function InvoicesList() {
     }
   }
 
+  const thismonthinvoicesdata = async () => {
+    try {
+      setLoading(true)
+      const invoicesData = await invoiceService.getInvoicesThisMonth()
+      setInvoices(invoicesData?.data || [])
+    } catch (error) {
+      console.error('Error fetching Invoices:', error)
+      setError('Failed to load this-month Invoices. Please try again.')
+      setInvoices([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const lastmonthinvoicesdata = async () => {
+    try {
+      setLoading(true)
+      const invoicesData = await invoiceService.getInvoicesLastMonth()
+      setInvoices(invoicesData?.data || [])
+    } catch (error) {
+      console.error('Error fetching Invoices:', error)
+      setError('Failed to load last-month Invoices. Please try again.')
+      setInvoices([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const thisyearinvoicesData = async () => {
+    try {
+      setLoading(true)
+      const invoicesData = await invoiceService.getInvoicesThisYear()
+      setInvoices(invoicesData?.data || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      setError('Failed to load this-month Invoices. Please try again.')
+      setInvoices([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handlemonthvalue = async (e) => {
+    const value = e.target.value;
+    setMonthvalue(value);
+
+    if (value === "this-month") {
+      await thismonthinvoicesdata();
+    } else if (value === "last-month") {
+      await lastmonthinvoicesdata();
+    } else if (value === "this-year") {
+      await thisyearinvoicesData();
+    }
+  };
   const handleDelete = async (invoiceId) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
       try {
@@ -39,7 +91,7 @@ function InvoicesList() {
       }
     }
   }
-  
+
   const calculateStats = () => {
     const total = invoices.length
     const pending = invoices.filter(inv => inv.status === 'draft' || inv.status === 'sent').length
@@ -93,10 +145,10 @@ function InvoicesList() {
           <h1 className="page-title">INVOICES LIST</h1>
         </div>
         <div className="page-actions">
-          <select className="time-filter">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>This Year</option>
+          <select className="time-filter" onChange={handlemonthvalue}>
+            <option value="this-month">This Month</option>
+            <option value="last-month">Last Month</option>
+            <option value="this-year">This Year</option>
           </select>
           <Link to="/invoices/add" className="btn btn-primary">
             <MdAdd size={16} />
@@ -127,9 +179,9 @@ function InvoicesList() {
         <div className="table-header">
           <h3>All Invoices List ({invoices.length} invoices)</h3>
           <select className="table-filter">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>This Year</option>
+            <option value="this-month">This Month</option>
+            <option value="last-month">Last Month</option>
+            <option value="this-year">This Year</option>
           </select>
         </div>
 
@@ -162,10 +214,12 @@ function InvoicesList() {
         ) : invoices.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <p style={{ marginBottom: '20px' }}>No invoices found.</p>
-            <Link to="/invoices/add" className="btn btn-primary">
-              <MdAdd size={16} />
-              Create Your First Invoice
-            </Link>
+            {monthvalue === "last-month" ?
+              <p>Create Your First Invoice</p>
+              : <Link to="/invoices/add" className="btn btn-primary">
+                <MdAdd size={16} />
+                Create Your First Invoice
+              </Link>}
           </div>
         ) : (
           <div className="table-container">
