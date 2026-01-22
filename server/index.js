@@ -20,7 +20,9 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: ["*",
+      "https://frontendmittronix.netlify.app"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
