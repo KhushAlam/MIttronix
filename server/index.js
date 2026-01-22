@@ -18,15 +18,33 @@ import brandRouter from './routes/brand.route.js';
 
 const app = express();
 
+const allowedOrigins = ["https://frontendmittronix.netlify.app"];
+
 app.use(
   cors({
-    origin: ["*",
-      "https://frontendmittronix.netlify.app"
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow non-browser requests like Postman
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // if you are sending cookies or auth headers
   })
 );
+
+// app.use(
+//   cors({
+//     origin: ["*",
+//       "https://frontendmittronix.netlify.app"
+//     ],
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
