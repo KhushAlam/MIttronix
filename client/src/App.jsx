@@ -52,89 +52,90 @@ function AppContent() {
     <div className="app">
       {!isAuthPage && <Sidebar />}
       <div className={`main-content ${isAuthPage ? 'auth-page' : ''}`}>
-          <Routes>
-            {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            
-            {/* Products Routes */}
-            <Route path="/products/list" element={<ProductList />} />
-            <Route path="/products/grid" element={<ProductGrid />} />
-            <Route path="/products/details/:id" element={<ProductDetails />} />
-            <Route path="/products/edit/:id" element={<ProductEdit />} />
-            <Route path="/products/edit" element={<ProductEdit />} />
-            <Route path="/products/create" element={<CreateProduct />} />
-            
-            {/* Categories Routes */}
-            <Route path="/categories/list" element={<CategoriesList />} />
-            <Route path="/categories/create" element={<CreateCategory />} />
-            <Route path="/categories/edit/:id" element={<EditCategory />} />
-            <Route path="/categories/edit" element={<EditCategory />} />
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* Brands Routes */}
-            <Route path="/brands/list" element={<BrandsList />} />
-            <Route path="/brands/create" element={<CreateBrand />} />
-            <Route path="/brands/edit/:id" element={<EditBrand />} />
-            <Route path="/brands/edit" element={<EditBrand />} />
+          {/* Products Routes */}
+          <Route path="/products/list" element={<ProductList />} />
+          <Route path="/products/grid" element={<ProductGrid />} />
+          <Route path="/products/details/:id" element={<ProductDetails />} />
+          <Route path="/products/edit/:id" element={<ProductEdit />} />
+          <Route path="/products/edit" element={<ProductEdit />} />
+          <Route path="/products/create" element={<CreateProduct />} />
 
-            {/* Inventory / Stock Control */}
-            <Route path="/inventory" element={<InventoryList />} />
+          {/* Categories Routes */}
+          <Route path="/categories/list" element={<CategoriesList />} />
+          <Route path="/categories/create" element={<CreateCategory />} />
+          <Route path="/categories/edit/:id" element={<EditCategory />} />
+          <Route path="/categories/edit" element={<EditCategory />} />
 
-            {/* Orders Routes */}
-            <Route path="/orders/list" element={<OrdersList />} />
-            <Route path="/orders/details/:id" element={<OrderDetails />} />
-            <Route path="/orders/details" element={<OrderDetails />} />
-            <Route path="/orders/add" element={<OrderAdd />} />
-            <Route path="/orders/edit/:id" element={<OrderEdit />} />
-            <Route path="/orders" element={<OrdersList />} />
-            
-            {/* Invoices Routes */}
-            <Route path="/invoices/list" element={<InvoicesList />} />
-            <Route path="/invoices/details/:id" element={<InvoiceDetails />} />
-            <Route path="/invoices/details" element={<InvoiceDetails />} />
-            <Route path="/invoices/add" element={<InvoiceAdd />} />
-            <Route path="/invoices/edit/:id" element={<InvoiceEdit />} />
-            <Route path="/invoices" element={<InvoicesList />} />
-            
-            {/* Settings & Profile & Notifications */}
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/service-request" element={<ServiceRequestList />} />
+          {/* Brands Routes */}
+          <Route path="/brands/list" element={<BrandsList />} />
+          <Route path="/brands/create" element={<CreateBrand />} />
+          <Route path="/brands/edit/:id" element={<EditBrand />} />
+          <Route path="/brands/edit" element={<EditBrand />} />
 
-            {/* Service Requests Routes */}
-            <Route path="/service-requests" element={<ServiceRequestList />} />
-            <Route path="/service-requests/create" element={<CreateServiceRequest />} />
-            <Route path="/service-requests/:id" element={<ServiceRequestDetails />} />
-            <Route path="/service-requests/:id/edit" element={<ServiceRequestEdit />} />
+          {/* Inventory / Stock Control */}
+          <Route path="/inventory" element={<InventoryList />} />
 
-            {/* Blog Routes */}
-            <Route path="/blogs" element={<BlogList />} />
-            <Route path="/blogs/create" element={<CreateBlog />} />
-            <Route path="/blogs/:id" element={<BlogDetails />} />
-            <Route path="/blogs/:id/edit" element={<BlogEdit />} />
+          {/* Orders Routes */}
+          <Route path="/orders/list" element={<OrdersList />} />
+          <Route path="/orders/details/:id" element={<OrderDetails />} />
+          <Route path="/orders/details" element={<OrderDetails />} />
+          <Route path="/orders/add" element={<OrderAdd />} />
+          <Route path="/orders/edit/:id" element={<OrderEdit />} />
+          <Route path="/orders" element={<OrdersList />} />
 
-            {/* Banner Routes */}
-            <Route path="/banners" element={<BannerList />} />
-            <Route path="/banners/create" element={<CreateBanner />} />
-            <Route path="/banners/:id" element={<BannerDetails />} />
-            <Route path="/banners/:id/edit" element={<BannerEdit />} />
+          {/* Invoices Routes */}
+          <Route path="/invoices/list" element={<InvoicesList />} />
+          <Route path="/invoices/details/:id" element={<InvoiceDetails />} />
+          <Route path="/invoices/details" element={<InvoiceDetails />} />
+          <Route path="/invoices/add" element={<InvoiceAdd />} />
+          <Route path='/invoices/add/:id' element={<InvoiceAdd />} />
+          <Route path="/invoices/edit/:id" element={<InvoiceEdit />} />
+          <Route path="/invoices" element={<InvoicesList />} />
 
-            {/* Role Routes */}
-            <Route path="/roles" element={<RoleList />} />
-            <Route path="/roles/create" element={<CreateRole />} />
-            <Route path="/roles/:id" element={<RoleDetails />} />
-            <Route path="/roles/edit" element={<RoleEdit />} />
+          {/* Settings & Profile & Notifications */}
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/service-request" element={<ServiceRequestList />} />
 
-            {/* Placeholder routes for other nav items */}
+          {/* Service Requests Routes */}
+          <Route path="/service-requests" element={<ServiceRequestList />} />
+          <Route path="/service-requests/create" element={<CreateServiceRequest />} />
+          <Route path="/service-requests/:id" element={<ServiceRequestDetails />} />
+          <Route path="/service-requests/:id/edit" element={<ServiceRequestEdit />} />
 
-            <Route path="/permissions" element={<div className="page-header"><h1>Permissions Page</h1></div>} />
-            <Route path="/customers" element={<div className="page-header"><h1>Customers Page</h1></div>} />
-            <Route path="/sellers" element={<div className="page-header"><h1>Sellers Page</h1></div>} />
-          </Routes>
-        </div>
+          {/* Blog Routes */}
+          <Route path="/blogs" element={<BlogList />} />
+          <Route path="/blogs/create" element={<CreateBlog />} />
+          <Route path="/blogs/:id" element={<BlogDetails />} />
+          <Route path="/blogs/:id/edit" element={<BlogEdit />} />
+
+          {/* Banner Routes */}
+          <Route path="/banners" element={<BannerList />} />
+          <Route path="/banners/create" element={<CreateBanner />} />
+          <Route path="/banners/:id" element={<BannerDetails />} />
+          <Route path="/banners/:id/edit" element={<BannerEdit />} />
+
+          {/* Role Routes */}
+          <Route path="/roles" element={<RoleList />} />
+          <Route path="/roles/create" element={<CreateRole />} />
+          <Route path="/roles/:id" element={<RoleDetails />} />
+          <Route path="/roles/edit" element={<RoleEdit />} />
+
+          {/* Placeholder routes for other nav items */}
+
+          <Route path="/permissions" element={<div className="page-header"><h1>Permissions Page</h1></div>} />
+          <Route path="/customers" element={<div className="page-header"><h1>Customers Page</h1></div>} />
+          <Route path="/sellers" element={<div className="page-header"><h1>Sellers Page</h1></div>} />
+        </Routes>
+      </div>
     </div>
   )
 }

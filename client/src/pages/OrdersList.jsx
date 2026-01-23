@@ -162,6 +162,10 @@ function OrdersList() {
         return "priority-normal";
     }
   };
+
+  const genreateinvoice = async ()=>{
+
+  }
   return (
     <div>
       <div className="page-header">
@@ -292,7 +296,7 @@ function OrdersList() {
                       </span>
                     </td>
                     <td>{order.products?.length || order.items || 0}</td>
-                    <td>{order.deliveryNumber || order.trackingNumber || '-'}</td>
+                    <td>{order.deliveryNumber || order.trackingnumber || '-'}</td>
                     <td>
                       <span
                         className={`status-badge ${getStatusBadgeClass(

@@ -184,6 +184,58 @@ function OrderAdd() {
     };
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+
+  //   try {
+  //     const { subtotal, tax, total } = calculateTotals();
+
+  //     const orderData = {
+  //       customerName: formData.customer.name,
+  //       products: formData.products.map((product) => ({
+  //         productId:
+  //           product.productId && product.productId !== ""
+  //             ? product.productId
+  //             : null,
+  //         name: product.name,
+  //         quantity: parseInt(product.quantity) || 1,
+  //         price: parseFloat(product.price) || 0,
+  //       })),
+  //       shippingAddress: {
+  //         address: formData.customer.address,
+  //         city: formData.customer.city,
+  //         email: formData.customer.email,
+  //         phone: formData.customer.phone,
+  //         company: formData.customer.company,
+  //       },
+  //       paymentMethod: formData.paymentMethod || "COD",
+  //       paymentStatus: "Pending",
+  //       orderStatus: formData.status || "Processing",
+  //       totalAmount: total,
+  //       orderDate: new Date(formData.orderDate),
+  //       deliveryDate: formData.deliveryDate
+  //         ? new Date(formData.deliveryDate)
+  //         : null,
+  //       priority: formData.priority || "Normal",
+  //       notes: formData.notes || "",
+  //       taxRate: parseFloat(formData.taxRate) || 0,
+  //       shippingCost: parseFloat(formData.shippingCost) || 0,
+  //       discountAmount: parseFloat(formData.discountAmount) || 0,
+  //     };
+
+  //     await orderService.createOrder(orderData);
+  //     alert("Order created successfully!");
+  //     navigate("/orders/list");
+  //   } catch (error) {
+  //     console.error("Error creating order:", error);
+  //     setError(error.message || "Failed to create order. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -194,15 +246,18 @@ function OrderAdd() {
 
       const orderData = {
         customerName: formData.customer.name,
+
         products: formData.products.map((product) => ({
           productId:
             product.productId && product.productId !== ""
               ? product.productId
               : null,
           name: product.name,
+          sku: product.sku || "",          // ✅ SKU added
           quantity: parseInt(product.quantity) || 1,
           price: parseFloat(product.price) || 0,
         })),
+
         shippingAddress: {
           address: formData.customer.address,
           city: formData.customer.city,
@@ -210,27 +265,35 @@ function OrderAdd() {
           phone: formData.customer.phone,
           company: formData.customer.company,
         },
+
         paymentMethod: formData.paymentMethod || "COD",
         paymentStatus: "Pending",
         orderStatus: formData.status || "Processing",
+
         totalAmount: total,
-        orderDate: new Date(formData.orderDate),
+        orderDate: formData.orderDate
+          ? new Date(formData.orderDate)
+          : new Date(),
+
         deliveryDate: formData.deliveryDate
           ? new Date(formData.deliveryDate)
           : null,
+
         priority: formData.priority || "Normal",
         notes: formData.notes || "",
+
         taxRate: parseFloat(formData.taxRate) || 0,
         shippingCost: parseFloat(formData.shippingCost) || 0,
         discountAmount: parseFloat(formData.discountAmount) || 0,
       };
 
       await orderService.createOrder(orderData);
+
       alert("Order created successfully!");
       navigate("/orders/list");
     } catch (error) {
       console.error("Error creating order:", error);
-      setError(error.message || "Failed to create order. Please try again.");
+      setError(error?.response?.data?.message || "Failed to create order.");
     } finally {
       setLoading(false);
     }

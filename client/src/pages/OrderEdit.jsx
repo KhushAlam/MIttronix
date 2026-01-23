@@ -219,7 +219,8 @@ function OrderEdit() {
           productId: product.productId && product.productId !== '' ? product.productId : null,
           name: product.name,
           quantity: parseInt(product.quantity) || 1,
-          price: parseFloat(product.price) || 0
+          price: parseFloat(product.price) || 0,
+          sku:product.sku||"",
         })),
         shippingAddress: formData.shippingAddress,
         paymentMethod: formData.paymentMethod || 'COD',
@@ -694,7 +695,7 @@ function OrderEdit() {
               <textarea
                 id="shippingAddress"
                 name="shippingAddress"
-                value={formData.shippingAddress}
+                value={formData.shippingAddress.address}
                 onChange={handleInputChange}
                 rows="3"
                 placeholder="Enter shipping address (if different from billing address)"

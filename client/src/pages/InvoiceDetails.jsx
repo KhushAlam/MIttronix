@@ -23,14 +23,25 @@ function InvoiceDetails() {
       setError('')
       const invoiceData = await invoiceService.getInvoiceById(id)
       setInvoice(invoiceData)
+      console.log(invoice)
     } catch (error) {
       console.error('Error loading invoice:', error)
       setError('Failed to load invoice data')
+      console.log(error)
     } finally {
       setLoading(false)
     }
   }
 
+   const handlePrint = () => {
+    const printContents = document.getElementById('printableArea').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload()
+  }
   const handleStatusUpdate = async (newStatus) => {
     try {
       setUpdatingStatus(true)
@@ -134,7 +145,7 @@ function InvoiceDetails() {
             <MdDownload size={16} />
             Download
           </button>
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={handlePrint}>
             <MdPrint size={16} />
             Print
           </button>
@@ -171,16 +182,16 @@ function InvoiceDetails() {
       )}
 
       <div className="invoice-details-container">
-        <div className="content-card invoice-card">
+        <div className="content-card invoice-card" id='printableArea'>
           {/* Invoice Header */}
           <div className="invoice-header">
             <div className="company-info">
-              <h2 className="company-name">{invoice.company?.name || 'Company Name'}</h2>
+              <h2 className="company-name">{invoice.customer?.company || 'Company Name'}</h2>
               <div className="company-details">
-                <p>{invoice.company?.address || 'Address not provided'}</p>
-                <p>{invoice.company?.city || 'City not provided'}</p>
-                <p>Phone: {invoice.company?.phone || 'N/A'}</p>
-                <p>Email: {invoice.company?.email || 'N/A'}</p>
+                <p>{invoice.costumer?.address || 'Address not provided'}</p>
+                <p>{invoice.customer?.city || 'City not provided'}</p>
+                <p>Phone: {invoice.customer?.phone || 'N/A'}</p>
+                <p>Email: {invoice.customer?.email || 'N/A'}</p>
                 <p>Website: {invoice.company?.website || 'N/A'}</p>
               </div>
             </div>

@@ -11,6 +11,15 @@ export const invoiceService = {
     }
   },
 
+   getInvoicesNumber: async () => {
+    try {
+      const response = await instance.get('/invoices/invoicenumber')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching invoices:', error)
+      throw error
+    }
+  },
   getInvoiceById: async (id) => {
     try {
       const response = await instance.get(`/invoices/${id}`)

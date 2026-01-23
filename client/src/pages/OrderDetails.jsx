@@ -2,6 +2,8 @@ import { Link, useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { MdArrowBack, MdPrint, MdEdit, MdLocalShipping, MdCheckCircle } from 'react-icons/md'
 import { orderService } from '../api/orderService.js'
+import { useReactToPrint } from "react-to-print"
+import { useRef } from 'react'
 
 function OrderDetails() {
   const { id } = useParams()
@@ -76,6 +78,18 @@ function OrderDetails() {
       default: return 'status-secondary'
     }
   }
+
+  const handlePrint = () => {
+    const printContents = document.getElementById('printableArea').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload()
+  }
+
+
 
   const getProgressSteps = () => {
     const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'
@@ -223,16 +237,16 @@ function OrderDetails() {
             <MdEdit size={16} />
             Edit Order
           </Link>
-          <button className="btn btn-outline">
+          <button className="btn btn-outline" onClick={handlePrint} >
             <MdPrint size={16} />
             Print
           </button>
         </div>
       </div>
 
-      <div className="order-details-container">
+      <div className="order-details-container" id='printableArea' >
         {/* Order Summary Card */}
-        <div className="content-card order-summary">
+        <div className="content-card order-summary" >
           <div className="order-summary-header">
             <div className="order-info">
               <h3>Order #{order._id?.slice(-8)}</h3>
@@ -244,7 +258,7 @@ function OrderDetails() {
               </span>
             </div>
           </div>
-          
+
           <div className="order-progress">
             {getProgressSteps().map((step, index) => {
               const IconComponent = step.icon
@@ -338,7 +352,7 @@ function OrderDetails() {
                 </div>
               ))}
             </div>
-            
+
             <div className="order-totals">
               <div className="totals-section">
                 <div className="totals-row">

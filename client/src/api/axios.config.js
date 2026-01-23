@@ -1,21 +1,16 @@
 import axios from "axios";
 
 const directBase =
-  import.meta?.env?.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, "")}/api`
-    : typeof window !== "undefined"
+  typeof window !== "undefined"
     ? `${window.location.protocol}//${window.location.hostname}:3000/api`
     : "http://localhost:3000/api";
 
-// 🔹 CHANGE 2: ENV name align (VITE_API_URL)
 let apiBase =
   typeof import.meta !== "undefined" &&
   import.meta.env &&
-  import.meta.env.VITE_API_URL
-    ? String(import.meta.env.VITE_API_URL)
+  import.meta.env.VITE_API_BASE_URL
+    ? String(import.meta.env.VITE_API_BASE_URL)
     : "/api";
-
-/* ===================== EXISTING LOCAL DEV LOGIC ===================== */
 
 if (
   typeof window !== "undefined" &&
@@ -26,26 +21,12 @@ if (
   apiBase = directBase;
 }
 
-/* ===================== ADDITION: NETLIFY PROD SAFETY ===================== */
-
-if (
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("netlify.app") &&
-  apiBase === "/api"
-) {
-  apiBase = `${import.meta.env.VITE_API_URL.replace(/\/+$/, "")}/api`;
-}
-
-/* ===================== EXISTING NORMALIZATION ===================== */
-
 if (apiBase !== "/api" && !apiBase.startsWith("http")) {
   apiBase = apiBase.replace(/\/+$/, "");
   if (!apiBase.endsWith("/api")) {
     apiBase = `${apiBase}/api`;
   }
 }
-
-/* ===================== AXIOS INSTANCES (UNCHANGED) ===================== */
 
 export const instance = axios.create({
   baseURL: apiBase,
@@ -78,8 +59,6 @@ instance.interceptors.response.use(
   }
 );
 
-/* ===================== EXISTING FALLBACK INSTANCES ===================== */
-
 const localInstance = axios.create({
   baseURL: "/api",
   timeout: 60000,
@@ -91,8 +70,6 @@ const directInstance = axios.create({
   timeout: 60000,
   headers: { "Content-Type": "application/json" },
 });
-
-/* ===================== EXISTING RETRY LOGIC (UNCHANGED) ===================== */
 
 export async function requestWithRetry(config, retries = 2, backoff = 300) {
   let attempt = 0;
@@ -115,30 +92,55 @@ export async function requestWithRetry(config, retries = 2, backoff = 300) {
       const usingRemote = String(instance.defaults.baseURL || "").startsWith(
         "http"
       );
-
       if ((isNetworkError || isTimeout) && usingRemote) {
+        console.warn(
+          "Remote request failed due to network/CORS. Attempting local /api proxy fallback...",
+          message
+        );
         try {
           const fallbackResponse = await localInstance.request(config);
+          console.log("Fallback to local /api succeeded");
           return fallbackResponse;
-        } catch {}
+        } catch (fallbackErr) {
+          console.warn("Local fallback also failed:", fallbackErr.message);
+        }
       }
 
       if (
         status === 502 ||
         status === 503 ||
         status === 504 ||
-        proxyBadGateway
+        proxyBadGateway ||
+        /ECONNREFUSED|connect ECONNREFUSED/i.test(message)
       ) {
         try {
+          console.warn(
+            `Proxy/target returned ${
+              status || ""
+            }. Attempting direct backend call to ${directBase}...`
+          );
           const directResponse = await directInstance.request(config);
+          console.log("Direct backend call succeeded");
           return directResponse;
-        } catch {}
+        } catch (directErr) {
+          console.warn("Direct backend call failed:", directErr.message);
+        }
       }
 
-      if (attempt === retries) throw err;
+      if (
+        attempt === retries ||
+        (!isNetworkError && !isTimeout && !proxyBadGateway)
+      ) {
+        throw err;
+      }
 
       attempt++;
-      await new Promise((res) => setTimeout(res, backoff * attempt));
+      const delayMs = backoff * attempt;
+      console.warn(
+        `Request failed (attempt ${attempt}). Retrying after ${delayMs}ms...`,
+        message
+      );
+      await new Promise((res) => setTimeout(res, delayMs));
     }
   }
 }

@@ -1,11 +1,13 @@
 import Invoice from "../models/invoice.model.js";
+import InvoiceCounterModel from "../models/invoiceCounterSchema.js";
 
 export const getInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find();
     if (!invoices) {
-      return res.status(400).json({success:false,
-        message:"No Invoice are Found"
+      return res.status(400).json({
+        success: false,
+        message: "No Invoice are Found"
       })
     } else {
       return res.status(200).status(200).json(invoices);
@@ -186,13 +188,6 @@ export const deleteInvoiceById = async (req, res) => {
 
 export const getInvoicesByMonth = async (req, res) => {
   try {
-    const { thisMonth } = req.query;
-    if (!thisMonth) {
-      return res.status(400).json({
-        success: false,
-        message: "thisMonth Query is Required"
-      });
-    }
     // For current date
     const now = new Date()
 
@@ -238,3 +233,41 @@ export const getInvoicesByMonth = async (req, res) => {
     });
   };
 };
+
+export const getInvoiceNumber = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+
+    const counter = await InvoiceCounterModel.findOneAndUpdate(
+      { year },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+
+    const seqNumber = counter.seq.toString().padStart(3, "0");
+    const invoiceNumber = `INV-${year}-${seqNumber}`;
+    console.log("Khush Alam");
+    return res.status(200).json({
+      success: true,
+      data: invoiceNumber
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Couldn't generate invoice number",
+      error: error.message
+    });
+  }
+};
+
+export const generateinvoice = async (req, res) => {
+  try {
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}

@@ -14,7 +14,7 @@ export const orderService = {
 
   getOrdersThisMonth: async () => {
     try {
-      const response = await requestWithRetry({ url: '/orders/this-month', method: 'get' })
+      const response = await requestWithRetry({ url: '/orders/this-month', method: 'get',})
       return response.data || { count: 0, data: [] }
     } catch (error) {
       console.error('Error fetching orders this month:', error.response?.status, error.message)

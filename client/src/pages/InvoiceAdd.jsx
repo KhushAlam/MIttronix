@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdArrowBack, MdSave, MdAdd, MdDelete } from "react-icons/md";
 import { invoiceService } from "../api/invoiceService.js";
+import { useEffect } from "react";
+import { orderService } from "../api/orderService.js"
 
 function InvoiceAdd() {
   const navigate = useNavigate();
-
+  const [order, setOrder] = useState([])
+  let [invoice, setinvoice] = useState("");
+  const [loading,setLoading] = useState(false);
+  const [error ,setError] =useState("")
+  const { id } = useParams()
   const [formData, setFormData] = useState({
     number: "",
     date: new Date().toISOString().split("T")[0],
@@ -44,6 +50,57 @@ function InvoiceAdd() {
       }));
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      loadOrderData()
+    } else {
+      getIvoicenumber()
+    }
+  }, [id])
+
+  const loadOrderData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      // Get all orders and find the one with matching ID
+      const orders = await orderService.getOrders()
+      const invoicenumber = await invoiceService.getInvoicesNumber()
+      const foundOrder = orders.find(o => o._id === id)
+
+      if (foundOrder) {
+        setOrder(foundOrder)
+      } else {
+        setError('Order not found')
+      }
+      if (invoicenumber) {
+        setinvoice(invoicenumber)
+      } else {
+        setError("No any Invoice Number")
+      }
+    } catch (error) {
+      console.error('Error loading order:', error)
+      setError('Failed to load order data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getIvoicenumber = async () => {
+    try {
+      setLoading(true)
+      setError("")
+      const invoicenumber = await invoiceService.getInvoicesNumber()
+      if (invoicenumber) {
+        setinvoice(invoicenumber)
+      } else {
+        setError("No any Invoice Number")
+      }
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
 
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...formData.items];
@@ -99,63 +156,69 @@ function InvoiceAdd() {
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const invoiceNumber = formData?.number?.trim();
-  const customerName = formData?.customer?.name?.trim();
-  const customerEmail = formData?.customer?.email?.trim();
-  const customerAddress = formData?.customer?.address?.trim();
-  const taxRate = parseFloat(formData?.taxRate) || 0;
-  const dueDate = new Date(formData?.dueDate);
-  const notes = formData?.notes || "";
-  const termsAndConditions = formData?.termsAndConditions || "";
-  const items = Array.isArray(formData?.items) ? formData.items : [];
+    const invoiceNumber = formData?.number?.trim();
+    const customerName = formData?.customer?.name?.trim();
+    const customerEmail = formData?.customer?.email?.trim();
+    const customerAddress = formData?.customer?.address?.trim();
+    const customerPhone = formData?.customer?.phone?.trim();
+    const customerCity = formData?.customer?.city?.trim();
+    const customerCompany = formData?.customer?.company?.trim();
+    const taxRate = parseFloat(formData?.taxRate) || 0;
+    const dueDate = new Date(formData?.dueDate);
+    const notes = formData?.notes || "";
+    const termsAndConditions = formData?.termsAndConditions || "";
+    const items = Array.isArray(formData?.items) ? formData.items : [];
 
-  if (!invoiceNumber || !customerName || items.length === 0) {
-    alert("Please fill all required fields: invoice number, customer name, and at least one item.");
-    return;
-  }
+    if (!invoiceNumber || !customerName || items.length === 0) {
+      alert("Please fill all required fields: invoice number, customer name, and at least one item.");
+      return;
+    }
 
-  const mappedItems = items.map((item, i) => {
-    const description = item.description?.trim();
-    const quantity = parseFloat(item.quantity);
-    const unitPrice = parseFloat(item.rate);
-    const total = quantity * unitPrice;
+    const mappedItems = items.map((item, i) => {
+      const description = item.description?.trim();
+      const quantity = parseFloat(item.quantity);
+      const unitPrice = parseFloat(item.rate);
+      const total = quantity * unitPrice;
 
-    console.log(`Item ${i}:`, { description, quantity, unitPrice, total });
+      console.log(`Item ${i}:`, { description, quantity, unitPrice, total });
 
-    return {
-      description,
-      quantity,
-      unitPrice,
-      total
-    };
-  });
-
-  const orderData = {
-    invoiceNumber,
-    customer: {
-      name: customerName,
-      email: customerEmail,
-      address: customerAddress
-    },
-    items: mappedItems,
-    tax: taxRate,
-    dueDate,
-    notes,
-    termsAndConditions
-  };
-
-  invoiceService.createInvoice(orderData)
-    .then(response => {
-      console.log('Invoice created successfully:', response);
-      navigate('/invoices/list');
-    })
-    .catch(error => {
-      console.error('Error creating invoice:', error);
-      alert('Failed to create invoice: ' + error.message);
+      return {
+        description,
+        quantity,
+        unitPrice,
+        total
+      };
     });
-};
+
+    const orderData = {
+      invoiceNumber,
+      customer: {
+        name: customerName,
+        email: customerEmail,
+        address: customerAddress,
+        phone: customerPhone,
+        city: customerCity,
+        company: customerCompany
+      },
+      items: mappedItems,
+      tax: taxRate,
+      dueDate,
+      notes,
+      termsAndConditions
+    };
+
+    invoiceService.createInvoice(orderData)
+      .then(response => {
+        console.log('Invoice created successfully:', response);
+        navigate('/invoices/list');
+      })
+      .catch(error => {
+        console.error('Error creating invoice:', error);
+        alert('Failed to create invoice: ' + error.message);
+      });
+  };
 
 
   const { subtotal, tax, total } = calculateTotals();
